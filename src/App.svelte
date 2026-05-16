@@ -35,10 +35,20 @@
   onMount(() => subscribeMidi((s) => tickSource.setInputId(s.selectedInputId)));
 
   let heldKeys = $state<Set<Key>>(new Set());
+  let latchedKey = $state<Key | null>(null);
+
+  // Pads to render as "held" — physically down pads plus the latched pad (if any).
+  const displayKeys = $derived.by(() => {
+    if (latchedKey === null) return heldKeys;
+    const out = new Set(heldKeys);
+    out.add(latchedKey);
+    return out;
+  });
 
   function press(key: Key, notes: number[]): void {
     host.padPressed(key, notes);
     heldKeys = new Set(heldKeys).add(key);
+    if (ui.latch) latchedKey = key;
   }
   function release(key: Key): void {
     host.padReleased(key);
@@ -46,6 +56,11 @@
     next.delete(key);
     heldKeys = next;
   }
+
+  // Clear the latched highlight when latch is turned off.
+  $effect(() => {
+    if (!ui.latch) latchedKey = null;
+  });
 
   // Ableton "Computer MIDI Keyboard" mapping.
   const KEY_TO_PAD: Record<string, Key> = {
@@ -110,7 +125,7 @@
 
 <main>
   <TopBar />
-  <PianoLayout onPress={press} onRelease={release} {heldKeys} />
+  <PianoLayout onPress={press} onRelease={release} heldKeys={displayKeys} />
   <footer>
     <p>
       Keys: <code>A S D F G H J</code> + <code>W E T Y U</code> = pads ·
