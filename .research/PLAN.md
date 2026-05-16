@@ -95,7 +95,7 @@ Style 4 + Style 5: 24 explicit J-6 rhythm patterns (16-step grids using `o`/`_`/
 - [ ] Single shared clock drives M4 + M5 + Style 3 phrase durations
 - [ ] `setInterval` at small tick (~5ms) is acceptable for prototype — no Web Audio API scheduler yet
 - [ ] (Optional, defer) MIDI clock send (24 PPQ)
-- [ ] (Optional, defer) MIDI clock receive
+- [x] MIDI clock receive — TickSource at 24 PPQ, Input port selector + Int/Ext toggle in top bar
 
 ### M7: Latch / hold
 
