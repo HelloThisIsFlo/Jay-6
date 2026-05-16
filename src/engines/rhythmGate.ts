@@ -1,40 +1,38 @@
 import { playChord, releaseChord } from '../midi';
-import { sixteenthMs } from '../clock';
+import { ticksPerSixteenth } from '../clock';
 import { parseRhythmPattern, type RhythmStep, type RhythmVariation } from '../phrases';
+import { tickSource } from '../tickSource';
 import type { Engine } from './types';
 
 interface ActiveHit {
   notes: number[];
-  releaseAtStepCount: number; // absolute step counter at which to release
+  releaseAtTick: number; // absolute internal tick counter at which to release
 }
 
 // Walks a 16-step rhythm pattern at sixteenth-note resolution.
-// On each `o`, fires the held chord; releases at gate-fraction of the hit's duration.
 export class RhythmGateEngine implements Engine {
   private steps: RhythmStep[];
-  private bpm: number;
-  private gatePercent: number; // 0..100 — fraction of hit duration to hold
+  private gatePercent: number;
 
   private heldNotes: number[] = [];
-  private timer: ReturnType<typeof setInterval> | null = null;
+  private unsubscribe: (() => void) | null = null;
 
-  private stepCount = 0; // monotonically increasing 16th-note counter
+  private tickCount = 0;             // total ticks since start()
+  private ticksPerStep: number;      // 6 at 24 PPQ
   private active: ActiveHit | null = null;
 
-  constructor(variation: RhythmVariation, bpm: number, gatePercent: number) {
+  constructor(variation: RhythmVariation, _bpm: number, gatePercent: number) {
     this.steps = parseRhythmPattern(variation.pattern);
-    this.bpm = bpm;
     this.gatePercent = gatePercent;
+    this.ticksPerStep = ticksPerSixteenth();
   }
 
   setVariation(v: RhythmVariation): void {
     this.steps = parseRhythmPattern(v.pattern);
-    // Keep stepCount; pattern wraps at 16.
   }
 
-  setBpm(bpm: number): void {
-    this.bpm = bpm;
-    if (this.timer) this.reschedule();
+  setBpm(_bpm: number): void {
+    // TickSource owns BPM.
   }
 
   setGatePercent(pct: number): void {
@@ -44,16 +42,14 @@ export class RhythmGateEngine implements Engine {
   start(notes: number[]): void {
     this.stop();
     this.heldNotes = [...notes];
-    this.stepCount = 0;
+    this.tickCount = 0;
+    this.unsubscribe = tickSource.subscribe(() => this.onTick());
     if (notes.length === 0) return;
-    // Tick once immediately to evaluate step 0, then schedule.
-    this.tick();
-    this.reschedule();
+    this.evaluateStep();
   }
 
   setNotes(notes: number[]): void {
     this.heldNotes = [...notes];
-    // If a hit is currently sounding with the old chord, swap mid-hit.
     if (this.active) {
       releaseChord(this.active.notes);
       this.active.notes = [...notes];
@@ -62,37 +58,37 @@ export class RhythmGateEngine implements Engine {
   }
 
   stop(): void {
-    if (this.timer !== null) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+    this.unsubscribe?.();
+    this.unsubscribe = null;
     if (this.active) {
       releaseChord(this.active.notes);
       this.active = null;
     }
     this.heldNotes = [];
-    this.stepCount = 0;
+    this.tickCount = 0;
   }
 
-  private reschedule(): void {
-    if (this.timer !== null) clearInterval(this.timer);
-    const ms = sixteenthMs(this.bpm);
-    this.timer = setInterval(() => {
-      this.stepCount += 1;
-      this.tick();
-    }, ms);
-  }
-
-  private tick(): void {
-    // Release any active hit that's done.
-    if (this.active && this.stepCount >= this.active.releaseAtStepCount) {
+  private onTick(): void {
+    if (this.heldNotes.length === 0) {
+      this.tickCount += 1;
+      return;
+    }
+    // Release any active hit whose gate window closed.
+    if (this.active && this.tickCount >= this.active.releaseAtTick) {
       releaseChord(this.active.notes);
       this.active = null;
     }
-    const stepInBar = this.stepCount % 16;
-    const hit = this.steps.find((s) => s.startStep === stepInBar);
+    // Step boundary?
+    this.tickCount += 1;
+    if (this.tickCount % this.ticksPerStep === 0) {
+      this.evaluateStep();
+    }
+  }
+
+  private evaluateStep(): void {
+    const stepIndex = (this.tickCount / this.ticksPerStep) % 16;
+    const hit = this.steps.find((s) => s.startStep === stepIndex);
     if (!hit) return;
-    // Release any still-active hit before firing the new one.
     if (this.active) {
       releaseChord(this.active.notes);
       this.active = null;
@@ -100,16 +96,11 @@ export class RhythmGateEngine implements Engine {
     if (this.heldNotes.length === 0) return;
     const notes = [...this.heldNotes];
     playChord(notes);
-    // Release after gate% of the hit's duration (in step counts).
-    // gate=100 → exactly at the boundary; lower = earlier release.
-    // We round up to keep at least 1 step of sustain for gate>0.
-    const gateSteps = Math.max(
+    const hitTicks = hit.durationSteps * this.ticksPerStep;
+    const gateTicks = Math.max(
       this.gatePercent > 0 ? 1 : 0,
-      Math.round((hit.durationSteps * this.gatePercent) / 100),
+      Math.round((hitTicks * this.gatePercent) / 100),
     );
-    this.active = {
-      notes,
-      releaseAtStepCount: this.stepCount + gateSteps,
-    };
+    this.active = { notes, releaseAtTick: this.tickCount + gateTicks };
   }
 }

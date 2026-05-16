@@ -27,6 +27,8 @@ export const STYLE_VARIATION_COUNT: Record<StyleKind, number> = {
   rhythm5: 12,
 };
 
+export type ClockSourceKind = 'internal' | 'external';
+
 export const ui = $state({
   bankIndex: 1, // 1..100
   style: 'hold' as StyleKind,
@@ -35,7 +37,12 @@ export const ui = $state({
   bpm: 110,
   latch: false,
   gatePercent: 75, // 0..100 — fraction of step length to hold the chord during rhythm gate
+  clockSource: 'internal' as ClockSourceKind,
 });
+
+export function setClockSource(k: ClockSourceKind): void {
+  ui.clockSource = k;
+}
 
 export function setStyle(kind: StyleKind): void {
   ui.style = kind;

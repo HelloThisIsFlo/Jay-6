@@ -1,6 +1,6 @@
 import { WebMidi, type Output, type OutputChannel } from 'webmidi';
 
-export interface MidiOutputInfo {
+export interface MidiPortInfo {
   id: string;
   name: string;
 }
@@ -10,8 +10,10 @@ export type MidiStatus = 'idle' | 'requesting' | 'ready' | 'unsupported' | 'deni
 interface State {
   status: MidiStatus;
   error: string | null;
-  outputs: MidiOutputInfo[];
+  outputs: MidiPortInfo[];
+  inputs: MidiPortInfo[];
   selectedOutputId: string | null;
+  selectedInputId: string | null;
   channel: number; // 1..16
 }
 
@@ -21,7 +23,9 @@ const state: State = {
   status: 'idle',
   error: null,
   outputs: [],
+  inputs: [],
   selectedOutputId: null,
+  selectedInputId: null,
   channel: 1,
 };
 
@@ -44,14 +48,19 @@ export function getMidiState(): Readonly<State> {
   return state;
 }
 
-function refreshOutputs(): void {
+function refreshPorts(): void {
   state.outputs = WebMidi.outputs.map((o) => ({ id: o.id, name: o.name }));
+  state.inputs = WebMidi.inputs.map((i) => ({ id: i.id, name: i.name }));
   if (state.selectedOutputId && !state.outputs.find((o) => o.id === state.selectedOutputId)) {
     state.selectedOutputId = null;
   }
   if (!state.selectedOutputId && state.outputs.length > 0) {
     state.selectedOutputId = state.outputs[0]!.id;
   }
+  if (state.selectedInputId && !state.inputs.find((i) => i.id === state.selectedInputId)) {
+    state.selectedInputId = null;
+  }
+  // Don't auto-select an input — external clock is opt-in.
   notify();
 }
 
@@ -69,9 +78,9 @@ export async function initMidi(): Promise<void> {
   try {
     await WebMidi.enable();
     state.status = 'ready';
-    refreshOutputs();
-    WebMidi.addListener('connected', refreshOutputs);
-    WebMidi.addListener('disconnected', refreshOutputs);
+    refreshPorts();
+    WebMidi.addListener('connected', refreshPorts);
+    WebMidi.addListener('disconnected', refreshPorts);
   } catch (err) {
     state.status = err instanceof Error && /denied|permission/i.test(err.message) ? 'denied' : 'error';
     state.error = err instanceof Error ? err.message : String(err);
@@ -81,6 +90,11 @@ export async function initMidi(): Promise<void> {
 
 export function selectOutput(id: string | null): void {
   state.selectedOutputId = id;
+  notify();
+}
+
+export function selectInput(id: string | null): void {
+  state.selectedInputId = id;
   notify();
 }
 

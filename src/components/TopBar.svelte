@@ -1,5 +1,14 @@
 <script lang="ts">
-  import { getMidiState, initMidi, selectOutput, setChannel, subscribeMidi, type MidiStatus } from '../midi';
+  import {
+    getMidiState,
+    initMidi,
+    selectInput,
+    selectOutput,
+    setChannel,
+    subscribeMidi,
+    type MidiPortInfo,
+    type MidiStatus,
+  } from '../midi';
   import { banks } from '../banks';
   import { onMount } from 'svelte';
   import {
@@ -11,20 +20,25 @@
     setBpm,
     toggleLatch,
     setGatePercent,
+    setClockSource,
     STYLE_LABELS,
     STYLE_VARIATION_COUNT,
     type StyleKind,
   } from '../state.svelte';
 
   let midiStatus = $state<MidiStatus>('idle');
-  let midiOutputs = $state<{ id: string; name: string }[]>([]);
+  let midiOutputs = $state<MidiPortInfo[]>([]);
+  let midiInputs = $state<MidiPortInfo[]>([]);
   let selectedOutputId = $state<string | null>(null);
+  let selectedInputId = $state<string | null>(null);
 
   onMount(() => {
     const unsub = subscribeMidi((s) => {
       midiStatus = s.status;
       midiOutputs = [...s.outputs];
+      midiInputs = [...s.inputs];
       selectedOutputId = s.selectedOutputId;
+      selectedInputId = s.selectedInputId;
     });
     initMidi();
     return unsub;
@@ -58,6 +72,20 @@
           <option value={o.id}>{o.name}</option>
         {/each}
       {/if}
+    </select>
+  </label>
+
+  <label class="field">
+    <span>Input</span>
+    <select
+      disabled={midiStatus !== 'ready'}
+      value={selectedInputId ?? ''}
+      onchange={(e) => selectInput((e.currentTarget as HTMLSelectElement).value || null)}
+    >
+      <option value="">— none —</option>
+      {#each midiInputs as i (i.id)}
+        <option value={i.id}>{i.name}</option>
+      {/each}
     </select>
   </label>
 
@@ -101,12 +129,29 @@
   </label>
 
   <label class="field">
+    <span>Clock</span>
+    <div class="seg">
+      <button
+        class:on={ui.clockSource === 'internal'}
+        onclick={() => setClockSource('internal')}
+      >Int</button>
+      <button
+        class:on={ui.clockSource === 'external'}
+        onclick={() => setClockSource('external')}
+        disabled={!selectedInputId}
+        title={selectedInputId ? '' : 'Select an Input first'}
+      >Ext</button>
+    </div>
+  </label>
+
+  <label class="field">
     <span>BPM</span>
     <input
       type="number"
       min="40"
       max="240"
       value={ui.bpm}
+      disabled={ui.clockSource === 'external'}
       onchange={(e) => setBpm(Number((e.currentTarget as HTMLInputElement).value))}
     />
   </label>
@@ -218,4 +263,18 @@
   .latch.on { background: #ff7a1a; color: #111; border-color: #ff7a1a; }
   .gateval { color: #eee; font-variant-numeric: tabular-nums; min-width: 4ch; }
   input[type='range'] { accent-color: #ff7a1a; }
+  input[type='number']:disabled { color: #555; }
+  .seg { display: flex; gap: 0; }
+  .seg button {
+    background: #2a2a2a;
+    color: #eee;
+    border: 1px solid #3a3a3a;
+    padding: 0.35rem 0.7rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .seg button:first-child { border-radius: 4px 0 0 4px; }
+  .seg button:last-child  { border-radius: 0 4px 4px 0; border-left: none; }
+  .seg button.on { background: #ff7a1a; color: #111; border-color: #ff7a1a; }
+  .seg button:disabled { color: #555; cursor: not-allowed; }
 </style>

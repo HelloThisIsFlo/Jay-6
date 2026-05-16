@@ -4,6 +4,8 @@
   import PianoLayout from './components/PianoLayout.svelte';
   import { EngineHost } from './engines/host';
   import { getBank, type Key } from './banks';
+  import { subscribeMidi } from './midi';
+  import { tickSource } from './tickSource';
   import {
     ui,
     setStyle,
@@ -21,12 +23,16 @@
     gatePercent: ui.gatePercent,
   });
 
-  // Bridge reactive UI state → imperative host calls.
-  $effect(() => { host.setBpm(ui.bpm); });
+  // Bridge reactive UI state → imperative host + tickSource calls.
+  $effect(() => { host.setBpm(ui.bpm); tickSource.setBpm(ui.bpm); });
   $effect(() => { host.setStyle(ui.style, ui.variation); });
   $effect(() => { host.setTranspose(ui.transpose); });
   $effect(() => { host.setLatch(ui.latch); });
   $effect(() => { host.setGatePercent(ui.gatePercent); });
+  $effect(() => { tickSource.setMode(ui.clockSource); });
+
+  // Push selected MIDI input id into the tick source so external clock can attach.
+  onMount(() => subscribeMidi((s) => tickSource.setInputId(s.selectedInputId)));
 
   let heldKeys = $state<Set<Key>>(new Set());
 
