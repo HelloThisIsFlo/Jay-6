@@ -16,8 +16,11 @@ const b = JSON.parse(fs.readFileSync(bPath, 'utf8'));
 let mismatches = 0;
 
 function eqArr(x, y) {
+  // Compare as sorted multisets — extractions may differ in order.
   if (x.length !== y.length) return false;
-  for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return false;
+  const a = [...x].sort((p, q) => p - q);
+  const b = [...y].sort((p, q) => p - q);
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
   return true;
 }
 
