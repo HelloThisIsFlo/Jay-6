@@ -158,7 +158,7 @@ Keyboard shortcuts pulled into prototype. Rest deferred:
 | M5 Rhythm | ✅ Styles 4+5, 24 patterns, gate slider |
 | M6 Clock | ✅ BPM 40-240, on-demand start (per Open decision below) |
 | M7 Latch | ✅ Top-bar toggle + Space, mid-flight chord swap |
-| M8 OP-1 test | ⬜ hands-on |
+| M8 OP-1 test | ✅ OP-1 connects, banks + rhythm play, latch + transpose + keyboard work; subjective fun confirmed. Tempo sync (clock receive) tracked as immediate post-prototype follow-up. |
 | M9 Phrases | ⬜ (out of prototype scope) |
 | M10 Polish | 🟡 keyboard shortcuts shipped; velocity / persistence / presets deferred |
 
