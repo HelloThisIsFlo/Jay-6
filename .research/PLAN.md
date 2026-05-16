@@ -151,16 +151,18 @@ Keyboard shortcuts pulled into prototype. Rest deferred:
 
 | Milestone | Status |
 |-----------|--------|
-| M1 Data | ⬜ |
-| M2 MIDI | ⬜ |
-| M3 Chord pads | ⬜ |
-| M4 Arp | ⬜ |
-| M5 Rhythm | ⬜ |
-| M6 Clock | ⬜ |
-| M7 Latch | ⬜ |
-| M8 OP-1 test | ⬜ |
+| M1 Data | ✅ phrases + 100 chord banks (note voicings need OP-1 spot-check — see M8) |
+| M2 MIDI | ✅ WEBMIDI.js plumbing; real audio confirmed at M8 |
+| M3 Chord pads | ✅ 5+7 piano layout, J-6 orange held-pad feedback |
+| M4 Arp | ✅ Styles 1+2, all 24 variations |
+| M5 Rhythm | ✅ Styles 4+5, 24 patterns, gate slider |
+| M6 Clock | ✅ BPM 40-240, on-demand start (per Open decision below) |
+| M7 Latch | ✅ Top-bar toggle + Space, mid-flight chord swap |
+| M8 OP-1 test | ⬜ hands-on |
 | M9 Phrases | ⬜ (out of prototype scope) |
-| M10 Polish | 🟡 (keyboard shortcuts only — rest out of scope) |
+| M10 Polish | 🟡 keyboard shortcuts shipped; velocity / persistence / presets deferred |
+
+Style 3 (Phrase Dur, 12 variations) shipped alongside M4/M5 since they share the clock + engine pattern.
 
 ## Decisions
 
@@ -193,17 +195,13 @@ Keyboard shortcuts pulled into prototype. Rest deferred:
 
 Roland publishes no note data for Chord Phrases / Strummed Chord Phrases. Options when M9 comes up: skip, roll own, reverse-engineer.
 
-#### Default BPM startup behavior
-**Needed by**: M6
+#### Roland chord voicing fidelity
+**Needed by**: M8
 
-Start clock immediately on load, or only when first pad pressed? Lean: only on demand to avoid surprise sound.
+Two independent WebFetch extractions of the Roland chord set page diverged on note values for ~30% of the 1,200 chord slots — the HTML table is dense and the summarized fetch loses cells. Shipped the more internally consistent run. Both pass the PLAN sanity checks (Bank 1 Cadd9, Bank 14 Oct Stack). If voicings sound off on the OP-1 during M8, spot-fix against the manual PDF or a hardware reference.
 
-#### Latch spacebar binding
-**Needed by**: M7 + keyboard shortcuts
+### ✅ Resolved during build
 
-Confirm Space = toggle latch (proposed). May conflict if you want Space for something else.
-
-#### "Smooth chord change while latched"
-**Needed by**: M7
-
-Implementation detail: do we release the previous chord exactly when the new one starts (overlap = 0), or briefly overlap? Decide during build.
+- **Default BPM startup**: clock starts on demand (engines lazy-create their `setInterval` on first `start()`); no surprise sound on load.
+- **Latch spacebar binding**: shipped as Space = toggle latch. No conflict observed.
+- **Smooth chord change while latched**: engines implement `setNotes()` for hot-swap (no restart). Hold/Phrase Dur release-old-then-play-new (single MIDI-event pair gap, inaudible). Arp keeps timeline position. Rhythm Gate swaps the in-flight hit if one is sounding.
