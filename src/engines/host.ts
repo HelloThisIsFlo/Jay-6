@@ -50,6 +50,8 @@ export class EngineHost {
   private playing = false;
   // The raw chord most recently sent to the engine — used for "latch + new pad" swap.
   private currentRawChord: number[] = [];
+  // The pad key currently sustained by latch (null = nothing latched).
+  private latchedKey: string | null = null;
 
   constructor(cfg: HostConfig) {
     this.cfg = { ...cfg };
@@ -62,15 +64,19 @@ export class EngineHost {
     const transposed = transposeNotes(rawNotes, this.cfg.transpose);
     this.currentRawChord = rawNotes;
     if (this.cfg.latch && this.playing) {
-      // Latch + already playing: same pad pressed again = stop, different pad = swap.
-      // Simplest rule: if the pressed chord matches what's playing, treat as stop. Else swap.
-      // Here we approximate "same pad" by key — held pad repeats stop.
-      // (We compare keys: if this exact pad was the last to start the latch, toggle it off.)
-      this.engine.setNotes(transposed);
+      // Roland J-6 HOLD convention: same pad re-press retriggers (engine timeline
+      // restarts), different pad swaps the chord smoothly (timeline continues).
+      // Only the Latch toggle stops sound.
+      if (this.latchedKey === key) {
+        this.engine.start(transposed);
+      } else {
+        this.engine.setNotes(transposed);
+      }
     } else {
       this.engine.start(transposed);
       this.playing = true;
     }
+    if (this.cfg.latch) this.latchedKey = key;
   }
 
   padReleased(key: string): void {
@@ -96,6 +102,7 @@ export class EngineHost {
   panic(): void {
     this.engine.stop();
     this.playing = false;
+    this.latchedKey = null;
     allNotesOff();
   }
 
@@ -141,6 +148,7 @@ export class EngineHost {
       this.engine.stop();
       this.playing = false;
     }
+    if (!latch) this.latchedKey = null;
   }
 
   setGatePercent(pct: number): void {
