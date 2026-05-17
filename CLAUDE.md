@@ -6,6 +6,7 @@ Browser app: J-6-style chord pads → MIDI → OP-1.
 
 - **[CURRENT-STATE.md](CURRENT-STATE.md)** — roadmap, what's shipped, what's next, conventions, file layout, architecture-in-a-paragraph. Read this first.
 - **[.research/PLAN.md](.research/PLAN.md)** — original plan + decision log.
+- **[.research/UAT.md](.research/UAT.md)** — feature-by-feature hand-test checklist. Say "run uat" to trigger the `uat-agent` skill that walks Flo through it.
 
 ## Stack
 

@@ -38,6 +38,7 @@ Style 3 (Phrase Dur, 12 variations) shipped alongside M4/M5 since they share the
 | LAN exposure (`vite --host`, `allowedHosts: true`) | ✅ |
 | Justfile (`dev`, `tunnel`, `serve`, `test`, `check`, `build`, `ci`) | ✅ |
 | Cloudflare tunnel → `jay-6.kempenich.dev` | 🟡 DNS provisioned, ingress added to local YAML, but TheMac tunnel is dashboard-managed in practice — add the public hostname in the Cloudflare Zero Trust dashboard for the tunnel to actually route |
+| UAT pass (`.research/UAT.md` via `uat-agent` skill) | 🟡 Checklist + skill drafted — not yet walked through |
 
 ### ⏳ Phase 3 — Backlog (not started)
 
@@ -122,6 +123,7 @@ just ci           # check + test + build
 ## Reference
 
 - Plan + decision log: [`.research/PLAN.md`](.research/PLAN.md)
+- UAT checklist (run via `uat-agent` skill): [`.research/UAT.md`](.research/UAT.md)
 - Roland J-6 chord list: https://static.roland.com/manuals/J-6_manual_v102/eng/28645807.html
 - Roland J-6 phrase list: https://static.roland.com/manuals/J-6_manual_v102/eng/28645808.html
 - Roland J-6 manual PDF: https://static.roland.com/assets/media/pdf/J-6_eng02_W.pdf
