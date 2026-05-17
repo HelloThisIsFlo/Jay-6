@@ -43,3 +43,16 @@ build:
 
 # Run check + tests + build.
 ci: check test build
+
+# Build container image locally (sanity check before pushing).
+docker-build:
+    docker build -t ghcr.io/hellothisisflo/jay-6:dev .
+
+# Apply k8s manifests to current kubectl context (https://jay-6.kempenich.ai).
+# Re-runs trigger a rollout restart so the new pod pulls the latest GHCR image.
+deploy:
+    ./deploy.sh
+
+# Tear down the jay-6 namespace. Remember to remove the Cloudflare tunnel route too.
+teardown:
+    ./cleanup.sh

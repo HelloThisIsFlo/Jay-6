@@ -7,7 +7,7 @@
 
 - **What it is**: Browser app. Click chord pads → MIDI flows out → OP-1 (or any MIDI synth) plays.
 - **Where we are**: Prototype shipped + verified on hardware. Now in post-prototype polish.
-- **How to run**: `just dev` (localhost) or `just serve` (Vite + Cloudflare tunnel → `jay-6.kempenich.dev`).
+- **How to run**: `just dev` (localhost), `just serve` (Vite + Cloudflare tunnel → `jay-6.kempenich.dev` from this Mac), or always-on at `https://jay-6.kempenich.ai` (home k8s cluster).
 
 ## Roadmap
 
@@ -38,6 +38,7 @@ Style 3 (Phrase Dur, 12 variations) shipped alongside M4/M5 since they share the
 | LAN exposure (`vite --host`, `allowedHosts: true`) | ✅ |
 | Justfile (`dev`, `tunnel`, `serve`, `test`, `check`, `build`, `ci`) | ✅ |
 | Cloudflare tunnel → `jay-6.kempenich.dev` | 🟡 DNS provisioned, ingress added to local YAML, but TheMac tunnel is dashboard-managed in practice — add the public hostname in the Cloudflare Zero Trust dashboard for the tunnel to actually route |
+| K8s deploy → `https://jay-6.kempenich.ai` | ✅ `Dockerfile` (nginx:alpine) + `k8s.yaml` (1 replica, 5m/32Mi) + GHCR Action + `./deploy.sh`. Routed via cluster cloudflared — see [`TUNNEL-SETUP.md`](TUNNEL-SETUP.md). |
 | UAT pass (`.research/UAT.md` via `uat-agent` skill) | 🟡 Checklist + skill drafted — not yet walked through |
 
 ### ⏳ Phase 3 — Backlog (not started)
@@ -103,6 +104,8 @@ just test         # vitest run
 just check        # svelte-check
 just build        # vite build
 just ci           # check + test + build
+just docker-build # local image sanity check (CI does the real push to GHCR)
+just deploy       # ./deploy.sh — apply k8s.yaml to current kubectl context
 ```
 
 ### Conventions
