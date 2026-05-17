@@ -17,3 +17,4 @@ dist-ssr
 coverage
 .playwright-mcp/
 smoke-*.png
+# README screenshot lives in docs/ — checked in.
