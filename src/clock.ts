@@ -53,6 +53,13 @@ export function ticksPerSixteenth(): number {
   return ticksPerStep('16th', false); // 6
 }
 
+// D-06: under Ext clock, rhythm engines' first step must land on a downbeat
+// (tick % TICKS_PER_QUARTER === 0). At currentTick=0 returns 24, never returns
+// currentTick itself — "first step lands on a downbeat" reads as wait-for-next.
+export function nextDownbeatTick(currentTick: number): number {
+  return (Math.floor(currentTick / TICKS_PER_QUARTER) + 1) * TICKS_PER_QUARTER;
+}
+
 export function arpTicksPerStep(subdivision: '8th' | '16th', triplet: boolean): number {
   return ticksPerStep(subdivision, triplet);
 }
