@@ -210,6 +210,9 @@
     background: #1a1a1a;
     border-bottom: 1px solid #2a2a2a;
     flex-wrap: wrap;
+    /* D-08: mirror PianoLayout — kill iOS text-selection flash on long-press. */
+    user-select: none;
+    -webkit-user-select: none;
   }
   .field {
     display: flex;
@@ -277,4 +280,22 @@
   .seg button:last-child  { border-radius: 0 4px 4px 0; border-left: none; }
   .seg button.on { background: #ff7a1a; color: #111; border-color: #ff7a1a; }
   .seg button:disabled { color: #555; cursor: not-allowed; }
+
+  /* D-08: kill 300ms tap delay + double-tap zoom on controls. <select> intentionally
+     excluded (Pitfall 6) — touch-action there breaks the native iOS dropdown gesture. */
+  button, input[type='number'], input[type='range'] {
+    touch-action: manipulation;
+  }
+
+  /* D-08: Apple HIG 44pt min tap targets. Per-element, NOT global on `button` — a
+     global rule would distort native <select> option rendering on iPad (Pitfall 6). */
+  .arrow, .latch, .seg button, .transpose button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* D-08: :active = touch substitute for :hover (iOS hover is sticky after tap-release). */
+  .arrow:active, .latch:active, .seg button:active, .transpose button:active {
+    filter: brightness(1.15);
+  }
 </style>
