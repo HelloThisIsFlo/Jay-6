@@ -1,5 +1,6 @@
 import { WebMidi, type Input } from 'webmidi';
 import { tickIntervalMs } from './clock';
+import { getMidiState } from './midi';
 
 export type ClockSource = 'internal' | 'external';
 type TickListener = () => void;
@@ -109,6 +110,13 @@ class TickSourceImpl {
   }
 
   private emitTick(): void {
+    // D-02: clock send is always-on when Int, never when Ext (we are the slave then).
+    // Optional-chain mirrors midi.ts:107-112 getChannel pattern — silent no-op when
+    // output not yet ready (Pitfall 1).
+    if (this.mode === 'internal') {
+      const outId = getMidiState().selectedOutputId;
+      if (outId) WebMidi.getOutputById(outId)?.sendClock();
+    }
     for (const l of this.listeners) l();
   }
 

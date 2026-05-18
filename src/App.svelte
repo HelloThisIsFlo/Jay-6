@@ -21,6 +21,7 @@
     transpose: ui.transpose,
     latch: ui.latch,
     gatePercent: ui.gatePercent,
+    clockMode: ui.clockSource,
   });
 
   // Bridge reactive UI state → imperative host + tickSource calls.

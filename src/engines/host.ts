@@ -1,6 +1,8 @@
-import { allNotesOff } from '../midi';
+import { WebMidi } from 'webmidi';
+import { allNotesOff, getMidiState } from '../midi';
 import { style1, style2, style3, style4, style5 } from '../phrases';
 import type { StyleKind } from '../state.svelte';
+import type { ClockSource } from '../tickSource';
 import { ArpEngine } from './arp';
 import { HoldEngine } from './hold';
 import { PhraseDurationEngine } from './phraseDuration';
@@ -14,6 +16,7 @@ interface HostConfig {
   transpose: number; // semitones
   latch: boolean;
   gatePercent: number;
+  clockMode: ClockSource;
 }
 
 function transposeNotes(notes: readonly number[], semitones: number): number[] {
@@ -75,6 +78,7 @@ export class EngineHost {
     } else {
       this.engine.start(transposed);
       this.playing = true;
+      this.sendTransport('start');
     }
     if (this.cfg.latch) this.latchedKey = key;
   }
@@ -89,6 +93,7 @@ export class EngineHost {
     if (this.heldPads.size === 0) {
       this.engine.stop();
       this.playing = false;
+      this.sendTransport('stop');
     } else {
       // Another pad still down: swap to the most recently still-held pad.
       const lastKey = Array.from(this.heldPads).at(-1)!;
@@ -156,6 +161,22 @@ export class EngineHost {
     if (this.engine instanceof RhythmGateEngine) {
       this.engine.setGatePercent(pct);
     }
+  }
+
+  setClockMode(mode: ClockSource): void {
+    this.cfg.clockMode = mode;
+  }
+
+  // D-02: only master mode sends transport — slave mode listens only.
+  // Optional-chain mirrors midi.ts:117-122 playChord guard style.
+  private sendTransport(kind: 'start' | 'stop' | 'continue'): void {
+    if (this.cfg.clockMode !== 'internal') return;
+    const outId = getMidiState().selectedOutputId;
+    if (!outId) return;
+    const out = WebMidi.getOutputById(outId);
+    if (kind === 'start') out?.sendStart();
+    else if (kind === 'stop') out?.sendStop();
+    else out?.sendContinue();
   }
 
   private updateEngineVariation(): void {
