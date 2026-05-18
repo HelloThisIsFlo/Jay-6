@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
+status: verifying
 stopped_at: Completed 02-04-PLAN.md
-last_updated: "2026-05-18T20:53:13.526Z"
+last_updated: "2026-05-18T21:00:24.063Z"
 last_activity: 2026-05-18
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 0
+  completed_plans: 5
+  percent: 50
 ---
 
 # Project State
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-05-18)
 Milestone: v1 (Prototype → UAT acceptance)
 Phase: 2 (Post-prototype polish + UAT acceptance) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-18
 
-Progress: [████████░░] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [████████░░] 80%
 | Phase 02-post-prototype-polish-uat-acceptance P02 | 1min | 1 tasks | 2 files |
 | Phase 02-post-prototype-polish-uat-acceptance P03 | 1min | 3 tasks | 3 files |
 | Phase 02-post-prototype-polish-uat-acceptance PP04 | 2min | 3 tasks tasks | 6 files files |
+| Phase 02-post-prototype-polish-uat-acceptance P05 | 2min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,8 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 - [Phase 02]: Transport sync wired master/slave — outbound sendClock gated on tickSource.mode==='internal' inside emitTick; inbound onTransport with 200ms performance.now() debounce + panicForModeSwitch alias for D-03 hard stop
 - [Phase 02]: rhythmGate must reset tickCount=0 after the arm-wait latch drops on the downbeat — without it the first audible step lands at index 4 (24/6) instead of 0; matches Int-mode invariant that start() initializes tickCount=0
 - [Phase 02]: armedPosition lives on EngineHost with a getArmedPosition() public getter — 'resume' branch is set on Continue but no engine reads it in v1 (live-instrument hybrid means alignment is the only Ext adjustment); consumer ships with the v2 sequencer
+- [Phase 02-post-prototype-polish-uat-acceptance]: 02-05: MANUAL.md ships at repo root — consumer-product tone (TE Pocket Operator anchor), 4 required H1 sections per D-14, designed to grow with v2 sequencer Section 5 without rewriting 1-4 (D-13)
+- [Phase 02-post-prototype-polish-uat-acceptance]: 02-05: REQ-uat-walkthrough handed off to verify-phase via .claude/skills/uat-agent (trigger 'run uat'); UAT §15 extended with 6 transport-sync bullets covering D-03 panic, D-04 downbeat alignment + Record=Start, D-05 200ms guard, Pitfall 8 no-clock-echo
 
 ### Pending Todos
 
@@ -107,6 +110,6 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 
 ## Session Continuity
 
-Last session: 2026-05-18T20:53:13.514Z
+Last session: 2026-05-18T21:00:18.291Z
 Stopped at: Completed 02-04-PLAN.md
 Resume file: None

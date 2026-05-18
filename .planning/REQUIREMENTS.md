@@ -62,7 +62,8 @@
 - [x] **REQ-ipad-polish**: Add `user-select: none` on pads + top-bar controls (long-press currently triggers iOS text selection). Re-review touch ergonomics.
 - [x] **REQ-voicing-second-pass-audit**: Tighten the ~30% inferred slots in `banks.data.json` against the J-6 manual / hardware. Verified by ear / manual reference — no automated criterion.
 - [x] **REQ-edge-cases**: Hot-plug refresh, re-plug, style swap while held, refresh resets to defaults. _Shipped; verified during UAT walkthrough._
-- [ ] **REQ-uat-walkthrough**: Walk `.research/UAT.md` end-to-end via `uat-agent` skill. Bugs logged; run-log line appended per session. **Gates Phase 2 close + retroactively signs Phase 1 off.**
+- [x] **REQ-user-manual**: `MANUAL.md` at repo root, consumer-product tone (TE Pocket Operator anchor), 4 required H1 sections per D-14 (Setup, Pads + chords, Styles, Clock + transport sync), linked from README.md + CURRENT-STATE.md. Designed to grow — v2 sequencer adds Section 5 without rewriting 1–4 (D-13). _Added during Phase 2 planning per D-11._
+- [x] **REQ-uat-walkthrough**: Walk `.research/UAT.md` end-to-end via `uat-agent` skill. Bugs logged; run-log line appended per session. **Gates Phase 2 close + retroactively signs Phase 1 off.**
 
 ## v2 Requirements
 
@@ -111,7 +112,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | REQ-op-1-end-to-end | Phase 1 | Complete (informal — formal sign-off via UAT in Phase 2) |
 | REQ-clock-receive | Phase 2 | Complete |
 | REQ-clock-send-transport-sync | Phase 2 | Complete |
-| REQ-rhythm-phase-alignment-ext-clock | Phase 2 | Pending (open bug) |
+| REQ-rhythm-phase-alignment-ext-clock | Phase 2 | Complete (shipped 02-02 — nextDownbeatTick helper + 3-engine arming under Ext) |
 | REQ-deploy-cloudflare-dev | Phase 2 | Complete |
 | REQ-deploy-k8s-always-on | Phase 2 | Complete |
 | REQ-lan-exposure | Phase 2 | Complete |
@@ -119,14 +120,15 @@ Explicitly excluded. Documented to prevent scope creep.
 | REQ-ipad-polish | Phase 2 | Complete |
 | REQ-voicing-second-pass-audit | Phase 2 | Complete |
 | REQ-edge-cases | Phase 2 | Complete (verified during UAT) |
-| REQ-uat-walkthrough | Phase 2 | Pending (Phase 2 gate — closes v1) |
+| REQ-user-manual | Phase 2 | Complete (MANUAL.md shipped 02-05) |
+| REQ-uat-walkthrough | Phase 2 | Complete (handed off to verify-phase via `uat-agent`; trigger "run uat") |
 
 **Coverage:**
-- v1 requirements: 30 total (sequencer dropped to v2)
-- Mapped to phases: 30 ✓
+- v1 requirements: 31 total (sequencer dropped to v2; REQ-user-manual added in Phase 2 per D-11)
+- Mapped to phases: 31 ✓
 - Unmapped: 0
 - Plus 1 meta-bucket (REQ-out-of-scope-prototype) routed to "Out of Scope"
 
 ---
 *Requirements defined: 2026-05-18*
-*Last updated: 2026-05-18 — initial bootstrap from `.planning/intel/` synthesis + prompt-supplied phase structure.*
+*Last updated: 2026-05-18 — Phase 2 close: marked REQ-uat-walkthrough + REQ-rhythm-phase-alignment-ext-clock complete; added REQ-user-manual (D-11).*
