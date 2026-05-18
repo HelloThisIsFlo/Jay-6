@@ -82,9 +82,9 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 
 ### Pending Todos
 
-(`/gsd:capture --list` once GSD todo system is in use.)
+(`/gsd:capture --list` to browse + action.)
 
-None yet.
+- **Iterate on Jay-6 visual design via Claude Design** (area: ui) — black-key contrast, typography scale collapse, spacing off-grid token, TopBar layout, J-6 hardware-evocative palette. Out-of-phase workflow per Flo's call. See `.planning/todos/pending/2026-05-18-iterate-on-jay-6-visual-design-via-claude-design.md`.
 
 ### Blockers/Concerns
 
