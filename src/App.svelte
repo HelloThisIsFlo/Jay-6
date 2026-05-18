@@ -155,4 +155,17 @@
     margin: 0 0.05rem;
     font-size: 0.78rem;
   }
+
+  /* D-08: iPad body scroll lock — prevents iOS rubber-band scroll / address-bar
+     jitter when a pad press starts mid-screen. `max-width: 1366px` guard excludes
+     large touchscreen Windows laptops with mice (Pitfall 7). */
+  @media (pointer: coarse) and (max-width: 1366px) {
+    :global(html), :global(body) {
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overscroll-behavior: none;
+    }
+  }
 </style>
