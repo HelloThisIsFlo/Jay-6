@@ -147,6 +147,56 @@ Keyboard shortcuts pulled into prototype. Rest deferred:
 - [ ] Persist settings between sessions (last bank, BPM, output port, etc.)
 - [ ] Save/recall favorite presets
 
+## Phase 2 — Post-prototype polish
+
+Bugs + closing the OP-1 sync story + deploy. No new feature surface. Phase 2 closes when UAT passes.
+
+### Rhythm phase alignment under external clock (bug)
+
+- [ ] First step lands off-beat when slaved to OP-1 — `engine.start()` fires immediately instead of waiting for next downbeat
+- [ ] Fix: anchor first step to next `tick-mod-24` boundary, or restart engine on incoming transport `start`
+- [ ] Verify on OP-1: rhythm gate locked to OP-1 beat across stop/start cycles
+
+### Transport sync + clock send
+
+Likely overlaps with the alignment fix — same tick-anchor logic.
+
+- [ ] 24 PPQ MIDI clock out when Int clock is active
+- [ ] Send Start / Stop / Continue on Jay-6 engine start OK, for number eight, let's go with option one. We can keep the asymmetry as long as we make the graph a bit less confusing. / stop
+- [ ] React to incoming Start / Stop / Continue from OP-1 → drive Jay-6 engine transport
+- [ ] OP-1 Record → also starts Jay-6 (record = transport start)
+- [ ] No double-trigger: Ext clock + incoming Start = one start
+
+### Voicing data second-pass audit
+
+- [ ] Open. Flo to explore separately. Goal: tighten the ~30% inferred slots from the original two-extraction diff.
+
+### iPad polish (second pass)
+
+- [ ] Text-selection fires on long-press — add `user-select: none` on pads + top-bar controls
+- [ ] Touch ergonomics not blocking, but worth a re-review during the pass
+
+### UAT walkthrough
+
+- [ ] Walk `.research/UAT.md` end-to-end via `uat-agent` skill
+- [ ] Phase 2 closes after UAT passes
+
+### Deploy
+
+- [x] Cloudflare tunnel → `https://jay-6.kempenich.dev` (public hostname live in Zero Trust)
+- [x] K8s + GHCR Action → `https://jay-6.kempenich.ai` (always-on)
+
+## Phase 3 — TBD
+
+- Sequencer (primary candidate). Detail TBD.
+
+## Backlog (no commitment)
+
+- M9 Style 6–9 phrases — Roland publishes no note data. Options: skip / roll own / reverse-engineer.
+- Velocity control
+- Persist last bank / BPM / port across sessions
+- Save/recall favorite presets
+
 ## Status
 
 | Milestone | Status |

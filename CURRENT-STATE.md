@@ -31,26 +31,41 @@ Style 3 (Phrase Dur, 12 variations) shipped alongside M4/M5 since they share the
 
 ### 🚧 Phase 2 — Post-prototype polish (in progress)
 
+Phase 2 closes once UAT passes. Details in [`.research/PLAN.md` → Phase 2](.research/PLAN.md).
+
+**Done**
+
 | Item | Status |
 |---|---|
 | MIDI clock **receive** (slave to OP-1) | ✅ TickSource at 24 PPQ, Input port + Int/Ext toggle in top bar |
 | Latched pad stays highlighted | ✅ |
 | LAN exposure (`vite --host`, `allowedHosts: true`) | ✅ |
 | Justfile (`dev`, `tunnel`, `serve`, `test`, `check`, `build`, `ci`) | ✅ |
-| Cloudflare tunnel → `jay-6.kempenich.dev` | 🟡 DNS provisioned, ingress added to local YAML, but TheMac tunnel is dashboard-managed in practice — add the public hostname in the Cloudflare Zero Trust dashboard for the tunnel to actually route |
-| K8s deploy → `https://jay-6.kempenich.ai` | ✅ `Dockerfile` (nginx:alpine) + `k8s.yaml` (1 replica, 5m/32Mi) + GHCR Action + `./deploy.sh`. Routed via cluster cloudflared — see [`TUNNEL-SETUP.md`](TUNNEL-SETUP.md). |
-| UAT pass (`.research/UAT.md` via `uat-agent` skill) | 🟡 Checklist + skill drafted — not yet walked through |
+| Cloudflare tunnel → `jay-6.kempenich.dev` | ✅ Public hostname live in Zero Trust dashboard. `just serve` routes tunnel → localhost:5173. |
+| K8s deploy → `https://jay-6.kempenich.ai` | ✅ `Dockerfile` (nginx:alpine) + `k8s.yaml` + GHCR Action + `./deploy.sh`. See [`TUNNEL-SETUP.md`](TUNNEL-SETUP.md). |
 
-### ⏳ Phase 3 — Backlog (not started)
+**Open**
+
+| Item | Status |
+|---|---|
+| Rhythm pattern phase alignment under external clock (bug) | ⏳ Engine `start()` fires immediately → off-beat under OP-1 clock. Anchor first step to next `tick-mod-24` boundary or restart on transport `start`. |
+| Transport sync + clock send (Start/Stop/Continue/Record) | ⏳ 24 PPQ out + react to OP-1 transport → drive Jay-6 engines. Likely folds with the alignment fix. |
+| Voicing data second-pass audit | ⏳ Open. Flo to explore separately. Goal: tighten the ~30% inferred slots. |
+| iPad polish (second pass) | ⏳ Text-selection on long-press → add `user-select: none`. Touch ergonomics worth a re-review. |
+| UAT walkthrough (`.research/UAT.md` via `uat-agent` skill) | 🟡 Checklist + skill ready, not yet run. Gates Phase 2 close. |
+
+### ⏳ Phase 3 — TBD
+
+- **Sequencer** (primary candidate). Detail TBD.
+
+### 📦 Backlog (no commitment)
 
 | Item | Notes |
 |---|---|
-| MIDI clock **send** (24 PPQ + Start/Stop/Continue) | Flagged optional in M6. Quick add (~50 lines, no UI change). |
 | M9 Style 6–9 phrases | Roland publishes no note data. Options: skip / roll own / reverse-engineer. |
-| M10 polish | Velocity control, persist last bank/BPM/port, save/recall favorite presets. |
-| Chord voicing spot-check | ~30% of slots were inferred during HTML extraction. Cross-check against Roland PDF or hardware if anything sounds off. |
-| Rhythm pattern phase alignment under external clock | Engine starts on `engine.start()` rather than on the next OP-1 beat → patterns can land off-beat. Fix: anchor first step to the next clock-tick-mod-24 boundary, or restart on transport `start`. |
-| iPad polish | Web MIDI works on iOS via the "Web MIDI Browser" app (Yonemoto). UI itself is desktop-first — touch ergonomics not yet tuned. |
+| Velocity control | |
+| Persist last bank / BPM / port | |
+| Save/recall favorite presets | |
 
 ## Project conventions
 
