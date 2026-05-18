@@ -42,7 +42,7 @@ Two-phase v1 milestone mirroring shipping reality, not a fresh plan. **Phase 1 (
   5. Voicing data in `src/banks.data.json` no longer contains the ~30% inferred slots flagged in the original two-extraction diff — chord-pad output sounds correct vs. the Roland manual / hardware on the audited banks.
   6. `MANUAL.md` exists at the repo root with the four D-14 sections (Setup, Pads + chords, Styles, Clock + transport sync) in consumer-product voice, linked from README.md + CURRENT-STATE.md.
 **Plans**: 5 plans
-  - [ ] 02-01-PLAN.md — Carry-forward acknowledgement for the 5 pre-GSD shipped REQs (clock-receive, deploys, LAN, iPad Web MIDI Browser)
+  - [x] 02-01-PLAN.md — Carry-forward acknowledgement for the 5 pre-GSD shipped REQs (clock-receive, deploys, LAN, iPad Web MIDI Browser)
   - [ ] 02-02-PLAN.md — `nextDownbeatTick()` pure-math helper + Vitest boundary cases (rhythm phase alignment math)
   - [ ] 02-03-PLAN.md — iPad ergonomics CSS pass + black-key Option B (UI-SPEC)
   - [ ] 02-04-PLAN.md — Transport sync wiring (clock send + transport receive + downbeat alignment + double-trigger guard + mode-switch hard stop + voicing-anchor verify)
@@ -57,4 +57,4 @@ Phases execute in numeric order: 1 → 2. v1 closes on Phase 2 UAT pass; sequenc
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Prototype (M1–M8 + keyboard) | N/A — retrospective | Shipped (informal); awaiting UAT in Phase 2 | 2026-05-18 (code-complete) |
-| 2. Post-prototype polish + UAT acceptance | 0 / 5 | In progress | - |
+| 2. Post-prototype polish + UAT acceptance | 1/5 | In Progress|  |
