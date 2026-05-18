@@ -23,7 +23,7 @@ TickSource at 24 PPQ. Top-bar Input port + Int/Ext toggle. Ext disables BPM inpu
 Container deployed to home K8s cluster (`Dockerfile` nginx:alpine + `k8s.yaml` + GHCR Action + `./deploy.sh`), exposed at `https://jay-6.kempenich.ai` via cluster-wide Cloudflare Tunnel. Browseable from anywhere but can't drive the OP-1 (Web MIDI cannot be proxied — DEC-web-midi-locality).
 
 - **Acceptance check:** `curl -sSI https://jay-6.kempenich.ai` returns `HTTP/2 200` (the K8s always-on deploy).
-- **Live check result (recorded by Task 2):** _filled in after Task 2 runs the curl._
+- **Live check result (2026-05-18T20:34:59Z):** `HTTP/2 200` — confirmed live. ✓
 
 ## REQ-lan-exposure
 
