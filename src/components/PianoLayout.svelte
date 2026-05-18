@@ -131,8 +131,13 @@
     min-height: 140px;
   }
   .pad.white .key { color: #888; }
+  /* D-10 Option B: lifted fill (#1f1f1f → #2e2e2e) + 1px inset top highlight for a
+     pocket-operator "raised key" feel. If this reads poorly on real iPad, walk the
+     fallback ladder per .planning/phases/02-post-prototype-polish-uat-acceptance/02-UI-SPEC.md
+     §"Fallback ladder (executor pivot path)": A (fill only) → C (orange hairline) → D (frame to #000). */
   .pad.black {
-    background: #1f1f1f;
+    background: #2e2e2e;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     color: #eee;
     min-height: 110px;
     border-color: #2a2a2a;
