@@ -31,16 +31,22 @@ Two-phase v1 milestone mirroring shipping reality, not a fresh plan. **Phase 1 (
 **UI hint**: yes
 
 ### Phase 2: Post-prototype polish + UAT acceptance
-**Goal**: Close the remaining Phase 2 open items (transport sync, rhythm phase alignment under external clock, voicing audit, iPad polish) and walk `.research/UAT.md` end-to-end so Phase 1 + Phase 2 are formally signed off. After this phase, Jay-6 is "shipped + acceptance-tested," and Phase 3 scoping can begin.
+**Goal**: Close the remaining Phase 2 open items (transport sync, rhythm phase alignment under external clock, voicing audit, iPad polish) + ship a consumer-product MANUAL.md at the repo root, then walk `.research/UAT.md` end-to-end so Phase 1 + Phase 2 are formally signed off. After this phase, Jay-6 is "shipped + acceptance-tested," and Phase 3 scoping can begin.
 **Depends on**: Phase 1
-**Requirements**: REQ-clock-receive, REQ-clock-send-transport-sync, REQ-rhythm-phase-alignment-ext-clock, REQ-deploy-cloudflare-dev, REQ-deploy-k8s-always-on, REQ-lan-exposure, REQ-ipad-web-midi-browser, REQ-ipad-polish, REQ-voicing-second-pass-audit, REQ-edge-cases, REQ-uat-walkthrough
+**Requirements**: REQ-clock-receive, REQ-clock-send-transport-sync, REQ-rhythm-phase-alignment-ext-clock, REQ-deploy-cloudflare-dev, REQ-deploy-k8s-always-on, REQ-lan-exposure, REQ-ipad-web-midi-browser, REQ-ipad-polish, REQ-voicing-second-pass-audit, REQ-edge-cases, REQ-uat-walkthrough, REQ-gate-slider, REQ-user-manual
 **Success Criteria** (what must be TRUE):
   1. User can switch the top-bar Clock toggle to **Ext**, start playback on the OP-1, and hear Jay-6's Rhythm Gate engine lock on-beat to the OP-1 — first hit lands on a downbeat, and Jay-6's engines react to OP-1 Start / Stop / Continue / Record without double-triggering.
   2. User can leave the Clock toggle on **Int**, hit play on a rhythm pattern, and any downstream MIDI device receives 24 PPQ MIDI clock + Start/Stop/Continue from Jay-6 (Jay-6 works as master too, not only as slave).
   3. User can open `https://jay-6.kempenich.dev` on the iPad inside Yonemoto's "Web MIDI Browser" app, see the OP-1 in the Output dropdown, and play comfortably — long-press on TopBar controls no longer triggers iOS text selection.
   4. User can `say "run uat"` and the `uat-agent` skill walks `.research/UAT.md` section-by-section with results recorded in the file; any surfaced bugs are logged with date stamps, and a run-log line is appended per session.
   5. Voicing data in `src/banks.data.json` no longer contains the ~30% inferred slots flagged in the original two-extraction diff — chord-pad output sounds correct vs. the Roland manual / hardware on the audited banks.
-**Plans**: TBD
+  6. `MANUAL.md` exists at the repo root with the four D-14 sections (Setup, Pads + chords, Styles, Clock + transport sync) in consumer-product voice, linked from README.md + CURRENT-STATE.md.
+**Plans**: 5 plans
+  - [ ] 02-01-PLAN.md — Carry-forward acknowledgement for the 5 pre-GSD shipped REQs (clock-receive, deploys, LAN, iPad Web MIDI Browser)
+  - [ ] 02-02-PLAN.md — `nextDownbeatTick()` pure-math helper + Vitest boundary cases (rhythm phase alignment math)
+  - [ ] 02-03-PLAN.md — iPad ergonomics CSS pass + black-key Option B (UI-SPEC)
+  - [ ] 02-04-PLAN.md — Transport sync wiring (clock send + transport receive + downbeat alignment + double-trigger guard + mode-switch hard stop + voicing-anchor verify)
+  - [ ] 02-05-PLAN.md — MANUAL.md at repo root + README/CURRENT-STATE links + UAT walkthrough handoff
 **UI hint**: yes
 
 ## Progress
@@ -51,4 +57,4 @@ Phases execute in numeric order: 1 → 2. v1 closes on Phase 2 UAT pass; sequenc
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Prototype (M1–M8 + keyboard) | N/A — retrospective | Shipped (informal); awaiting UAT in Phase 2 | 2026-05-18 (code-complete) |
-| 2. Post-prototype polish + UAT acceptance | 0 / TBD | In progress | - |
+| 2. Post-prototype polish + UAT acceptance | 0 / 5 | In progress | - |
