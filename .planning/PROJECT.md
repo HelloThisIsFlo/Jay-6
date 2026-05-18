@@ -51,15 +51,15 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 - [ ] **REQ-clock-send-transport-sync** — 24 PPQ out + Start/Stop/Continue/Record both ways (Phase 2)
 - [ ] **REQ-voicing-second-pass-audit** — tighten ~30% inferred chord slots (Phase 2)
 - [ ] **REQ-ipad-polish** — `user-select: none` on TopBar + touch ergonomics re-review (Phase 2)
-- [ ] **REQ-uat-walkthrough** — run `.research/UAT.md` end-to-end via `uat-agent` skill (Phase 2 gate)
+- [ ] **REQ-uat-walkthrough** — run `.research/UAT.md` end-to-end via `uat-agent` skill (Phase 2 gate — closes v1)
 - [ ] **REQ-edge-cases** — hot-plug + refresh + style-swap regressions (verified during UAT)
-- [ ] **REQ-phase-3-sequencer** — Phase 3 placeholder, scope TBD
 
 ### Out of Scope
 
 <!-- Explicit, with reasoning. Captured from REQ-out-of-scope-prototype + project conventions. -->
 
-- **Style 6–9 phrases** — Roland publishes no note data; reverse-engineering or hand-rolling is high-cost / low-confidence. May revisit if Phase 3 needs them.
+- **Sequencer** — deferred to milestone **v2** (post-UAT). Run `/gsd:new-milestone` once Phase 2 UAT passes; sequencer becomes Phase 1 of v2. Likely scope: step sequencer driving chord-pad presses on a grid, pattern chaining, basic song mode. Must respect DEC-engines-time-source-agnostic + DEC-engine-orchestrator.
+- **Style 6–9 phrases** — Roland publishes no note data; reverse-engineering or hand-rolling is high-cost / low-confidence. May revisit in v2 if sequencer needs them.
 - **Velocity control** — prototype intentionally fixed-velocity; adds complexity without changing the core loop.
 - **Persistence (last bank / BPM / port / latch)** — deferred to Phase 3+; current "load with defaults" is fine for a solo tool.
 - **Save/recall favourite presets** — Phase 3+ alongside persistence.

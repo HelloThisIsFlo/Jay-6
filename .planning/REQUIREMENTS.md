@@ -64,13 +64,11 @@
 - [x] **REQ-edge-cases**: Hot-plug refresh, re-plug, style swap while held, refresh resets to defaults. _Shipped; verified during UAT walkthrough._
 - [ ] **REQ-uat-walkthrough**: Walk `.research/UAT.md` end-to-end via `uat-agent` skill. Bugs logged; run-log line appended per session. **Gates Phase 2 close + retroactively signs Phase 1 off.**
 
-### Phase 3 placeholder
-
-- [ ] **REQ-phase-3-sequencer**: Sequencer is the primary Phase 3 candidate. Detail TBD — descope or refine once Phase 2 closes.
-
 ## v2 Requirements
 
-_None tracked separately yet. Items currently sit in "Out of Scope" until promoted._
+_Promoted from Out of Scope via `/gsd:new-milestone` once Phase 2 UAT closes v1._
+
+- **Sequencer** (candidate v2 Phase 1) — step sequencer driving chord-pad presses on a grid; pattern chaining; basic song mode. Must slot into existing TickSource + engine-host without violating DEC-engines-time-source-agnostic or DEC-engine-orchestrator. Scope refined during `/gsd:new-milestone`.
 
 ## Out of Scope
 
@@ -121,12 +119,11 @@ Explicitly excluded. Documented to prevent scope creep.
 | REQ-ipad-polish | Phase 2 | Pending |
 | REQ-voicing-second-pass-audit | Phase 2 | Pending |
 | REQ-edge-cases | Phase 2 | Complete (verified during UAT) |
-| REQ-uat-walkthrough | Phase 2 | Pending (Phase 2 gate) |
-| REQ-phase-3-sequencer | Phase 3 | Pending (scope TBD) |
+| REQ-uat-walkthrough | Phase 2 | Pending (Phase 2 gate — closes v1) |
 
 **Coverage:**
-- v1 requirements: 31 total
-- Mapped to phases: 31 ✓
+- v1 requirements: 30 total (sequencer dropped to v2)
+- Mapped to phases: 30 ✓
 - Unmapped: 0
 - Plus 1 meta-bucket (REQ-out-of-scope-prototype) routed to "Out of Scope"
 

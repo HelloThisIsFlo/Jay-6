@@ -2,7 +2,9 @@
 
 ## Overview
 
-Three-phase trajectory mirroring shipping reality, not a fresh plan. **Phase 1 (Prototype)** is code-complete + hardware-verified informally and awaits formal UAT sign-off (which happens inside Phase 2). **Phase 2 (Post-prototype polish)** is in progress — closes the open Phase 2 work items + runs `.research/UAT.md` end-to-end via the `uat-agent` skill; that walkthrough is the gate that retroactively validates Phase 1. **Phase 3 (Sequencer)** is a placeholder — no commitment, scope TBD until Phase 2 closes.
+Two-phase v1 milestone mirroring shipping reality, not a fresh plan. **Phase 1 (Prototype)** is code-complete + hardware-verified informally and awaits formal UAT sign-off (which happens inside Phase 2). **Phase 2 (Post-prototype polish)** is in progress — closes the open Phase 2 work items + runs `.research/UAT.md` end-to-end via the `uat-agent` skill; that walkthrough is the gate that retroactively validates Phase 1 + closes v1.
+
+> **Sequencer** is deferred to milestone **v2**. Run `/gsd:new-milestone` once Phase 2 UAT passes — sequencer becomes Phase 1 of v2.
 
 ## Phases
 
@@ -11,8 +13,7 @@ Three-phase trajectory mirroring shipping reality, not a fresh plan. **Phase 1 (
 - Decimal phases (e.g. 2.1, 2.2): Urgent insertions (marked `INSERTED`) — none yet.
 
 - [x] **Phase 1: Prototype (M1–M8 + keyboard)** — J-6 chord pads + 5 playback styles + latch + keyboard, end-to-end to OP-1 over USB MIDI. _Shipped + informally hardware-verified; awaiting UAT in Phase 2._
-- [ ] **Phase 2: Post-prototype polish + UAT acceptance** — close open Phase 2 items (transport sync, rhythm phase alignment, voicing audit, iPad polish) and pass the `.research/UAT.md` walkthrough that retroactively signs Phase 1 off.
-- [ ] **Phase 3: Sequencer (placeholder)** — sequencer is the primary candidate. Scope TBD until Phase 2 closes.
+- [ ] **Phase 2: Post-prototype polish + UAT acceptance** — close open Phase 2 items (transport sync, rhythm phase alignment, voicing audit, iPad polish) and pass the `.research/UAT.md` walkthrough that retroactively signs Phase 1 off. **Closes v1.**
 
 ## Phase Details
 
@@ -42,25 +43,12 @@ Three-phase trajectory mirroring shipping reality, not a fresh plan. **Phase 1 (
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 3: Sequencer (placeholder)
-**Goal**: Add a sequencer layer on top of the prototype's engines + 24 PPQ TickSource. Exact scope TBD — to be defined once Phase 2 closes and Phase 1 is formally signed off. Likely candidates: step sequencer driving chord-pad presses on a grid, pattern chaining, basic song mode.
-**Depends on**: Phase 2 (UAT signoff required — don't pile new work on un-validated foundations)
-**Requirements**: REQ-phase-3-sequencer
-**Success Criteria** (what must be TRUE):
-  1. Phase scope is defined (`.research/PLAN.md` Phase 3 section populated; this roadmap updated with concrete success criteria + plan list).
-  2. Sequencer slots cleanly into the existing TickSource + engine-host architecture without violating DEC-engines-time-source-agnostic or DEC-engine-orchestrator.
-  3. [Concrete user-observable criterion — TBD during scoping.]
-**Plans**: TBD — defer concrete planning until Phase 2 closes.
-**UI hint**: yes
-
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3.
-Phase 1 is shipped; Phase 2 is the active phase; Phase 3 is gated on Phase 2 close.
+Phases execute in numeric order: 1 → 2. v1 closes on Phase 2 UAT pass; sequencer (v2) is scoped via `/gsd:new-milestone` after that.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Prototype (M1–M8 + keyboard) | N/A — retrospective | Shipped (informal); awaiting UAT in Phase 2 | 2026-05-18 (code-complete) |
 | 2. Post-prototype polish + UAT acceptance | 0 / TBD | In progress | - |
-| 3. Sequencer (placeholder) | 0 / TBD | Not started (scope TBD) | - |

@@ -9,10 +9,11 @@ See: .planning/PROJECT.md (updated 2026-05-18)
 
 ## Current Position
 
-Phase: 2 of 3 (Post-prototype polish + UAT acceptance)
+Milestone: v1 (Prototype → UAT acceptance)
+Phase: 2 of 2 (Post-prototype polish + UAT acceptance)
 Plan: 0 of TBD in current phase
 Status: In progress (carried in from existing prototype + Phase 2 work done before GSD bootstrap)
-Last activity: 2026-05-18 — bootstrapped `.planning/` (PROJECT / REQUIREMENTS / ROADMAP / STATE) from `.planning/intel/` synthesis.
+Last activity: 2026-05-18 — bootstrapped `.planning/` (PROJECT / REQUIREMENTS / ROADMAP / STATE) from `.planning/intel/` synthesis. Scope fix: sequencer moved out of v1 to milestone v2 (post-UAT).
 
 Progress: [██████░░░░] ~60% — Phase 1 shipped (informal); Phase 2 done items: clock receive, deploys, LAN, latched-pad highlight. Open: transport sync + clock send, rhythm phase alignment, voicing audit, iPad polish, UAT walkthrough.
 
@@ -29,7 +30,6 @@ Progress: [██████░░░░] ~60% — Phase 1 shipped (informal); 
 |-------|-------|-------|----------|
 | 1. Prototype | retrospective | — | — |
 | 2. Post-prototype polish + UAT | 0 / TBD | — | — |
-| 3. Sequencer | 0 / TBD | — | — |
 
 **Recent Trend:**
 - Last 5 plans: N/A (no GSD plans yet)
@@ -80,4 +80,4 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 
 Last session: 2026-05-18 — GSD bootstrap (`new-project-from-ingest`).
 Stopped at: PROJECT / REQUIREMENTS / ROADMAP / STATE written from `.planning/intel/` synthesis + prompt-supplied phase mapping.
-Resume file: None — next step is either `/gsd:plan-phase 2` to start formal planning of Phase 2 open items, or `say "run uat"` to start the UAT walkthrough via the `uat-agent` skill.
+Resume file: None — next step is either `/gsd:plan-phase 2` to start formal planning of Phase 2 open items, or `say "run uat"` to start the UAT walkthrough via the `uat-agent` skill. After Phase 2 closes → `/gsd:new-milestone` spins up v2 (sequencer).
