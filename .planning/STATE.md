@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: executing
+stopped_at: Phase 2 context gathered
+last_updated: "2026-05-18T20:04:52.913Z"
+last_activity: "2026-05-18 — bootstrapped `.planning/` (PROJECT / REQUIREMENTS / ROADMAP / STATE) from `.planning/intel/` synthesis. Scope fix: sequencer moved out of v1 to milestone v2 (post-UAT)."
+progress:
+  total_phases: 2
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
+---
+
 # Project State
 
 ## Project Reference
@@ -20,6 +36,7 @@ Progress: [██████░░░░] ~60% — Phase 1 shipped (informal); 
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 0 (GSD plans — pre-GSD work shipped without plan files)
 - Average duration: N/A
 - Total execution time: N/A
@@ -32,6 +49,7 @@ Progress: [██████░░░░] ~60% — Phase 1 shipped (informal); 
 | 2. Post-prototype polish + UAT | 0 / TBD | — | — |
 
 **Recent Trend:**
+
 - Last 5 plans: N/A (no GSD plans yet)
 - Trend: N/A
 
@@ -78,6 +96,6 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 
 ## Session Continuity
 
-Last session: 2026-05-18 — GSD bootstrap (`new-project-from-ingest`).
-Stopped at: PROJECT / REQUIREMENTS / ROADMAP / STATE written from `.planning/intel/` synthesis + prompt-supplied phase mapping.
-Resume file: None — next step is either `/gsd:plan-phase 2` to start formal planning of Phase 2 open items, or `say "run uat"` to start the UAT walkthrough via the `uat-agent` skill. After Phase 2 closes → `/gsd:new-milestone` spins up v2 (sequencer).
+Last session: 2026-05-18T20:04:52.900Z
+Stopped at: Phase 2 context gathered
+Resume file: .planning/phases/02-post-prototype-polish-uat-acceptance/02-CONTEXT.md
