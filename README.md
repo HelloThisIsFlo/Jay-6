@@ -53,8 +53,9 @@ Note: Web MIDI requires a *secure context* — `localhost` or HTTPS. Plain `http
 ## 📚 More docs
 
 - [`MANUAL.md`](MANUAL.md) — user guide (how to play, clock sync, iPad setup)
-- [`CURRENT-STATE.md`](CURRENT-STATE.md) — roadmap, what's shipped, what's next
-- [`.research/PLAN.md`](.research/PLAN.md) — design rationale and decision log
+- [`.planning/PROJECT.md`](.planning/PROJECT.md) — project goals + milestones
+- [`.planning/ROADMAP.md`](.planning/ROADMAP.md) — phase plan + status
+- [`.research/pre-gsd-archive/`](.research/pre-gsd-archive/) — historical (pre-GSD) design docs
 
 ## 🎬 Why "Jay-6"?
 

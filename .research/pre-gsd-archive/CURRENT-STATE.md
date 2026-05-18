@@ -52,7 +52,7 @@ Phase 2 closes once UAT passes. Details in [`.research/PLAN.md` → Phase 2](.re
 | Transport sync + clock send (Start/Stop/Continue/Record) | ⏳ 24 PPQ out + react to OP-1 transport → drive Jay-6 engines. Likely folds with the alignment fix. |
 | Voicing data second-pass audit | ⏳ Open. Flo to explore separately. Goal: tighten the ~30% inferred slots. |
 | iPad polish (second pass) | ⏳ Text-selection on long-press → add `user-select: none`. Touch ergonomics worth a re-review. |
-| UAT walkthrough (`.research/UAT.md` via `uat-agent` skill) | 🟡 Checklist + skill ready, not yet run. Gates Phase 2 close. |
+| UAT walkthrough (`/gsd:verify-work 2` — phase 02-UAT.md) | 🟡 Checklist generated, walk in progress. Gates Phase 2 close. |
 
 ### ⏳ Phase 3 — TBD
 
@@ -142,7 +142,7 @@ just deploy       # ./deploy.sh — apply k8s.yaml to current kubectl context
 
 - User manual: [`MANUAL.md`](MANUAL.md)
 - Plan + decision log: [`.research/PLAN.md`](.research/PLAN.md)
-- UAT checklist (run via `uat-agent` skill): [`.research/UAT.md`](.research/UAT.md)
+- UAT checklist (run via `/gsd:verify-work {phase}`): [`.planning/phases/02-post-prototype-polish-uat-acceptance/02-UAT.md`](.planning/phases/02-post-prototype-polish-uat-acceptance/02-UAT.md)
 - Roland J-6 chord list: https://static.roland.com/manuals/J-6_manual_v102/eng/28645807.html
 - Roland J-6 phrase list: https://static.roland.com/manuals/J-6_manual_v102/eng/28645808.html
 - Roland J-6 manual PDF: https://static.roland.com/assets/media/pdf/J-6_eng02_W.pdf

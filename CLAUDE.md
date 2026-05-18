@@ -2,33 +2,34 @@
 
 Browser app: J-6-style chord pads → MIDI → OP-1.
 
-## Start here
+## Project is GSD-managed
 
-- **[CURRENT-STATE.md](CURRENT-STATE.md)** — roadmap, what's shipped, what's next, conventions, file layout, architecture-in-a-paragraph. Read this first.
-- **[.research/PLAN.md](.research/PLAN.md)** — original plan + decision log.
-- **[.research/UAT.md](.research/UAT.md)** — feature-by-feature hand-test checklist. Say "run uat" to trigger the `uat-agent` skill that walks Flo through it.
+Workflow orchestration via [GSD](https://github.com/Get-Shit-Done). Start here:
+
+- **`.planning/PROJECT.md`** — what we're building + why
+- **`.planning/ROADMAP.md`** — phase plan + status
+- **`.planning/STATE.md`** — current focus
+- **`.planning/phases/`** — per-phase RESEARCH / CONTEXT / PLAN / SUMMARY / UAT artifacts
+- **`MANUAL.md`** — user-facing guide
+
+Use `/gsd:progress` to advance work. `/gsd:help` for command index.
+
+## `.research/` directory
+
+Non-GSD scratchpad. Anything not authored by GSD workflows: hand-written notes, pre-GSD design docs, external research, exploration outputs. Free-form — no schema.
 
 ## Stack
 
 Vite 6 + Svelte 5 (runes) + TypeScript strict + Vitest + WEBMIDI.js v3.
 Chrome/Edge desktop for Web MIDI. iPad needs the "Web MIDI Browser" app.
 
-## Common commands
+## Commands
 
-```bash
-just              # list recipes
-just dev          # vite localhost (use this for Web MIDI dev)
-just serve        # vite + Cloudflare tunnel (https://jay-6.kempenich.dev)
-just test         # vitest
-just check        # svelte-check
-just ci           # check + test + build
-```
+`just` lists recipes. Common: `just dev`, `just test`, `just check`, `just ci`.
 
-## Project conventions
+## Conventions
 
-- Engines subscribe to `tickSource` (24 PPQ); they never own timers.
-- UI state lives in `src/state.svelte.ts` ($state runes). `App.svelte` bridges to imperative host + tickSource via `$effect`.
-- `src/banks.data.json` is the verified Roland extraction — don't edit by hand; if voicings need correcting, fix the JSON.
-- No premature features (no Web Audio scheduler, no presets, no persistence — those are Phase 3 backlog in CURRENT-STATE.md).
-- Comments: WHY only. Don't restate the code.
-- After meaningful changes: update `CURRENT-STATE.md` so the next agent (or future-you) lands oriented.
+- Engines subscribe to `tickSource` (24 PPQ); never own timers.
+- UI state in `src/state.svelte.ts` ($state runes); `App.svelte` bridges to imperative host + tickSource via `$effect`.
+- `src/banks.data.json` = verified Roland extraction — don't edit by hand.
+- Comments: WHY only. No restating code.
