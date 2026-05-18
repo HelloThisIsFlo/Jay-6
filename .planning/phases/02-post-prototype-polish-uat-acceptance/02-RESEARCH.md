@@ -696,7 +696,14 @@ button, select, input[type='number'], input[type='range'] {
 | A3 | `Math.floor((current/24)+1)*24` returns the next downbeat at tick 0 (verified in Pitfall 3 + unit test) — the spec "tick % 24 == 0" leaves the at-zero edge ambiguous between "current tick" and "next tick" | Pattern 2 | Medium — if user reads D-06 as "fire on tick 0 if already on a downbeat" we'd need `(Math.ceil((current+1)/24))*24` instead. Recommend planner asks user during planning. |
 | A4 | TE pocket-operator manual style is the right aesthetic anchor for MANUAL.md (CONTEXT.md mentions this explicitly so risk is near zero) | MANUAL.md structure | Very low — explicitly approved in D-13 |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All 4 resolved during planning. Recommendations applied in PLAN.md files:
+> Q1 → 02-04 Task 3B (verify-only, no new anchors added — 5 already shipped in commit `f2d5d59`).
+> Q2 → 02-02 formula locked: `(Math.floor(currentTick / 24) + 1) * 24` (next downbeat, never current).
+> Q3 → 02-05 documents both URLs with the Web-MIDI-locality caveat.
+> Q4 → 02-05 documents iPad UAT as skip-with-note rather than block v1 close.
+
 
 1. **The 5 reconciliation test anchors specified in D-19 are already shipped.**
    - What we know: Commit `f2d5d59` (the voicing-reconciliation commit) added 5 anchors to `test/banks.test.ts`: bank 1/A (FM/A), bank 30/A (G/B), bank 46/A (Em), bank 79/A (F7/A), bank 95/C (FM7/E). Total file is now 7 anchors (the 5 new + original bank 1/C Cadd9 + bank 14/C Oct Stack).
