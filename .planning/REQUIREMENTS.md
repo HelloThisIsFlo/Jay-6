@@ -40,7 +40,7 @@
 - [x] **REQ-bpm**: BPM input 40–240, default 110. Live tempo updates without engine restart.
 - [x] **REQ-clock-receive**: TickSource at 24 PPQ. Input port + Int/Ext toggle in top bar. Ext disables BPM input + slaves engines to OP-1 tempo. Switch back to Int → BPM re-enabled.
 - [ ] **REQ-clock-send-transport-sync**: 24 PPQ MIDI clock out when Int is active. Send Start/Stop/Continue on engine start/stop. React to incoming Start/Stop/Continue (and OP-1 Record = start) → drive Jay-6 transport. No double-trigger on Ext + Start.
-- [ ] **REQ-rhythm-phase-alignment-ext-clock**: Under Ext clock, first step lands on-beat (anchor to next `tick-mod-24` boundary, or restart on transport Start). _Open bug._
+- [x] **REQ-rhythm-phase-alignment-ext-clock**: Under Ext clock, first step lands on-beat (anchor to next `tick-mod-24` boundary, or restart on transport Start). _Open bug._
 
 ### Keyboard
 
