@@ -1,0 +1,35 @@
+{
+  "source_path": "/Users/flo/Work/Private/Dev/Music/Jay-6/.research/PLAN.md",
+  "type": "PRD",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Jay-6 Plan",
+  "summary": "Project plan and decision log for Jay-6: browser app translating J-6-style chord pad clicks into MIDI output for the OP-1, scoped across milestones M1-M10 and Phases 2-3.",
+  "scope": [
+    "chord pad UI",
+    "MIDI output (WEBMIDI.js)",
+    "OP-1 integration",
+    "Roland J-6 chord bank data (100 banks x 12 chords)",
+    "phrase data (Styles 1-5)",
+    "arpeggiator engine",
+    "rhythm gate engine",
+    "tempo / clock (BPM + MIDI clock receive/send)",
+    "latch / hold",
+    "keyboard shortcuts (Ableton mapping)",
+    "transport sync (Start/Stop/Continue)",
+    "iPad polish",
+    "deploy (Cloudflare tunnel, K8s + GHCR)",
+    "Phase 3 sequencer (TBD)"
+  ],
+  "cross_refs": [
+    "src/banks.ts",
+    "src/phrases.ts",
+    ".research/UAT.md",
+    "https://static.roland.com/manuals/J-6_manual_v102/eng/28645807.html",
+    "https://static.roland.com/manuals/J-6_manual_v102/eng/28645808.html",
+    "https://developer.mozilla.org/en-US/docs/Web/API/Web_MIDI_API"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Hybrid document: dominant signal is PRD (milestones M1-M10 with acceptance checklists, goals, scope in/out, status table, Phase 2/3 roadmap). Also contains a substantial embedded decision log (Closed/Open/Resolved-during-build) with many small project decisions and a tech-stack section with concrete data shapes. No single architectural decision dominates, so ADR is not the best fit; SPEC signals (data shapes, MIDI channel/port specifics) are subordinate to the requirements/roadmap framing. Per ambiguity rule, decision-log content is acknowledged but PRD wins on volume and framing. Embedded decisions may warrant separate ADR extraction downstream."
+}

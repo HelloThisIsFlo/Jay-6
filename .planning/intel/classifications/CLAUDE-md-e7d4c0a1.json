@@ -1,0 +1,26 @@
+{
+  "source_path": "/Users/flo/Work/Private/Dev/Music/Jay-6/CLAUDE.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Jay-6",
+  "summary": "Project onboarding for Claude Code: stack, common just commands, start-here pointers, and load-bearing project conventions.",
+  "scope": [
+    "project onboarding",
+    "stack (Vite 6, Svelte 5 runes, TypeScript, Vitest, WEBMIDI.js v3)",
+    "just commands (dev, serve, test, check, ci)",
+    "project conventions (tickSource subscription, UI state location, banks.data.json, no premature features, comment style)",
+    "documentation entry points"
+  ],
+  "cross_refs": [
+    "CURRENT-STATE.md",
+    ".research/PLAN.md",
+    ".research/UAT.md",
+    "src/state.svelte.ts",
+    "App.svelte",
+    "src/banks.data.json"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

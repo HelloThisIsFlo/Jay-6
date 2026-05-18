@@ -1,0 +1,26 @@
+{
+  "source_path": "/Users/flo/Work/Private/Dev/Music/Jay-6/README.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Jay-6",
+  "summary": "Project README for Jay-6, a browser-based Roland J-6 chord pad app that sends MIDI to external gear like the OP-1.",
+  "scope": [
+    "Jay-6 app overview",
+    "feature list",
+    "quick start commands",
+    "keyboard shortcuts",
+    "tech stack",
+    "browser support matrix"
+  ],
+  "cross_refs": [
+    "docs/screenshot.png",
+    "CURRENT-STATE.md",
+    ".research/PLAN.md",
+    "https://www.roland.com/global/products/j-6/",
+    "https://webmidijs.org/"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

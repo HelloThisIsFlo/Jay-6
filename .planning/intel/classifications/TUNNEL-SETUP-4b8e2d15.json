@@ -1,0 +1,24 @@
+{
+  "source_path": "/Users/flo/Work/Private/Dev/Music/Jay-6/TUNNEL-SETUP.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Cloudflare Tunnel Setup",
+  "summary": "Operational runbook describing how the Jay-6 app is exposed via the cluster Cloudflare Tunnel, the local-only `just serve` alternative, and cleanup steps.",
+  "scope": [
+    "Cloudflare Tunnel configuration",
+    "jay-6.kempenich.ai public hostname",
+    "cluster service routing",
+    "local dev tunnel via just serve",
+    "jay-6.kempenich.dev",
+    "Web MIDI locality constraint",
+    "K8s namespace cleanup"
+  ],
+  "cross_refs": [
+    "https://one.dash.cloudflare.com/",
+    "./cleanup.sh"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

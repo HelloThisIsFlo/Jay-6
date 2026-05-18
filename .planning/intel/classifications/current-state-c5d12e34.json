@@ -1,0 +1,33 @@
+{
+  "source_path": "/Users/flo/Work/Private/Dev/Music/Jay-6/CURRENT-STATE.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Jay-6 — Current State",
+  "summary": "Roadmap snapshot, phase status, project conventions, file layout, and one-paragraph architecture overview for the Jay-6 browser-to-MIDI chord-pad app.",
+  "scope": [
+    "project roadmap",
+    "phase status tracking",
+    "stack conventions",
+    "file layout",
+    "architecture overview",
+    "build/run commands",
+    "MIDI serving caveats",
+    "backlog"
+  ],
+  "cross_refs": [
+    ".research/PLAN.md",
+    ".research/UAT.md",
+    "TUNNEL-SETUP.md",
+    "src/banks.data.json",
+    "src/phrases.ts",
+    "https://static.roland.com/manuals/J-6_manual_v102/eng/28645807.html",
+    "https://static.roland.com/manuals/J-6_manual_v102/eng/28645808.html",
+    "https://static.roland.com/assets/media/pdf/J-6_eng02_W.pdf",
+    "https://developer.mozilla.org/en-US/docs/Web/API/Web_MIDI_API",
+    "https://webmidijs.org/docs/"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Mixed-content doc (roadmap + conventions + light architecture summary). No frontmatter, no Decision/Consequences sections, no user stories or acceptance criteria, no API/schema contracts. Convention statements ('engines time-source-agnostic', 'no premature features') read decision-like but explicitly defer rationale to .research/PLAN.md — treated as summary/context, not standalone ADR. Dominant mode is onboarding/status doc → DOC. Synthesizer should mine cross_refs (PLAN.md, UAT.md) for higher-precedence content."
+}

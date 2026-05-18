@@ -1,0 +1,34 @@
+{
+  "source_path": "/Users/flo/Work/Private/Dev/Music/Jay-6/.research/UAT.md",
+  "type": "PRD",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Jay-6 — UAT Checklist",
+  "summary": "Feature-by-feature hand-test acceptance checklist covering every shipped Jay-6 capability from MIDI connectivity through iPad/tunnel deployment.",
+  "scope": [
+    "MIDI connectivity (Output/Input/Channel)",
+    "Bank navigation (100 banks, wrap-around, keyboard shortcuts)",
+    "Chord pads (J-6 layout, Roland labels, fallback labels)",
+    "Transpose (±12 octave steps, clamps)",
+    "BPM (40–240 range, live updates)",
+    "Style: Hold",
+    "Style: Arp 1 (8th, 12 variations)",
+    "Style: Arp 2 (16th, 12 variations)",
+    "Style: Phrase Duration",
+    "Style: Rhythm Gate 4 / Rhythm Gate 5",
+    "Gate slider (flagged suspect)",
+    "Latch (button + Space key)",
+    "Keyboard shortcuts",
+    "MIDI clock receive (Int/Ext)",
+    "Bank label fallback",
+    "LAN + Cloudflare tunnel deployment",
+    "iPad / Web MIDI Browser support",
+    "Edge cases (hot-plug, refresh, style swap)"
+  ],
+  "cross_refs": [
+    "CURRENT-STATE.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "No frontmatter or naming convention; classified as PRD because content is structured acceptance criteria for user-facing features (PRD hallmark per taxonomy). Competing SPEC signal exists (it documents shipped behavior contracts), but no APIs/schemas/protocol fields make SPEC the weaker fit. Confidence medium due to absence of explicit type markers."
+}
