@@ -44,7 +44,7 @@ Two-phase v1 milestone mirroring shipping reality, not a fresh plan. **Phase 1 (
 **Plans**: 5 plans
   - [x] 02-01-PLAN.md — Carry-forward acknowledgement for the 5 pre-GSD shipped REQs (clock-receive, deploys, LAN, iPad Web MIDI Browser)
   - [x] 02-02-PLAN.md — `nextDownbeatTick()` pure-math helper + Vitest boundary cases (rhythm phase alignment math)
-  - [ ] 02-03-PLAN.md — iPad ergonomics CSS pass + black-key Option B (UI-SPEC)
+  - [x] 02-03-PLAN.md — iPad ergonomics CSS pass + black-key Option B (UI-SPEC)
   - [ ] 02-04-PLAN.md — Transport sync wiring (clock send + transport receive + downbeat alignment + double-trigger guard + mode-switch hard stop + voicing-anchor verify)
   - [ ] 02-05-PLAN.md — MANUAL.md at repo root + README/CURRENT-STATE links + UAT walkthrough handoff
 **UI hint**: yes
@@ -57,4 +57,4 @@ Phases execute in numeric order: 1 → 2. v1 closes on Phase 2 UAT pass; sequenc
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Prototype (M1–M8 + keyboard) | N/A — retrospective | Shipped (informal); awaiting UAT in Phase 2 | 2026-05-18 (code-complete) |
-| 2. Post-prototype polish + UAT acceptance | 2/5 | In Progress|  |
+| 2. Post-prototype polish + UAT acceptance | 3/5 | In Progress|  |

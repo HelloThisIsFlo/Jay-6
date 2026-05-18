@@ -59,7 +59,7 @@
 
 ### Phase 2 polish + acceptance
 
-- [ ] **REQ-ipad-polish**: Add `user-select: none` on pads + top-bar controls (long-press currently triggers iOS text selection). Re-review touch ergonomics.
+- [x] **REQ-ipad-polish**: Add `user-select: none` on pads + top-bar controls (long-press currently triggers iOS text selection). Re-review touch ergonomics.
 - [ ] **REQ-voicing-second-pass-audit**: Tighten the ~30% inferred slots in `banks.data.json` against the J-6 manual / hardware. Verified by ear / manual reference — no automated criterion.
 - [x] **REQ-edge-cases**: Hot-plug refresh, re-plug, style swap while held, refresh resets to defaults. _Shipped; verified during UAT walkthrough._
 - [ ] **REQ-uat-walkthrough**: Walk `.research/UAT.md` end-to-end via `uat-agent` skill. Bugs logged; run-log line appended per session. **Gates Phase 2 close + retroactively signs Phase 1 off.**
@@ -116,7 +116,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | REQ-deploy-k8s-always-on | Phase 2 | Complete |
 | REQ-lan-exposure | Phase 2 | Complete |
 | REQ-ipad-web-midi-browser | Phase 2 | Complete |
-| REQ-ipad-polish | Phase 2 | Pending |
+| REQ-ipad-polish | Phase 2 | Complete |
 | REQ-voicing-second-pass-audit | Phase 2 | Pending |
 | REQ-edge-cases | Phase 2 | Complete (verified during UAT) |
 | REQ-uat-walkthrough | Phase 2 | Pending (Phase 2 gate — closes v1) |
