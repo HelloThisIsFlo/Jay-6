@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   arpStepMs,
+  nextDownbeatTick,
   noteValueMs,
   quarterMs,
   sixteenthMs,
@@ -61,5 +62,23 @@ describe('clock', () => {
 
   it('tickIntervalMs at 120 = 500/24 ≈ 20.833', () => {
     expect(tickIntervalMs(120)).toBeCloseTo(500 / 24, 6);
+  });
+});
+
+describe('nextDownbeatTick', () => {
+  // D-06: first rhythm step under Ext clock must land on tick % 24 === 0.
+  // At tick 0 the helper returns 24, never 0 — "first step lands on a
+  // downbeat" reads as wait-for-next per RESEARCH.md Pitfall 3.
+  it('returns next downbeat — never returns the same tick when already on one', () => {
+    expect(nextDownbeatTick(0)).toBe(24);
+    expect(nextDownbeatTick(24)).toBe(48);
+    expect(nextDownbeatTick(96)).toBe(120);
+  });
+
+  it('rounds up partial counts to next 24-boundary', () => {
+    expect(nextDownbeatTick(1)).toBe(24);
+    expect(nextDownbeatTick(23)).toBe(24);
+    expect(nextDownbeatTick(25)).toBe(48);
+    expect(nextDownbeatTick(47)).toBe(48);
   });
 });
