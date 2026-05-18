@@ -43,6 +43,10 @@ function buildEngine(cfg: HostConfig): Engine {
 }
 
 export class EngineHost {
+  // D-05 double-trigger guard window: OP-1 Record+Start chatter can fire two Starts
+  // within ~tens of ms; 200ms covers it without rejecting legit user retriggers.
+  private static readonly START_DEBOUNCE_MS = 200;
+
   private cfg: HostConfig;
   private engine: Engine;
   // pads currently physically held (mouse/key down) — independent of latch
@@ -55,6 +59,12 @@ export class EngineHost {
   private currentRawChord: number[] = [];
   // The pad key currently sustained by latch (null = nothing latched).
   private latchedKey: string | null = null;
+  // D-05: monotonic timestamp of the last inbound Start — performance.now() not
+  // Date.now() because NTP sync mid-session would invalidate the window (Pitfall 2).
+  private lastStartMs = 0;
+  // D-04: lifecycle state — Start arms 'fresh' (reset position), Continue arms
+  // 'resume'. Lives on host because it's engine-lifecycle state, not UI state.
+  private armedPosition: 'fresh' | 'resume' | null = null;
 
   constructor(cfg: HostConfig) {
     this.cfg = { ...cfg };
@@ -165,6 +175,38 @@ export class EngineHost {
 
   setClockMode(mode: ClockSource): void {
     this.cfg.clockMode = mode;
+  }
+
+  // D-04: exposed for engines / UAT instrumentation that need to distinguish
+  // "fresh" (Start reset position to 0) from "resume" (Continue keeps position).
+  // Current rhythm engines align to next downbeat regardless; consumer for the
+  // 'resume' branch ships when sequencer arrives (v2).
+  getArmedPosition(): 'fresh' | 'resume' | null {
+    return this.armedPosition;
+  }
+
+  // D-04: forward inbound transport from tickSource. Master mode ignores inbound;
+  // only slave (Ext) reacts. Stop reuses panic() per Pitfall 5 (verified all-clean path).
+  onTransport(kind: 'start' | 'stop' | 'continue'): void {
+    if (this.cfg.clockMode !== 'external') return;
+    if (kind === 'start') {
+      // D-05 + Pitfall 2: performance.now() is monotonic — immune to NTP shifts.
+      const now = performance.now();
+      if (now - this.lastStartMs < EngineHost.START_DEBOUNCE_MS) return;
+      this.lastStartMs = now;
+      this.armedPosition = 'fresh';
+    } else if (kind === 'continue') {
+      this.armedPosition = 'resume';
+    } else {
+      // Pitfall 5: reuse the verified all-clean path; don't invent a new cleanup.
+      this.panic();
+    }
+  }
+
+  // D-03 mode-switch hard stop. Alias for clarity at the App.svelte call site —
+  // semantics identical to user-pressed Panic.
+  panicForModeSwitch(): void {
+    this.panic();
   }
 
   // D-02: only master mode sends transport — slave mode listens only.

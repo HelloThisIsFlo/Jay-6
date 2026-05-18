@@ -1,5 +1,5 @@
 import { playChord, releaseChord } from '../midi';
-import { ticksPerSixteenth } from '../clock';
+import { nextDownbeatTick, ticksPerSixteenth } from '../clock';
 import { parseRhythmPattern, type RhythmStep, type RhythmVariation } from '../phrases';
 import { tickSource } from '../tickSource';
 import type { Engine } from './types';
@@ -20,6 +20,9 @@ export class RhythmGateEngine implements Engine {
   private tickCount = 0;             // total ticks since start()
   private ticksPerStep: number;      // 6 at 24 PPQ
   private active: ActiveHit | null = null;
+  // D-06: when non-null, onTick suppresses audio until tickCount reaches this
+  // boundary. Set under Ext mode at start(); cleared on first audible step.
+  private armUntilTick: number | null = null;
 
   constructor(variation: RhythmVariation, _bpm: number, gatePercent: number) {
     this.steps = parseRhythmPattern(variation.pattern);
@@ -45,7 +48,13 @@ export class RhythmGateEngine implements Engine {
     this.tickCount = 0;
     this.unsubscribe = tickSource.subscribe(() => this.onTick());
     if (notes.length === 0) return;
-    this.evaluateStep();
+    // D-06: under Ext clock, defer first fire until next downbeat (tick % 24 === 0).
+    // D-07: Int mode unchanged — fires immediately to preserve live-feel.
+    if (tickSource.getMode() === 'external') {
+      this.armUntilTick = nextDownbeatTick(this.tickCount); // = 24 at tickCount=0
+    } else {
+      this.evaluateStep();
+    }
   }
 
   setNotes(notes: number[]): void {
@@ -69,6 +78,19 @@ export class RhythmGateEngine implements Engine {
   }
 
   private onTick(): void {
+    // D-06: still arming under Ext — count ticks but emit no audio.
+    if (this.armUntilTick !== null) {
+      if (this.tickCount < this.armUntilTick) {
+        this.tickCount += 1;
+        return;
+      }
+      // Landed on the downbeat: reset tickCount so pattern starts at step 0,
+      // drop the arm latch, fire the first audible step.
+      this.armUntilTick = null;
+      this.tickCount = 0;
+      this.evaluateStep();
+      return;
+    }
     if (this.heldNotes.length === 0) {
       this.tickCount += 1;
       return;
@@ -86,7 +108,10 @@ export class RhythmGateEngine implements Engine {
   }
 
   private evaluateStep(): void {
-    const stepIndex = (this.tickCount / this.ticksPerStep) % 16;
+    // Pitfall 4: Math.floor() defends against dropped ticks under Ext clock —
+    // float stepIndex would silently skip a bar. Tick-aligned today, but the
+    // floor removes the assumption.
+    const stepIndex = Math.floor(this.tickCount / this.ticksPerStep) % 16;
     const hit = this.steps.find((s) => s.startStep === stepIndex);
     if (!hit) return;
     if (this.active) {

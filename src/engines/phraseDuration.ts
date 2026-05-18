@@ -1,5 +1,5 @@
 import { playChord, releaseChord } from '../midi';
-import { ticksPerStep } from '../clock';
+import { TICKS_PER_QUARTER, ticksPerStep } from '../clock';
 import type { PhraseDurationVariation } from '../phrases';
 import { tickSource } from '../tickSource';
 import type { Engine } from './types';
@@ -26,10 +26,15 @@ export class PhraseDurationEngine implements Engine {
   start(notes: number[]): void {
     this.stop();
     this.heldNotes = [...notes];
-    this.ticksUntilNext = this.ticksPerStep;
+    // D-06: under Ext, first fire waits for the next quarter-note boundary.
+    // D-07: under Int, ticksUntilNext follows the variation's step length and
+    // fire() runs immediately to preserve live-feel.
+    this.ticksUntilNext = tickSource.getMode() === 'external'
+      ? TICKS_PER_QUARTER
+      : this.ticksPerStep;
     this.unsubscribe = tickSource.subscribe(() => this.onTick());
     if (notes.length === 0) return;
-    this.fire();
+    if (tickSource.getMode() === 'internal') this.fire();
   }
 
   setNotes(notes: number[]): void {

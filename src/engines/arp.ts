@@ -1,5 +1,5 @@
 import { playChord, releaseChord } from '../midi';
-import { arpTicksPerStep } from '../clock';
+import { arpTicksPerStep, TICKS_PER_QUARTER } from '../clock';
 import type { ArpVariation } from '../phrases';
 import { tickSource } from '../tickSource';
 import type { Engine } from './types';
@@ -54,10 +54,14 @@ export class ArpEngine implements Engine {
     this.heldNotes = [...notes];
     this.sequence = buildSequence(this.heldNotes, this.variation);
     this.idx = 0;
-    this.ticksUntilNext = this.ticksPerStep;
+    // D-06: under Ext, first fire waits for next quarter-note boundary.
+    // D-07: Int preserves immediate-fire live-feel.
+    this.ticksUntilNext = tickSource.getMode() === 'external'
+      ? TICKS_PER_QUARTER
+      : this.ticksPerStep;
     this.unsubscribe = tickSource.subscribe(() => this.onTick());
     if (this.sequence.length === 0) return;
-    this.fireNext();
+    if (tickSource.getMode() === 'internal') this.fireNext();
   }
 
   setNotes(notes: number[]): void {
