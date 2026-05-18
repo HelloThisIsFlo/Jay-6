@@ -30,10 +30,20 @@
   $effect(() => { host.setTranspose(ui.transpose); });
   $effect(() => { host.setLatch(ui.latch); });
   $effect(() => { host.setGatePercent(ui.gatePercent); });
-  $effect(() => { tickSource.setMode(ui.clockSource); });
+  // D-03: mode switch is a hard stop (panic + clear latch) BEFORE flipping tickSource.
+  // host.setClockMode() gates outbound transport per D-02 (master sends, slave listens).
+  $effect(() => {
+    host.panicForModeSwitch();
+    host.setClockMode(ui.clockSource);
+    tickSource.setMode(ui.clockSource);
+  });
 
   // Push selected MIDI input id into the tick source so external clock can attach.
   onMount(() => subscribeMidi((s) => tickSource.setInputId(s.selectedInputId)));
+
+  // D-04: forward inbound transport to host; host decides arm vs resume vs stop,
+  // with D-05 double-trigger guard inside onTransport().
+  onMount(() => tickSource.subscribeTransport((kind) => host.onTransport(kind)));
 
   let heldKeys = $state<Set<Key>>(new Set());
   let latchedKey = $state<Key | null>(null);
