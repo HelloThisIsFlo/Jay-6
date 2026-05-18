@@ -39,7 +39,7 @@
 - [x] **REQ-clock**: Single shared clock drives all time-driven engines. `setInterval`-based for prototype (DEC-clock-setinterval-prototype).
 - [x] **REQ-bpm**: BPM input 40–240, default 110. Live tempo updates without engine restart.
 - [x] **REQ-clock-receive**: TickSource at 24 PPQ. Input port + Int/Ext toggle in top bar. Ext disables BPM input + slaves engines to OP-1 tempo. Switch back to Int → BPM re-enabled.
-- [ ] **REQ-clock-send-transport-sync**: 24 PPQ MIDI clock out when Int is active. Send Start/Stop/Continue on engine start/stop. React to incoming Start/Stop/Continue (and OP-1 Record = start) → drive Jay-6 transport. No double-trigger on Ext + Start.
+- [x] **REQ-clock-send-transport-sync**: 24 PPQ MIDI clock out when Int is active. Send Start/Stop/Continue on engine start/stop. React to incoming Start/Stop/Continue (and OP-1 Record = start) → drive Jay-6 transport. No double-trigger on Ext + Start.
 - [x] **REQ-rhythm-phase-alignment-ext-clock**: Under Ext clock, first step lands on-beat (anchor to next `tick-mod-24` boundary, or restart on transport Start). _Open bug._
 
 ### Keyboard
@@ -60,7 +60,7 @@
 ### Phase 2 polish + acceptance
 
 - [x] **REQ-ipad-polish**: Add `user-select: none` on pads + top-bar controls (long-press currently triggers iOS text selection). Re-review touch ergonomics.
-- [ ] **REQ-voicing-second-pass-audit**: Tighten the ~30% inferred slots in `banks.data.json` against the J-6 manual / hardware. Verified by ear / manual reference — no automated criterion.
+- [x] **REQ-voicing-second-pass-audit**: Tighten the ~30% inferred slots in `banks.data.json` against the J-6 manual / hardware. Verified by ear / manual reference — no automated criterion.
 - [x] **REQ-edge-cases**: Hot-plug refresh, re-plug, style swap while held, refresh resets to defaults. _Shipped; verified during UAT walkthrough._
 - [ ] **REQ-uat-walkthrough**: Walk `.research/UAT.md` end-to-end via `uat-agent` skill. Bugs logged; run-log line appended per session. **Gates Phase 2 close + retroactively signs Phase 1 off.**
 
@@ -110,14 +110,14 @@ Explicitly excluded. Documented to prevent scope creep.
 | REQ-keyboard-shortcuts | Phase 1 | Complete |
 | REQ-op-1-end-to-end | Phase 1 | Complete (informal — formal sign-off via UAT in Phase 2) |
 | REQ-clock-receive | Phase 2 | Complete |
-| REQ-clock-send-transport-sync | Phase 2 | Pending |
+| REQ-clock-send-transport-sync | Phase 2 | Complete |
 | REQ-rhythm-phase-alignment-ext-clock | Phase 2 | Pending (open bug) |
 | REQ-deploy-cloudflare-dev | Phase 2 | Complete |
 | REQ-deploy-k8s-always-on | Phase 2 | Complete |
 | REQ-lan-exposure | Phase 2 | Complete |
 | REQ-ipad-web-midi-browser | Phase 2 | Complete |
 | REQ-ipad-polish | Phase 2 | Complete |
-| REQ-voicing-second-pass-audit | Phase 2 | Pending |
+| REQ-voicing-second-pass-audit | Phase 2 | Complete |
 | REQ-edge-cases | Phase 2 | Complete (verified during UAT) |
 | REQ-uat-walkthrough | Phase 2 | Pending (Phase 2 gate — closes v1) |
 

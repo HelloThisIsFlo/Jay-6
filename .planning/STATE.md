@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-05-18T20:42:31.476Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-05-18T20:53:13.526Z"
 last_activity: 2026-05-18
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -27,11 +27,11 @@ See: .planning/PROJECT.md (updated 2026-05-18)
 
 Milestone: v1 (Prototype → UAT acceptance)
 Phase: 2 (Post-prototype polish + UAT acceptance) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-05-18
 
-Progress: [██████░░░░] 60%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [██████░░░░] 60%
 | Phase 02-post-prototype-polish-uat-acceptance P01 | 1min | 2 tasks | 1 files |
 | Phase 02-post-prototype-polish-uat-acceptance P02 | 1min | 1 tasks | 2 files |
 | Phase 02-post-prototype-polish-uat-acceptance P03 | 1min | 3 tasks | 3 files |
+| Phase 02-post-prototype-polish-uat-acceptance PP04 | 2min | 3 tasks tasks | 6 files files |
 
 ## Accumulated Context
 
@@ -72,6 +73,9 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 - [Phase ?]: [Phase 02]: 02-02: nextDownbeatTick helper formula = (floor(currentTick/24)+1)*24 — pins D-06 at-zero edge (Pitfall 3)
 - [Phase ?]: [Phase 02]: 02-03: Shipped UI-SPEC Option B for black-key visibility (#1f1f1f -> #2e2e2e + inset 1px top highlight); fallback ladder A->C->D comment lives at .pad.black so executor can pivot without re-invoking ui-phase
 - [Phase ?]: [Phase 02]: 02-03: iPad CSS contract pattern — extend component <style> with user-select:none + touch-action:manipulation (exclude <select> per Pitfall 6) + per-element 44pt min + :active brightness bump. Body scroll lock lives at App.svelte root under @media (pointer: coarse) and (max-width: 1366px)
+- [Phase 02]: Transport sync wired master/slave — outbound sendClock gated on tickSource.mode==='internal' inside emitTick; inbound onTransport with 200ms performance.now() debounce + panicForModeSwitch alias for D-03 hard stop
+- [Phase 02]: rhythmGate must reset tickCount=0 after the arm-wait latch drops on the downbeat — without it the first audible step lands at index 4 (24/6) instead of 0; matches Int-mode invariant that start() initializes tickCount=0
+- [Phase 02]: armedPosition lives on EngineHost with a getArmedPosition() public getter — 'resume' branch is set on Continue but no engine reads it in v1 (live-instrument hybrid means alignment is the only Ext adjustment); consumer ships with the v2 sequencer
 
 ### Pending Todos
 
@@ -103,6 +107,6 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 
 ## Session Continuity
 
-Last session: 2026-05-18T20:42:20.347Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-05-18T20:53:13.514Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
