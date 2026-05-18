@@ -93,7 +93,11 @@
     padding: 1.5rem;
     max-width: 1100px;
     margin: 2rem auto;
-    background: #181818;
+    /* D-10 fallback step D: frame dropped to #000 so black keys (#2e2e2e) pop
+       against true black. Earlier #181818 frame inverted the visual hierarchy —
+       app bg #111 was darker than the frame, making the piano panel feel
+       "raised" instead of recessed. */
+    background: #000;
     border-radius: 12px;
     user-select: none;
     touch-action: none;
@@ -131,10 +135,14 @@
     min-height: 140px;
   }
   .pad.white .key { color: #888; }
-  /* D-10 Option B: lifted fill (#1f1f1f → #2e2e2e) + 1px inset top highlight for a
-     pocket-operator "raised key" feel. If this reads poorly on real iPad, walk the
-     fallback ladder per .planning/phases/02-post-prototype-polish-uat-acceptance/02-UI-SPEC.md
-     §"Fallback ladder (executor pivot path)": A (fill only) → C (orange hairline) → D (frame to #000). */
+  /* D-10 fallback ladder: walked Option B → D (frame to #000 — applied above) after
+     desktop eyeball showed Option B alone read muddy: #2e2e2e keys on the original
+     #181818 frame gave Δluma ~22 (visible but indistinct), and the 6%-alpha top
+     highlight was lost at desktop zoom. Frame → #000 restores depth contrast.
+     Keeping the inset highlight + #2e2e2e fill — if this still reads weak on real
+     iPad, drop the highlight and bump fill toward #262626. UI-SPEC ref:
+     .planning/phases/02-post-prototype-polish-uat-acceptance/02-UI-SPEC.md §"Fallback
+     ladder (executor pivot path)". */
   .pad.black {
     background: #2e2e2e;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
