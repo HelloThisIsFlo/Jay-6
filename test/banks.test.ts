@@ -61,4 +61,36 @@ describe('banks data', () => {
     expect(c.name).toBe('');
     expect(c.notes).toEqual([60, 72]);
   });
+
+  // Reconciliation anchors — slots where stonefruit + Roland independently agree.
+  // Spread across banks/genres so a regression on the JSON shows up loudly.
+  it('bank 1 / A is FM/A → [45, 57, 60, 65]', () => {
+    const c = banks[0]!.chords.find((c) => c.key === 'A')!;
+    expect(c.name).toBe('FM/A');
+    expect(c.notes).toEqual([45, 57, 60, 65]);
+  });
+
+  it('bank 30 / A is G/B → [47, 55, 59, 62]', () => {
+    const c = banks[29]!.chords.find((c) => c.key === 'A')!;
+    expect(c.name).toBe('G/B');
+    expect(c.notes).toEqual([47, 55, 59, 62]);
+  });
+
+  it('bank 46 / A is Em → [52, 59, 67]', () => {
+    const c = banks[45]!.chords.find((c) => c.key === 'A')!;
+    expect(c.name).toBe('Em');
+    expect(c.notes).toEqual([52, 59, 67]);
+  });
+
+  it('bank 79 / A is F7/A → [57, 63, 65]', () => {
+    const c = banks[78]!.chords.find((c) => c.key === 'A')!;
+    expect(c.name).toBe('F7/A');
+    expect(c.notes).toEqual([57, 63, 65]);
+  });
+
+  it('bank 95 / C is FM7/E → [64, 65, 69]', () => {
+    const c = banks[94]!.chords.find((c) => c.key === 'C')!;
+    expect(c.name).toBe('FM7/E');
+    expect(c.notes).toEqual([64, 65, 69]);
+  });
 });
