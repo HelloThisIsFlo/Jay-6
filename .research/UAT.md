@@ -252,6 +252,12 @@ If indistinguishable: note whether the MIDI note-off timing actually changes (br
 - [ ] Hit play on OP-1 → engines slave to OP-1 tempo (audibly tracks OP-1 BPM)
 - [ ] Switch OP-1 tempo → Jay-6 follows
 - [ ] Switch back to **Int** → BPM input re-enables, engines re-use internal clock
+- [ ] In **Int** mode, OP-1 sees Jay-6's clock (OP-1 tempo indicator locks to Jay-6's BPM)
+- [ ] In **Ext** mode, pad press during playback → rhythm engine's first hit lands on the next downbeat (not immediately) — locks to OP-1 grid
+- [ ] OP-1 **Record** button → treated as Start (Jay-6 arms rhythm engines + rhythm pattern resets to step 0)
+- [ ] Switch **Int → Ext** mid-play → all notes off + engine stops + latch clears (hard panic by design, D-03)
+- [ ] Double-trigger guard: repeated OP-1 Start within 200ms does NOT double-fire (no audible stutter)
+- [ ] In **Ext** mode, a downstream device receives NO clock pulses from Jay-6 (Jay-6 only listens — does not echo clock back)
 
 **Notes**:
 
