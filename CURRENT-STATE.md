@@ -140,6 +140,7 @@ just deploy       # ./deploy.sh — apply k8s.yaml to current kubectl context
 
 ## Reference
 
+- User manual: [`MANUAL.md`](MANUAL.md)
 - Plan + decision log: [`.research/PLAN.md`](.research/PLAN.md)
 - UAT checklist (run via `uat-agent` skill): [`.research/UAT.md`](.research/UAT.md)
 - Roland J-6 chord list: https://static.roland.com/manuals/J-6_manual_v102/eng/28645807.html
