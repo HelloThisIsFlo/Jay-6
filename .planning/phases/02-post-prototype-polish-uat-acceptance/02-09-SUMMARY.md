@@ -97,6 +97,10 @@ None - no external service configuration required.
 - All three test-10 / test-19 gaps closed in code; awaiting manual UAT re-verify on real iPhone (double-tap selection + landscape reachability) at the verification gate.
 - No blockers introduced.
 
+## Self-Check: PASSED
+
+All 5 modified files present; all 4 commits (a130b85, cd1ff67, d0b7682, 7d3f0ce) found in git history.
+
 ---
 *Phase: 02-post-prototype-polish-uat-acceptance*
 *Completed: 2026-05-20*
