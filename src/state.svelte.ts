@@ -8,11 +8,14 @@ export type StyleKind =
   | 'rhythm4'
   | 'rhythm5';
 
+// 'phraseDur' key/type/engine names stay historical for state-machine stability
+// (fragile latch/engine machine keys off 'phraseDur'); only the label is authoritative.
 export const STYLE_LABELS: Record<StyleKind, string> = {
   hold: 'Hold',
   arp1: 'Arp (Style 1, 8th)',
   arp2: 'Arp (Style 2, 16th)',
-  phraseDur: 'Phrase Dur (Style 3)',
+  // 'Phrase Dur' was inaccurate — it's chord stabs at fixed beat durations, not a phrase (UAT test 10).
+  phraseDur: 'Beat (Style 3)',
   rhythm4: 'Rhythm Gate (Style 4)',
   rhythm5: 'Rhythm Gate (Style 5)',
 };

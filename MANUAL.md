@@ -147,7 +147,7 @@ Same matrix as Arp 1, double the rate.
 
 > 💡 **Picking between Arp 1 and Arp 2.** Use Arp 2 at slow tempos or with sparse chords (3–4 notes). Use Arp 1 when the chord is dense or the tempo is fast — otherwise it sounds like a blur.
 
-## 🎼 Phrase Dur — chord-as-rhythm
+## 🎼 Beat — chord-as-rhythm
 
 Re-triggers the entire chord at a fixed musical length. **12 variations**: 2× / 1 / ½ / ¼ / 8th / 16th + triplet counterparts.
 

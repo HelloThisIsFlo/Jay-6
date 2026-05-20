@@ -8,7 +8,7 @@
 
 - 🎵 **All 100 Roland J-6 chord banks**, 12 chords each — extracted straight from Roland's manual
 - 🎛️ **12-pad piano layout** mirroring the J-6 hardware (5 black on top, 7 white on bottom)
-- 🌀 **5 playback styles**: Hold · Arp 8th · Arp 16th · Phrase Duration · Rhythm Gate × 2 — 60 variations total
+- 🌀 **5 playback styles**: Hold · Arp 8th · Arp 16th · Beat · Rhythm Gate × 2 — 60 variations total
 - ⛓️ **Latch** that follows the J-6 HOLD convention (same-pad re-press retriggers)
 - ⌨️ **Ableton-style keyboard shortcuts** so you can play without a mouse
 - 🕰️ **External MIDI clock receive** — slave it to your OP-1's tempo
