@@ -12,6 +12,7 @@
     setBank,
     bumpTranspose,
     toggleLatch,
+    setClockSource,
   } from './state.svelte';
 
   const host = new EngineHost({
@@ -39,7 +40,22 @@
   });
 
   // Push selected MIDI input id into the tick source so external clock can attach.
-  onMount(() => subscribeMidi((s) => tickSource.setInputId(s.selectedInputId)));
+  // Ext→Int fallback: if the selected input vanishes while in Ext mode, the engine
+  // has no clock — fall back to Int so state stays coherent (UAT test 20 hot-plug).
+  // midi.ts:refreshPorts already nulls selectedInputId when the device disconnects;
+  // the clockSource change rides the mode-switch $effect, which panics (clears audio
+  // + highlights) too.
+  onMount(() =>
+    subscribeMidi((s) => {
+      tickSource.setInputId(s.selectedInputId);
+      const inputGone =
+        s.selectedInputId === null ||
+        !s.inputs.find((i) => i.id === s.selectedInputId);
+      if (ui.clockSource === 'external' && inputGone) {
+        setClockSource('internal');
+      }
+    }),
+  );
 
   // D-04: forward inbound transport to host; host decides arm vs resume vs stop,
   // with D-05 double-trigger guard inside onTransport().
@@ -137,12 +153,23 @@
     }
   }
 
+  // Browser reload/close tears down the WebMidi context WITHOUT firing note-offs, so a
+  // latched chord hangs on the synth (UAT test 6). The onMount-return panic only runs on
+  // Svelte component teardown, NOT on browser unload — so listen for unload directly.
+  // pagehide is primary (more reliable on mobile Safari / iOS "Web MIDI Browser");
+  // beforeunload is the desktop fallback. Both call the same idempotent panic().
+  const onUnload = (): void => host.panic();
+
   onMount(() => {
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('pagehide', onUnload);
+    window.addEventListener('beforeunload', onUnload);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('pagehide', onUnload);
+      window.removeEventListener('beforeunload', onUnload);
       host.panic();
     };
   });
