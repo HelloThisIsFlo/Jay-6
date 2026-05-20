@@ -5,9 +5,11 @@ import {
   noteValueMs,
   quarterMs,
   sixteenthMs,
+  TICKS_PER_BAR,
   TICKS_PER_QUARTER,
   ticksPerSixteenth,
   ticksPerStep,
+  ticksUntilDownbeatFrom,
   tickIntervalMs,
 } from '../src/clock';
 
@@ -80,5 +82,25 @@ describe('nextDownbeatTick', () => {
     expect(nextDownbeatTick(23)).toBe(24);
     expect(nextDownbeatTick(25)).toBe(48);
     expect(nextDownbeatTick(47)).toBe(48);
+  });
+});
+
+describe('ticksUntilDownbeatFrom', () => {
+  // UAT test 11 + 16: engines align to OP-1's ABSOLUTE bar frame (96 ticks/bar),
+  // not a local quarter counted from pad-press. On a bar boundary → fire now
+  // (wait 0); otherwise wait to the NEXT bar boundary.
+  it('TICKS_PER_BAR = 96 (4 quarters at 24 PPQ)', () => {
+    expect(TICKS_PER_BAR).toBe(96);
+  });
+
+  it('returns 0 when already exactly on a bar boundary', () => {
+    expect(ticksUntilDownbeatFrom(0)).toBe(0);
+    expect(ticksUntilDownbeatFrom(96)).toBe(0);
+  });
+
+  it('returns ticks remaining to the next bar boundary mid-bar', () => {
+    expect(ticksUntilDownbeatFrom(1)).toBe(95);
+    expect(ticksUntilDownbeatFrom(95)).toBe(1);
+    expect(ticksUntilDownbeatFrom(97)).toBe(95);
   });
 });
