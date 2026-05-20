@@ -2,7 +2,7 @@ import { WebMidi } from 'webmidi';
 import { allNotesOff, getMidiState } from '../midi';
 import { style1, style2, style3, style4, style5 } from '../phrases';
 import type { StyleKind } from '../state.svelte';
-import type { ClockSource } from '../tickSource';
+import { tickSource, type ClockSource } from '../tickSource';
 import { ArpEngine } from './arp';
 import { HoldEngine } from './hold';
 import { PhraseDurationEngine } from './phraseDuration';
@@ -188,15 +188,24 @@ export class EngineHost {
   // D-04: forward inbound transport from tickSource. Master mode ignores inbound;
   // only slave (Ext) reacts. Stop reuses panic() per Pitfall 5 (verified all-clean path).
   onTransport(kind: 'start' | 'stop' | 'continue'): void {
+    // Intentional UAT instrumentation for the transport re-verify (test 16 step 4):
+    // proves inbound transport reaches the engine. console.debug (not log) keeps it
+    // out of the default prod console. Tracked-removal follow-up in 02-06-SUMMARY.
+    console.debug('TRANSPORT-IN', kind);
     if (this.cfg.clockMode !== 'external') return;
-    if (kind === 'start') {
-      // D-05 + Pitfall 2: performance.now() is monotonic — immune to NTP shifts.
+    if (kind === 'start' || kind === 'continue') {
+      // OP-1 emits Continue (0xFB) on Play, NEVER Start (0xFA) — confirmed in the
+      // 2026-05-20 MIDI Monitor session. Keying align off Continue is required for
+      // THIS hardware, so both messages arm-and-align. Debounce covers OP-1
+      // Record chatter (D-05 + Pitfall 2: performance.now() is NTP-immune).
       const now = performance.now();
       if (now - this.lastStartMs < EngineHost.START_DEBOUNCE_MS) return;
       this.lastStartMs = now;
       this.armedPosition = 'fresh';
-    } else if (kind === 'continue') {
-      this.armedPosition = 'resume';
+      // Restart the absolute tick at the transport event so ticksUntilDownbeatFrom
+      // aligns to the OP-1's just-started bar. (The 'resume'-vs-'fresh' sequencer-v2
+      // distinction is noted but no longer blocks alignment on this hardware.)
+      tickSource.resetExternalTick();
     } else {
       // Pitfall 5: reuse the verified all-clean path; don't invent a new cleanup.
       this.panic();

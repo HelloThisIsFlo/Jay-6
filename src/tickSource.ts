@@ -35,7 +35,14 @@ class TickSourceImpl {
     // Fresh Ext session counts from a clean base; flipping to Int clears any
     // stale Ext count so a later Ext session never inherits it.
     this.resetExternalTick();
-    if (this.listeners.size > 0) this.activate();
+    // Under Ext, transport (Start/Stop/Continue) must be observable the moment a
+    // clock source is selected — independent of whether an engine has subscribed
+    // yet (UAT root cause #2: TRANSPORT-IN never logged because the listener only
+    // attached on first tick subscriber). attachInputListener no-ops without an
+    // inputId, so this is safe pre-selection. Int still only needs a timer when
+    // an engine is listening.
+    if (this.mode === 'external') this.attachInputListener();
+    else if (this.listeners.size > 0) this.activate();
   }
 
   getExternalTick(): number {
@@ -82,7 +89,11 @@ class TickSourceImpl {
 
   private deactivate(): void {
     this.stopInternalTimer();
-    this.detachInputListener();
+    // Under Ext, keep the input listener bound after the last engine unsubscribes
+    // so inbound transport stays observable independent of engine subscription
+    // timing (UAT root cause #2). The Int flip / detachInputListener is the only
+    // thing that goes deaf to the OP-1 (test-16 Int-leak guard).
+    if (this.mode !== 'external') this.detachInputListener();
   }
 
   private startInternalTimer(): void {
@@ -104,6 +115,10 @@ class TickSourceImpl {
     if (!this.inputId) return;
     const input: Input | undefined = WebMidi.getInputById(this.inputId);
     if (!input) return;
+    // Idempotent: setMode('external') now attaches eagerly (transport observability)
+    // and a later engine subscribe() re-enters via activate() — detach first so
+    // listeners never double-bind (each event must fire subscribers exactly once).
+    this.detachInputListener();
     // (Re)attaching means a fresh Ext session — count the OP-1's bar frame from 0.
     this.resetExternalTick();
     const onClock = (): void => this.emitTick();
