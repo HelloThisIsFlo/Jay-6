@@ -1,5 +1,5 @@
 import { playChord, releaseChord } from '../midi';
-import { nextDownbeatTick, ticksPerSixteenth } from '../clock';
+import { ticksPerSixteenth, ticksUntilDownbeatFrom } from '../clock';
 import { parseRhythmPattern, type RhythmStep, type RhythmVariation } from '../phrases';
 import { tickSource } from '../tickSource';
 import type { Engine } from './types';
@@ -48,10 +48,18 @@ export class RhythmGateEngine implements Engine {
     this.tickCount = 0;
     this.unsubscribe = tickSource.subscribe(() => this.onTick());
     if (notes.length === 0) return;
-    // D-06: under Ext clock, defer first fire until next downbeat (tick % 24 === 0).
+    // Arm against OP-1's ABSOLUTE bar, not a local beat counted from pad-press:
+    // wait = ticks from the OP-1's current position to its next bar downbeat
+    // (fixes the measured +278ms off-grid, UAT tests 11 + 16). wait===0 means
+    // we're already on the OP-1's downbeat → fire step 0 now.
     // D-07: Int mode unchanged — fires immediately to preserve live-feel.
     if (tickSource.getMode() === 'external') {
-      this.armUntilTick = nextDownbeatTick(this.tickCount); // = 24 at tickCount=0
+      const wait = ticksUntilDownbeatFrom(tickSource.getExternalTick());
+      if (wait === 0) {
+        this.evaluateStep();
+      } else {
+        this.armUntilTick = wait;
+      }
     } else {
       this.evaluateStep();
     }

@@ -1,5 +1,5 @@
 import { playChord, releaseChord } from '../midi';
-import { TICKS_PER_QUARTER, ticksPerStep } from '../clock';
+import { ticksPerStep, ticksUntilDownbeatFrom } from '../clock';
 import type { PhraseDurationVariation } from '../phrases';
 import { tickSource } from '../tickSource';
 import type { Engine } from './types';
@@ -26,15 +26,16 @@ export class PhraseDurationEngine implements Engine {
   start(notes: number[]): void {
     this.stop();
     this.heldNotes = [...notes];
-    // D-06: under Ext, first fire waits for the next quarter-note boundary.
-    // D-07: under Int, ticksUntilNext follows the variation's step length and
-    // fire() runs immediately to preserve live-feel.
-    this.ticksUntilNext = tickSource.getMode() === 'external'
-      ? TICKS_PER_QUARTER
-      : this.ticksPerStep;
+    const ext = tickSource.getMode() === 'external';
+    // Arm against OP-1's ABSOLUTE bar, not a local beat from pad-press (fixes the
+    // measured +278ms off-grid, UAT tests 11 + 16). wait===0 → already on the
+    // OP-1's downbeat, fire now then resume ticksPerStep cadence.
+    // D-07: under Int, fire() runs immediately to preserve live-feel.
+    const extWait = ext ? ticksUntilDownbeatFrom(tickSource.getExternalTick()) : 0;
+    this.ticksUntilNext = ext && extWait > 0 ? extWait : this.ticksPerStep;
     this.unsubscribe = tickSource.subscribe(() => this.onTick());
     if (notes.length === 0) return;
-    if (tickSource.getMode() === 'internal') this.fire();
+    if (!ext || extWait === 0) this.fire();
   }
 
   setNotes(notes: number[]): void {

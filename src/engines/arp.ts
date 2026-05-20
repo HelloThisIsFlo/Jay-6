@@ -1,5 +1,5 @@
 import { playChord, releaseChord } from '../midi';
-import { arpTicksPerStep, TICKS_PER_QUARTER } from '../clock';
+import { arpTicksPerStep, ticksUntilDownbeatFrom } from '../clock';
 import type { ArpVariation } from '../phrases';
 import { tickSource } from '../tickSource';
 import type { Engine } from './types';
@@ -54,14 +54,16 @@ export class ArpEngine implements Engine {
     this.heldNotes = [...notes];
     this.sequence = buildSequence(this.heldNotes, this.variation);
     this.idx = 0;
-    // D-06: under Ext, first fire waits for next quarter-note boundary.
+    const ext = tickSource.getMode() === 'external';
+    // Arm against OP-1's ABSOLUTE bar, not a local beat from pad-press (fixes the
+    // measured +278ms off-grid, UAT tests 11 + 16). wait===0 → already on the
+    // OP-1's downbeat, fire now then resume ticksPerStep cadence.
     // D-07: Int preserves immediate-fire live-feel.
-    this.ticksUntilNext = tickSource.getMode() === 'external'
-      ? TICKS_PER_QUARTER
-      : this.ticksPerStep;
+    const extWait = ext ? ticksUntilDownbeatFrom(tickSource.getExternalTick()) : 0;
+    this.ticksUntilNext = ext && extWait > 0 ? extWait : this.ticksPerStep;
     this.unsubscribe = tickSource.subscribe(() => this.onTick());
     if (this.sequence.length === 0) return;
-    if (tickSource.getMode() === 'internal') this.fireNext();
+    if (!ext || extWait === 0) this.fireNext();
   }
 
   setNotes(notes: number[]): void {
