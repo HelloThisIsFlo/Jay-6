@@ -20,6 +20,10 @@ Known visual debt (some flagged in UI-SPEC as out-of-scope acknowledged):
 - 📐 **Spacing scale off-grid token** — `0.75rem` (12px) breaks the 4/8/16/24/32 grid. UI-SPEC Dim 5 FLAG. Decide: round to 0.5rem (8) or 1rem (16) per usage site.
 - 🎛️ **TopBar layout** — visually busy (Output/Input/Channel/Bank/‹›/Transpose/Int·Ext/BPM/Style/Variation/Gate/Latch in one row). Group? Collapse? Hide-on-mobile?
 - 🎨 **J-6 hardware visual reference** — current Jay-6 looks generic-dark-synth, not J-6-evocative. Could borrow more from the actual J-6's orange/cream/black palette + chunky panel feel.
+- 🎰 **Variation selector — semantic visual cues** _(surfaced during Phase 2 UAT, 2026-05-19)_:
+  - Triplet variations (V07–V12 for Arp 1 / Arp 2; V07–V12 for PhraseDur) should be visually differentiated from straight variations — color, badge, or background shade so user sees "this one swings" at a glance without reading documentation.
+  - Even better: each variation shows a tiny inline pattern graph hinting at the shape — ↗ for UP, ↗↘ for UP&DOWN, ↘ for DOWN, doubled stroke for 2-oct range. Eliminates the "what does V08 do again?" cognitive load.
+  - Likely applies to all 5 styles (Arp 1/2 numeric V01–V12, Phrase Dur duration values, Rhythm Gate patterns). Common variation-selector pattern.
 
 Out-of-phase: don't run this through `/gsd:discuss-phase` / `/gsd:plan-phase`. Use "Claude Design" (Flo's free-form design iteration workflow) instead — faster turnaround, no execute-phase ceremony for what's mostly tweaking CSS values and judging by eye.
 
