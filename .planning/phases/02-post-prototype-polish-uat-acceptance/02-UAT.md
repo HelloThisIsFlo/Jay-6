@@ -315,14 +315,19 @@ not_a_bug: 1
 pending: 0
 skipped: 0
 blocked: 0
-gaps_logged: 10
+gaps_logged: 11
 note: |
   5 tests marked `issue` (4, 14, 16, 19, 20). Test 13 (gate slider) reclassified
   not_a_bug after research confirmed per-step gate matches Roland J-6 convention.
-  10 active fix-gaps in Gaps section — more than issue-count because several
+  11 active fix-gaps in Gaps section — more than issue-count because several
   passing tests surfaced side-findings (e.g. page-reload note hang under test 6,
   internal-clock drift confirmed under test 8 → moved to Known Deferrals). Test 11
   = conditional pass (V04/V06/V08 need re-verify after Ext-clock fix).
+  MIDI-MONITOR SESSION (2026-05-20) added hard evidence to 2 gaps: Ext-clock
+  alignment (measured +278ms / 0.42-beat off-grid; arm anchors to pad-press not
+  OP-1 bar) + a NEW transport-semantics gap (OP-1 emits Continue not Start;
+  transport events not reaching engine). No-echo (Pitfall 8) confirmed GOOD.
+  Throwaway J6DBG instrumentation added + reverted during the session.
 
 ## Gaps
 
@@ -364,6 +369,28 @@ note: |
   artifacts: []
   missing: []
 
+- truth: "When OP-1 starts playback under Ext clock, Jay-6 receives the transport event and (per D-04) arms/resets the rhythm engines to step 0 on the downbeat"
+  status: failed
+  root_cause: |
+    Two stacked problems found in the MIDI-monitor session (2026-05-20):
+    1. WRONG MESSAGE: the OP-1 emits MIDI **Continue (0xFB)** on Play, NEVER **Start (0xFA)** — confirmed in MIDI Monitor (only Continue + Stop ever appear). Jay-6's D-04 keys the "reset pattern to step 0 / arm fresh" behavior off `start`; OP-1's Continue maps to `armedPosition='resume'`, a no-op stub no engine reads. So the intended Play→reset behavior never fires from this hardware.
+    2. EVENTS NOT REACHING ENGINE: even the Continue/Stop the OP-1 does send produced ZERO `TRANSPORT-IN` console logs in Jay-6, despite MIDI Monitor showing them on the wire. Suspect: the engine only subscribes to tickSource on pad-press, and transport listeners may not be wired (or webmidi 'continue'/'start' events not surfacing) when transport arrives. Needs confirmation.
+  severity: major
+  test: 16
+  artifacts:
+    - path: "src/engines/host.ts:190-204"
+      issue: "onTransport handles 'start' (reset) + 'continue' (resume stub); OP-1 only sends 'continue', so reset path is dead for this hardware"
+    - path: "src/tickSource.ts:87-105, 123-125"
+      issue: "transport listener attachment + emitTransport — verify events actually fire when OP-1 sends Continue/Stop"
+  missing:
+    - "Treat Continue (and/or a configurable transport trigger) as a valid sync/arm signal, not just Start"
+    - "Confirm transport listeners are attached + firing independent of engine subscription timing"
+  midi_session_evidence: |
+    MIDI Monitor (wall-clock) showed: Stop, Continue, Continue, Stop, Stop... from OP-1.
+    Pressing Play on OP-1 = Continue (0xFB), never Start (0xFA).
+    Same window, Jay-6 console logged NO transport-in events at all.
+    No-echo (Pitfall 8) CONFIRMED GOOD in the same run: zero CLOCK-OUT lines while in Ext mode.
+
 - truth: "After switching clock to Int, Jay-6's engines stop receiving timing from the OP-1 — they use only the internal clock"
   status: failed
   reason: "User reported during test 16 (transient, not reproducible after page reload): Int mode selected, but Jay-6's rhythm still followed OP-1's tempo changes. State leak in mode switch — possibly tickSource still subscribed to external MIDI clock events even after mode flip. Page reload cleared it."
@@ -393,23 +420,35 @@ note: |
   artifacts: []
   missing: []
 
-- truth: "Under Ext clock, Rhythm Gate patterns align their 16-step grid to OP-1's bar position — V01 hits on the beat, V02 hits on the e-of-beat, V03 on the +, V04 on the a. Variations are audibly distinct."
+- truth: "Under Ext clock, Rhythm Gate patterns align their 16-step grid to OP-1's bar position — first hit lands on OP-1's downbeat, not at an arbitrary phase."
   status: failed
-  reason: "User reported during test 11: Rhythm Gate 4 V01/V02/V03 all sound identical under Ext clock — they all hit on the beat. Int clock shows audible differences between V01/V02/V03."
+  root_cause: "CONFIRMED via MIDI-monitor session (2026-05-20). The arm waits a fixed 24 LOCAL ticks from pad-press, not until OP-1's actual downbeat. rhythmGate.ts:54 sets armUntilTick = nextDownbeatTick(this.tickCount) where this.tickCount is the engine's own counter starting at 0 on start() (= pad-press), NOT OP-1's absolute bar position. So the first hit lands one OP-1-quarter after pad-press, wherever that falls in the bar. Same pattern in arp.ts:59-61 + phraseDuration.ts:32-34 (ticksUntilNext = TICKS_PER_QUARTER under Ext) — all three engines affected."
   severity: major
   test: 11
-  artifacts: []
-  missing: []
-  later_context: |
-    During test 12 (Rhythm Gate 5), user shared: OP-1 records starting from the
-    first note it hears — leading silence in a pattern is not recorded. So
-    patterns starting with `_` (like V02 `_o___...`) may appear "on the beat" on
-    OP-1's display even when Jay-6 fires them at the correct grid offset, because
-    OP-1 truncates the silence. This MAY invalidate the original finding —
-    Jay-6 might be aligning correctly, OP-1's display is misleading. Debugger
-    should verify by other means (browser MIDI monitor / DAW recording / scope).
-    Also: user later tested V01/V02/V03 on Rhythm Gate 5 under Ext clock and
-    they WORKED — distinguishable. Adds weight to the OP-1-display theory.
+  artifacts:
+    - path: "src/engines/rhythmGate.ts:45-58, 80-92"
+      issue: "armUntilTick anchored to local tickCount (resets to 0 on pad-press), not OP-1 absolute tick"
+    - path: "src/engines/arp.ts:52-65"
+      issue: "ticksUntilNext = TICKS_PER_QUARTER from local start — same flaw"
+    - path: "src/engines/phraseDuration.ts:26-38"
+      issue: "same flaw"
+    - path: "src/tickSource.ts"
+      issue: "no absolute external-tick counter exposed for engines to align against"
+  missing:
+    - "TickSource exposes an absolute external-clock tick position (counts incoming MIDI clock bytes, resettable on transport), so engines can compute the true next-downbeat in OP-1's frame"
+    - "Engines arm against that absolute position instead of a local tickCount"
+  midi_session_evidence: |
+    Captured 2026-05-20, OP-1 over Bluetooth, ~90 BPM, Rhythm Gate 4 V01, Ext clock.
+    Console (performance.now ms) vs MIDI Monitor:
+    - OP-1 downbeats (CLOCK-IN): 174583.3 → 175250.9 → 175917.4 (~667ms apart = 90 BPM)
+    - Jay-6 note-ons:           174862.5 → 175528.4 → 176195.7 (~667ms apart — TEMPO locked)
+    - Phase offset: every note-on +278ms after the OP-1 downbeat = 0.42 of a beat OFF-GRID, consistently.
+    Arm trace:
+      174193.9  RG.start (pad press), armUntilTick=24 LOCAL ticks
+      174583.3  CLOCK-IN downbeat#6  ← should have fired here (390ms after press)
+      174862.3  RG.arm-release, fired step 0  ← actually fired +668ms after press (= 24 local ticks = 1 OP-1 quarter)
+    Conclusion: tempo syncs, phase does not. Arm ignores OP-1's bar; counts a fixed beat from pad-press.
+    Earlier OP-1-truncates-leading-silence theory (test 12 note) is NOT the cause — the offset is real and measurable on note-on bytes, independent of OP-1's display.
 
 - truth: "Style name 'Phrase Dur' clearly communicates what the style does"
   status: failed
