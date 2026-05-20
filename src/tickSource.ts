@@ -137,6 +137,12 @@ class TickSourceImpl {
     };
   }
 
+  // test-16 Int-leak guard: switching to Int must make Jay-6 fully deaf to the
+  // OP-1 — this removes ALL FOUR webmidi listeners (clock/start/stop/continue) so
+  // no inbound clock or transport can reach engines after the flip. The transient
+  // leak (rhythm kept following OP-1 tempo after Int, cleared only by reload) must
+  // not regress. Idempotent (nulls detachInput) — safe to call on every flip.
+  // Locked by test/tickSource.test.ts Cases A–C.
   private detachInputListener(): void {
     this.detachInput?.();
     this.detachInput = null;
