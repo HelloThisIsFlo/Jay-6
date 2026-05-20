@@ -199,6 +199,18 @@
     color: #eee;
     background: #111;
     min-height: 100vh;
+    /* 02-03 only covered .topbar; iPhone double-tap still selected pad labels and
+       other surfaces (UAT test 19). Suppress selection app-wide by default and
+       kill the iOS long-press callout — editable inputs are re-enabled below. */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  /* Form fields stay editable/selectable despite the app-wide suppression. */
+  main :global(input),
+  main :global(textarea) {
+    user-select: text;
+    -webkit-user-select: text;
   }
   footer {
     text-align: center;

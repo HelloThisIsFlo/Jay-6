@@ -130,8 +130,20 @@
     text-align: left;
     border: 1px solid #333;
     transition: background-color 60ms, transform 40ms, box-shadow 80ms;
+    /* .piano has user-select:none but iOS still independently selected the pad's
+       text spans on double-tap, and long-press raised the callout menu (UAT test 19).
+       Suppress on the button + its text spans + kill the iOS callout. */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
   .pad:active { transform: translateY(1px); }
+  .pad .key,
+  .pad .name {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
   .pad .key {
     font-size: 0.7rem;
     color: #888;
