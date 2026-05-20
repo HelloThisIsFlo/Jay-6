@@ -54,7 +54,7 @@
 
 - [x] **REQ-deploy-cloudflare-dev**: `just serve` runs Vite + Cloudflare tunnel → `https://jay-6.kempenich.dev`. Use case: OP-1 plugged into the same Mac as the browser.
 - [x] **REQ-deploy-k8s-always-on**: Container deployed to home K8s cluster, exposed at `https://jay-6.kempenich.ai` via cluster-wide Cloudflare Tunnel. `Dockerfile` (nginx:alpine) + `k8s.yaml` + GHCR Action + `./deploy.sh`.
-- [x] **REQ-lan-exposure**: `just dev-lan` exposes Vite on `0.0.0.0`. iPad on same LAN can reach app (MIDI denied over plain http — expected).
+- [x] **REQ-lan-exposure**: App reachable from devices other than this Mac. Fulfilled by the dev Cloudflare tunnel (`jay-6.kempenich.dev` via TheMac tunnel) — HTTPS, so Web MIDI works on those devices too. (Superseded the earlier `just dev-lan` plain-http `0.0.0.0` approach, which only gave view-only LAN access with MIDI denied; removed 2026-05-20 during Phase 2 UAT cleanup.)
 - [x] **REQ-ipad-web-midi-browser**: Jay-6 works on iPad via Yonemoto's "Web MIDI Browser" app. App loads `https://jay-6.kempenich.dev`, OP-1 appears in Output dropdown, pads play.
 
 ### Phase 2 polish + acceptance

@@ -10,10 +10,6 @@ default:
 dev:
     npm run dev
 
-# Vite dev server bound to 0.0.0.0 (LAN viewers — MIDI still requires localhost).
-dev-lan:
-    npm run dev:lan
-
 # Cloudflared tunnel to jay-6.kempenich.dev (HTTPS, Web MIDI works in desktop browsers).
 # Uses the TheMac tunnel config at ~/.cloudflared/config-themac.yml.
 tunnel:
