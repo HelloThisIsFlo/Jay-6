@@ -37,14 +37,25 @@
     return bank.chords.find((c) => c.key === k);
   }
 
+  // Pointer-leave/mouseup race left notes hanging (UAT test 4): a press could end via
+  // pointerup, pointercancel (touch/gesture interruption), or lostpointercapture (OS
+  // yanks capture mid-press) — pointerup intermittently never arrived. We track the
+  // captured pointerId per pad and route every end-path through one idempotent release
+  // so the note-off always fires exactly once (a second end for the same pointer no-ops).
+  const captured = new Map<Key, number>();
+
   function handlePointerDown(e: PointerEvent, k: Key) {
     const c = chordFor(k);
     if (!c) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    captured.set(k, e.pointerId);
     e.preventDefault();
     onPress(k, c.notes);
   }
-  function handlePointerUp(e: PointerEvent, k: Key) {
+  function endPress(e: PointerEvent, k: Key) {
+    // Idempotent: only release if this pointer is the one still captured for this pad.
+    if (captured.get(k) !== e.pointerId) return;
+    captured.delete(k);
     (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
     e.preventDefault();
     onRelease(k);
@@ -60,7 +71,9 @@
       style:grid-column="{col} / span 2"
       style:grid-row="1"
       onpointerdown={(e) => handlePointerDown(e, key)}
-      onpointerup={(e) => handlePointerUp(e, key)}
+      onpointerup={(e) => endPress(e, key)}
+      onpointercancel={(e) => endPress(e, key)}
+      onlostpointercapture={(e) => endPress(e, key)}
       oncontextmenu={(e) => e.preventDefault()}
     >
       <span class="key">{key}</span>
@@ -75,7 +88,9 @@
       style:grid-column="{col} / span 2"
       style:grid-row="2"
       onpointerdown={(e) => handlePointerDown(e, key)}
-      onpointerup={(e) => handlePointerUp(e, key)}
+      onpointerup={(e) => endPress(e, key)}
+      onpointercancel={(e) => endPress(e, key)}
+      onlostpointercapture={(e) => endPress(e, key)}
       oncontextmenu={(e) => e.preventDefault()}
     >
       <span class="key">{key}</span>
