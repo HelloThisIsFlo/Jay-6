@@ -238,4 +238,17 @@
       overscroll-behavior: none;
     }
   }
+  /* The lock above assumed the UI fits the viewport (true in portrait). iPhone
+     landscape is shorter than the UI, so position:fixed trapped the keys off-screen
+     with no way to scroll to them (UAT test 19). On short/landscape viewports, restore
+     scrollability so off-screen content is reachable; keep overscroll-behavior:none so
+     the rubber-band/address-bar containment the lock was added for still holds. */
+  @media (pointer: coarse) and (max-width: 1366px) and (max-height: 480px) {
+    :global(html), :global(body) {
+      overflow-y: auto;
+      position: static;
+      height: auto;
+      overscroll-behavior: none;
+    }
+  }
 </style>
