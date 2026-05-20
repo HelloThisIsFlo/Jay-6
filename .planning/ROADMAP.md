@@ -47,10 +47,10 @@ Two-phase v1 milestone mirroring shipping reality, not a fresh plan. **Phase 1 (
   - [x] 02-03-PLAN.md — iPad ergonomics CSS pass + black-key Option B (UI-SPEC)
   - [x] 02-04-PLAN.md — Transport sync wiring (clock send + transport receive + downbeat alignment + double-trigger guard + mode-switch hard stop + voicing-anchor verify)
   - [x] 02-05-PLAN.md — MANUAL.md at repo root + README/CURRENT-STATE links + UAT walkthrough handoff
-  - [ ] 02-06-PLAN.md — Gap closure: transport sync (absolute external-tick alignment + OP-1 Continue-as-trigger) [tests 11, 16]
-  - [ ] 02-07-PLAN.md — Gap closure: clear-state-on-disruption (panic/mode-switch/disconnect clears latch+highlights+notes; Ext→Int fallback; unload panic) [tests 6, 16, 20]
-  - [ ] 02-08-PLAN.md — Gap closure: pad release-edge race + keyboard preventDefault (Space/arrows) [tests 4, 14, 15]
-  - [ ] 02-09-PLAN.md — Gap closure: 'Phrase Dur' → 'Beat' rename + iOS text-selection + iPhone landscape [tests 10, 19]
+  - [x] 02-06-PLAN.md — Gap closure: transport sync (absolute external-tick alignment + OP-1 Continue-as-trigger) [tests 11, 16]
+  - [x] 02-07-PLAN.md — Gap closure: clear-state-on-disruption (panic/mode-switch/disconnect clears latch+highlights+notes; Ext→Int fallback; unload panic) [tests 6, 16, 20]
+  - [x] 02-08-PLAN.md — Gap closure: pad release-edge race + keyboard preventDefault (Space/arrows) [tests 4, 14, 15]
+  - [x] 02-09-PLAN.md — Gap closure: 'Phrase Dur' → 'Beat' rename + iOS text-selection + iPhone landscape [tests 10, 19]
 **UI hint**: yes
 
 ## Progress
