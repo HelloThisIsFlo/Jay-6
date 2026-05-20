@@ -132,6 +132,10 @@
     if (k === 'x') { bumpTranspose(1);  ev.preventDefault(); return; }
     if (ev.key === 'ArrowLeft')  { setBank(ui.bankIndex - 1); ev.preventDefault(); return; }
     if (ev.key === 'ArrowRight') { setBank(ui.bankIndex + 1); ev.preventDefault(); return; }
+    // ↑/↓ are unbound but still scroll the page (browser default on a focusable body).
+    // Swallow them so the app never scrolls under the player (UAT test 15). Not wired to
+    // variation-cycling here — that's a Polish Backlog idea, out of scope for gap closure.
+    if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') { ev.preventDefault(); return; }
     if (ev.key === ' ' || k === 'spacebar') {
       toggleLatch();
       ev.preventDefault();
@@ -161,7 +165,9 @@
   const onUnload = (): void => host.panic();
 
   onMount(() => {
-    window.addEventListener('keydown', onKeyDown);
+    // passive:false — Space + arrow keys scroll a focusable body by default; a passive
+    // listener would ignore preventDefault and the page would still scroll (UAT tests 14, 15).
+    window.addEventListener('keydown', onKeyDown, { passive: false });
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('pagehide', onUnload);
     window.addEventListener('beforeunload', onUnload);
