@@ -65,6 +65,10 @@ export class EngineHost {
   // D-04: lifecycle state — Start arms 'fresh' (reset position), Continue arms
   // 'resume'. Lives on host because it's engine-lifecycle state, not UI state.
   private armedPosition: 'fresh' | 'resume' | null = null;
+  // Highlight state (heldKeys/latchedKey) is component-owned in App.svelte, so the
+  // host can't clear it directly. Every panic path (mode switch, transport stop,
+  // disconnect, unload) invokes this so the UI clears too — never a stuck-on state.
+  private onPanic: (() => void) | null = null;
 
   constructor(cfg: HostConfig) {
     this.cfg = { ...cfg };
@@ -113,12 +117,25 @@ export class EngineHost {
     }
   }
 
+  // Register the App's highlight-clear hook. Called once on mount so EVERY panic
+  // path drives the same UI cleanup, not just user-pressed panic.
+  setOnPanic(cb: () => void): void {
+    this.onPanic = cb;
+  }
+
   // Called by UI button (latch is a toggle) or manually to clear sound.
   panic(): void {
     this.engine.stop();
     this.playing = false;
     this.latchedKey = null;
+    // A disruption clears ALL engine-side held state per the user's "never stuck-on"
+    // principle (UAT tests 16, 20): a physically-held key surviving a disconnect must
+    // not keep the engine logically "held" and refire on the next event.
+    this.heldPads.clear();
+    this.padNotes.clear();
+    this.currentRawChord = [];
     allNotesOff();
+    this.onPanic?.();
   }
 
   setBpm(bpm: number): void {

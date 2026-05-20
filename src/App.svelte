@@ -48,6 +48,15 @@
   let heldKeys = $state<Set<Key>>(new Set());
   let latchedKey = $state<Key | null>(null);
 
+  // Highlight state is component-owned; host signals cleanup via setOnPanic so EVERY
+  // panic path (mode switch, transport stop, device disconnect, browser unload) clears
+  // the UI — never a stuck-lit pad after the audio stops (UAT tests 16, 20).
+  function clearAllHighlights(): void {
+    heldKeys = new Set();
+    latchedKey = null;
+  }
+  onMount(() => host.setOnPanic(clearAllHighlights));
+
   // Pads to render as "held" — physically down pads plus the latched pad (if any).
   const displayKeys = $derived.by(() => {
     if (latchedKey === null) return heldKeys;
@@ -68,9 +77,14 @@
     heldKeys = next;
   }
 
-  // Clear the latched highlight when latch is turned off.
+  // Clear highlights when latch is turned off. Always drop the latched pad; also clear
+  // the held-pad highlights when nothing is physically down — latch-off while a rhythm
+  // gate sustains must leave no yellow pads lit (UAT test 16, manifestation 1).
   $effect(() => {
-    if (!ui.latch) latchedKey = null;
+    if (!ui.latch) {
+      latchedKey = null;
+      if (downKeys.size === 0) heldKeys = new Set();
+    }
   });
 
   // Ableton "Computer MIDI Keyboard" mapping.
