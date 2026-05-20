@@ -14,6 +14,11 @@ class TickSourceImpl {
   private timer: ReturnType<typeof setInterval> | null = null;
   private inputId: string | null = null;
   private detachInput: (() => void) | null = null;
+  // Absolute count of inbound MIDI clock bytes under Ext mode — the OP-1's own
+  // bar frame. Engines read this at start() to align their first audible step to
+  // the OP-1's real downbeat (not a beat counted from pad-press). Never advances
+  // under Int (we are the master then; there is no external position to track).
+  private externalTick = 0;
 
   setBpm(bpm: number): void {
     this.bpm = bpm;
@@ -27,7 +32,18 @@ class TickSourceImpl {
     this.stopInternalTimer();
     this.detachInputListener();
     this.mode = mode;
+    // Fresh Ext session counts from a clean base; flipping to Int clears any
+    // stale Ext count so a later Ext session never inherits it.
+    this.resetExternalTick();
     if (this.listeners.size > 0) this.activate();
+  }
+
+  getExternalTick(): number {
+    return this.externalTick;
+  }
+
+  resetExternalTick(): void {
+    this.externalTick = 0;
   }
 
   setInputId(id: string | null): void {
@@ -88,6 +104,8 @@ class TickSourceImpl {
     if (!this.inputId) return;
     const input: Input | undefined = WebMidi.getInputById(this.inputId);
     if (!input) return;
+    // (Re)attaching means a fresh Ext session — count the OP-1's bar frame from 0.
+    this.resetExternalTick();
     const onClock = (): void => this.emitTick();
     const onStart = (): void => this.emitTransport('start');
     const onStop = (): void => this.emitTransport('stop');
@@ -116,6 +134,9 @@ class TickSourceImpl {
     if (this.mode === 'internal') {
       const outId = getMidiState().selectedOutputId;
       if (outId) WebMidi.getOutputById(outId)?.sendClock();
+    } else {
+      // One increment per inbound MIDI clock byte — the OP-1's absolute position.
+      this.externalTick += 1;
     }
     for (const l of this.listeners) l();
   }

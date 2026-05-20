@@ -60,6 +60,22 @@ export function nextDownbeatTick(currentTick: number): number {
   return (Math.floor(currentTick / TICKS_PER_QUARTER) + 1) * TICKS_PER_QUARTER;
 }
 
+// One 4/4 bar = 4 quarters at 24 PPQ = 96 ticks. The 16-step rhythm grid maps
+// onto exactly one bar (16 sixteenths * 6 ticks).
+export const TICKS_PER_BAR = TICKS_PER_QUARTER * 4;
+
+// Aligns engines to the OP-1's ABSOLUTE bar frame, fixing the +278ms / 0.42-beat
+// off-grid measured in the 2026-05-20 MIDI-monitor session: the previous arm
+// counted a local beat from pad-press (nextDownbeatTick(this.tickCount)), so the
+// first hit landed one OP-1 quarter after the press, wherever that fell in the
+// bar. Given the OP-1's absolute tick position, return ticks to wait until the
+// next bar downbeat — 0 when already exactly on a boundary (fire now, live feel),
+// else the remainder to the next boundary strictly after absTick.
+export function ticksUntilDownbeatFrom(absTick: number): number {
+  const offset = ((absTick % TICKS_PER_BAR) + TICKS_PER_BAR) % TICKS_PER_BAR;
+  return offset === 0 ? 0 : TICKS_PER_BAR - offset;
+}
+
 export function arpTicksPerStep(subdivision: '8th' | '16th', triplet: boolean): number {
   return ticksPerStep(subdivision, triplet);
 }
