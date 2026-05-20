@@ -41,12 +41,16 @@ Two-phase v1 milestone mirroring shipping reality, not a fresh plan. **Phase 1 (
   4. User can `say "run uat"` and the `uat-agent` skill walks `.research/UAT.md` section-by-section with results recorded in the file; any surfaced bugs are logged with date stamps, and a run-log line is appended per session.
   5. Voicing data in `src/banks.data.json` no longer contains the ~30% inferred slots flagged in the original two-extraction diff — chord-pad output sounds correct vs. the Roland manual / hardware on the audited banks.
   6. `MANUAL.md` exists at the repo root with the four D-14 sections (Setup, Pads + chords, Styles, Clock + transport sync) in consumer-product voice, linked from README.md + CURRENT-STATE.md.
-**Plans**: 5 plans
+**Plans**: 9 plans (5 base + 4 gap-closure)
   - [x] 02-01-PLAN.md — Carry-forward acknowledgement for the 5 pre-GSD shipped REQs (clock-receive, deploys, LAN, iPad Web MIDI Browser)
   - [x] 02-02-PLAN.md — `nextDownbeatTick()` pure-math helper + Vitest boundary cases (rhythm phase alignment math)
   - [x] 02-03-PLAN.md — iPad ergonomics CSS pass + black-key Option B (UI-SPEC)
   - [x] 02-04-PLAN.md — Transport sync wiring (clock send + transport receive + downbeat alignment + double-trigger guard + mode-switch hard stop + voicing-anchor verify)
   - [x] 02-05-PLAN.md — MANUAL.md at repo root + README/CURRENT-STATE links + UAT walkthrough handoff
+  - [ ] 02-06-PLAN.md — Gap closure: transport sync (absolute external-tick alignment + OP-1 Continue-as-trigger) [tests 11, 16]
+  - [ ] 02-07-PLAN.md — Gap closure: clear-state-on-disruption (panic/mode-switch/disconnect clears latch+highlights+notes; Ext→Int fallback; unload panic) [tests 6, 16, 20]
+  - [ ] 02-08-PLAN.md — Gap closure: pad release-edge race + keyboard preventDefault (Space/arrows) [tests 4, 14, 15]
+  - [ ] 02-09-PLAN.md — Gap closure: 'Phrase Dur' → 'Beat' rename + iOS text-selection + iPhone landscape [tests 10, 19]
 **UI hint**: yes
 
 ## Progress
