@@ -58,6 +58,8 @@ class TickSourceImpl {
     this.inputId = id;
     if (this.mode === 'external') {
       this.detachInputListener();
+      // New input device = genuinely fresh bar frame (attach no longer resets).
+      this.resetExternalTick();
       this.attachInputListener();
     }
   }
@@ -119,8 +121,12 @@ class TickSourceImpl {
     // and a later engine subscribe() re-enters via activate() — detach first so
     // listeners never double-bind (each event must fire subscribers exactly once).
     this.detachInputListener();
-    // (Re)attaching means a fresh Ext session — count the OP-1's bar frame from 0.
-    this.resetExternalTick();
+    // NOTE: do NOT resetExternalTick() here. attachInputListener runs on every engine
+    // subscribe (activate() when listeners.size hits 1), so resetting here zeroed the
+    // OP-1's bar frame on every pad-press — the arm read getExternalTick()===0 and fired
+    // instantly instead of waiting for the downbeat (UAT re-verify test 5). The bar frame
+    // is anchored where it belongs: setMode (clean base on flip), setInputId (new device),
+    // and host.onTransport on Start/Continue (the OP-1 telling us where the bar is).
     const onClock = (): void => this.emitTick();
     const onStart = (): void => this.emitTransport('start');
     const onStop = (): void => this.emitTransport('stop');
