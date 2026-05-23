@@ -2,10 +2,12 @@
 phase: 02-post-prototype-polish-uat-acceptance
 scope: gap-closure (plans 02-06..02-09 only; 02-01..02-05 verified + shipped earlier)
 verified: 2026-05-20T19:44:34Z
-status: human_needed
-verdict: PASS-PENDING-MANUAL-UAT
-score: 12/12 code-side must-haves verified
+human_verified: 2026-05-23
+status: verified
+verdict: PASS
+score: 12/12 code-side must-haves verified + 11/11 hardware/touch UAT passed
 overrides_applied: 0
+manual_uat_result: "PASS — UAT re-verify 11/11 on hardware (OP-1 over USB MIDI + iPad/iPhone) on 2026-05-23; all 9 human_verification items below confirmed. Closes the human-verification list; verdict upgraded PASS-PENDING-MANUAL-UAT → PASS."
 gates:
   just_check: "PASS — 207 files, 0 errors, 0 warnings"
   just_test: "PASS — 45/45 (incl. 3 new tickSource Int-leak + ticksUntilDownbeatFrom bar-alignment)"
@@ -43,8 +45,9 @@ human_verification:
 
 **Phase Goal (gap-closure subset):** Close the four UAT-surfaced gap clusters in code — Ext-clock transport sync (tests 11, 16), state-cleanup-on-disruption (tests 6, 16, 20), pad release-edge race + keyboard preventDefault (tests 4, 14, 15), and the 'Beat' rename + iOS/landscape polish (tests 10, 19) — leaving only hardware/touch acceptance for the UAT re-run.
 **Verified:** 2026-05-20T19:44:34Z
-**Verdict:** PASS-PENDING-MANUAL-UAT
+**Verdict:** PASS _(upgraded from PASS-PENDING-MANUAL-UAT)_
 **Re-verification:** No — initial verification of the gap-closure run.
+**Manual UAT closed:** 2026-05-23 — UAT re-verify ran **11/11 PASS** on hardware (OP-1 over USB MIDI + iPad/iPhone in Web MIDI Browser). All 9 `human_verification` items below confirmed. Code-side PASS + hardware/touch PASS ⇒ full PASS.
 
 ## Verdict Rationale
 
@@ -149,9 +152,9 @@ No `console.log`, `J6DBG`, `FIXME`, `XXX`, `TBD`, `TODO`, `HACK`, or `PLACEHOLDE
 - **ROADMAP plan checkboxes:** 02-06..02-09 are still shown unchecked (`[ ]`) in ROADMAP.md line 50-53 and STATE.md reports `completed_plans: 5`. Bookkeeping lag — the work is committed and verified. Orchestrator/`/gsd:progress` should update these on close.
 - **`emitTick` increments `externalTick` before notifying listeners** (`tickSource.ts:155-162`), so an engine reading `getExternalTick()` inside a clock callback sees the post-increment value. The engines only read it once at `start()` (before subscribing on the same tick), so the off-by-one does not affect first-fire alignment. Worth a hardware confirm during UAT 11 (already in the manual list).
 
-## Human Verification Required (PENDING MANUAL UAT)
+## Human Verification — CLOSED (UAT 11/11 PASS, 2026-05-23)
 
-All items below are **code-complete and awaiting hardware/touch sign-off** — distinct from incomplete work. See the `human_verification` frontmatter for the structured checklist. Summary:
+✅ **All items below were confirmed on hardware/touch during the UAT re-verify on 2026-05-23 (11/11 PASS).** They are retained for the record; none remain open. See the `human_verification` frontmatter for the structured checklist. Summary:
 
 1. **UAT 11 / 16 (Ext downbeat alignment)** — OP-1 over MIDI: note-ons land on the downbeat (offset approx 0, not +278ms).
 2. **UAT 16 step 4 (TRANSPORT-IN)** — OP-1 Play logs `TRANSPORT-IN continue` and arms engines.

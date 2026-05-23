@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Browser app that turns J-6-style chord pads into MIDI — primarily for the Teenage Engineering OP-1 (incl. OP-1 field over Bluetooth MIDI). Solo tool for Flo. Click (or keyboard-press) a chord pad → MIDI flows out to the OP-1 → the OP-1 plays. Goal: reproduce the Roland J-6 chord-pad experience in any (Web-MIDI-capable) browser, extensible toward a Phase 3 sequencer.
+Browser app that turns J-6-style chord pads into MIDI — primarily for the Teenage Engineering OP-1 (incl. OP-1 field over Bluetooth MIDI). Solo tool for Flo. Click (or keyboard-press) a chord pad → MIDI flows out to the OP-1 → the OP-1 plays. Goal: reproduce the Roland J-6 chord-pad experience in any (Web-MIDI-capable) browser, extensible toward a v2 sequencer.
 
 ## Core Value
 
@@ -14,51 +14,59 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 
 ### Validated
 
-<!-- Shipped + verified informally on hardware. UAT walkthrough still gates formal Phase 1 sign-off. -->
+<!-- All 31 v1 requirements shipped + signed off by the UAT walkthrough (11/11 PASS on hardware, 2026-05-23). -->
 
-- ✓ **REQ-data-chord-banks** — Phase 1 (shipped, voicing audit open in Phase 2)
-- ✓ **REQ-data-phrases** — Phase 1
-- ✓ **REQ-midi-output** — Phase 1
-- ✓ **REQ-midi-input** — Phase 1
-- ✓ **REQ-chord-pad-ui** — Phase 1
-- ✓ **REQ-top-bar-layout** — Phase 1
-- ✓ **REQ-bank-navigation** — Phase 1
-- ✓ **REQ-transpose** — Phase 1
-- ✓ **REQ-arpeggiator** — Phase 1
-- ✓ **REQ-phrase-duration** — Phase 1
-- ✓ **REQ-rhythm-gate** — Phase 1 (gate-slider flagged suspect, retest in UAT)
-- ✓ **REQ-clock** — Phase 1
-- ✓ **REQ-bpm** — Phase 1
-- ✓ **REQ-latch** — Phase 1
-- ✓ **REQ-style-selector** — Phase 1
-- ✓ **REQ-hold-engine** — Phase 1
-- ✓ **REQ-keyboard-shortcuts** — Phase 1
-- ✓ **REQ-op-1-end-to-end** — Phase 1 (M8 hands-on)
-- ✓ **REQ-clock-receive** — Phase 2 (done)
-- ✓ **REQ-deploy-cloudflare-dev** — Phase 2 (done)
-- ✓ **REQ-deploy-k8s-always-on** — Phase 2 (done)
-- ✓ **REQ-lan-exposure** — Phase 2 (done)
-- ✓ **REQ-ipad-web-midi-browser** — Phase 2 (done)
+**Phase 1 — Prototype (v1.0):**
 
-> Note: "Validated" here = shipped + author-tested. **Formal validation happens at UAT walkthrough (REQ-uat-walkthrough), which gates Phase 2 close and retroactively signs off Phase 1.**
+- ✓ **REQ-data-chord-banks** — v1.0 (voicing audit closed in Phase 2)
+- ✓ **REQ-data-phrases** — v1.0
+- ✓ **REQ-midi-output** — v1.0
+- ✓ **REQ-midi-input** — v1.0
+- ✓ **REQ-chord-pad-ui** — v1.0
+- ✓ **REQ-top-bar-layout** — v1.0
+- ✓ **REQ-bank-navigation** — v1.0
+- ✓ **REQ-transpose** — v1.0
+- ✓ **REQ-arpeggiator** — v1.0
+- ✓ **REQ-phrase-duration** — v1.0
+- ✓ **REQ-rhythm-gate** — v1.0
+- ✓ **REQ-clock** — v1.0
+- ✓ **REQ-bpm** — v1.0
+- ✓ **REQ-latch** — v1.0
+- ✓ **REQ-style-selector** — v1.0
+- ✓ **REQ-hold-engine** — v1.0
+- ✓ **REQ-keyboard-shortcuts** — v1.0
+- ✓ **REQ-op-1-end-to-end** — v1.0 (M8 hands-on + UAT)
+
+**Phase 2 — Polish + acceptance (v1.0):**
+
+- ✓ **REQ-clock-receive** — v1.0
+- ✓ **REQ-clock-send-transport-sync** — v1.0 (24 PPQ out + Start/Stop/Continue/Record both ways; downbeat-aligned, double-trigger guarded)
+- ✓ **REQ-rhythm-phase-alignment-ext-clock** — v1.0 (first step anchors to next bar downbeat under Ext clock)
+- ✓ **REQ-gate-slider** — v1.0 (UAT-confirmed audibly distinguishable; suspect flag cleared)
+- ✓ **REQ-voicing-second-pass-audit** — v1.0 (~30% inferred slots tightened against manual/hardware)
+- ✓ **REQ-ipad-polish** — v1.0 (app-wide `user-select:none`, touch ergonomics, iPhone landscape reachability)
+- ✓ **REQ-ipad-web-midi-browser** — v1.0
+- ✓ **REQ-edge-cases** — v1.0 (single clear-all/panic path; hot-plug + reload + style-swap)
+- ✓ **REQ-user-manual** — v1.0 (MANUAL.md at repo root, consumer-product voice)
+- ✓ **REQ-uat-walkthrough** — v1.0 (11/11 PASS on hardware, 2026-05-23 — the v1 acceptance gate)
+- ✓ **REQ-deploy-cloudflare-dev** — v1.0
+- ✓ **REQ-deploy-k8s-always-on** — v1.0
+- ✓ **REQ-lan-exposure** — v1.0
 
 ### Active
 
-<!-- Current scope. Phase 2 close + Phase 3 placeholder. -->
+<!-- v2 scope. Refined via /gsd:new-milestone. -->
 
-- [ ] **REQ-gate-slider** — verify gate-length is audibly distinguishable (Phase 2 / UAT)
-- [ ] **REQ-rhythm-phase-alignment-ext-clock** — bug fix: anchor first step to next tick-mod-24 (Phase 2)
-- [ ] **REQ-clock-send-transport-sync** — 24 PPQ out + Start/Stop/Continue/Record both ways (Phase 2)
-- [ ] **REQ-voicing-second-pass-audit** — tighten ~30% inferred chord slots (Phase 2)
-- [ ] **REQ-ipad-polish** — `user-select: none` on TopBar + touch ergonomics re-review (Phase 2)
-- [ ] **REQ-uat-walkthrough** — run `.research/UAT.md` end-to-end via `uat-agent` skill (Phase 2 gate — closes v1)
-- [ ] **REQ-edge-cases** — hot-plug + refresh + style-swap regressions (verified during UAT)
+- [ ] **Sequencer** (v2 Phase 1) — step sequencer driving chord-pad presses on a grid; pattern chaining; basic song mode. Must slot into the existing 24 PPQ TickSource + `engines/host.ts` without violating DEC-engines-time-source-agnostic or DEC-engine-orchestrator.
+- [ ] **Host-owned play/latch single source of truth** (v2, architecture) — host owns play/latch truth; UI is a pure projection. Kills the dual-store desync class behind the v1 UAT bugs. (See `.planning/todos/`.)
+- [ ] **Transport-reset / record-sync** (v2, engines) — wire OP-1 Start/Continue to reset a running engine to step 0 so manual record-start syncs to the take. `armedPosition` resume hook already stubbed in `host.ts`.
 
 ### Out of Scope
 
 <!-- Explicit, with reasoning. Captured from REQ-out-of-scope-prototype + project conventions. -->
 
-- **Sequencer** — deferred to milestone **v2** (post-UAT). Run `/gsd:new-milestone` once Phase 2 UAT passes; sequencer becomes Phase 1 of v2. Likely scope: step sequencer driving chord-pad presses on a grid, pattern chaining, basic song mode. Must respect DEC-engines-time-source-agnostic + DEC-engine-orchestrator.
+<!-- Sequencer promoted to Active for v2 after the v1.0 UAT pass — see Active above. -->
+
 - **Style 6–9 phrases** — Roland publishes no note data; reverse-engineering or hand-rolling is high-cost / low-confidence. May revisit in v2 if sequencer needs them.
 - **Velocity control** — prototype intentionally fixed-velocity; adds complexity without changing the core loop.
 - **Persistence (last bank / BPM / port / latch)** — deferred to Phase 3+; current "load with defaults" is fine for a solo tool.
@@ -71,17 +79,14 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 
 ## Context
 
+- **Shipped v1.0** (2026-05-23) — ~2,133 LOC TS/Svelte, 45/45 unit tests green, **UAT 11/11 PASS on hardware**. v1 = full J-6 chord-pad → OP-1 loop + 6 styles + latch + keyboard + bidirectional transport sync.
 - **Solo developer + Claude.** No team, no stakeholders, no sprints. Flo is the visionary + product owner; Claude is the implementer.
 - **Hardware target.** Teenage Engineering OP-1 (class-compliant USB MIDI) and OP-1 field (Bluetooth MIDI). Other MIDI synths work as a bonus.
-- **Phase 1 already shipped + hardware-verified informally** — formal UAT walkthrough (Phase 2 deliverable) is the gate that retroactively signs Phase 1 off.
-- **Already deployed.**
+- **Deployed.**
   - `https://jay-6.kempenich.dev` — `just serve` (local Mac, dev tunnel — use when OP-1 is plugged into the Mac).
   - `https://jay-6.kempenich.ai` — always-on K8s cluster behind a cluster-wide Cloudflare Tunnel.
-- **Known open bugs (Phase 2 scope).**
-  - Rhythm-engine first step fires immediately under external clock → off-beat.
-  - `subscribeTransport` plumbing exists in `tickSource.ts` but nothing wires it → OP-1 Start/Stop/Continue is silently dropped.
-  - No 24 PPQ clock send despite infrastructure being there.
-  - ~30% of `banks.data.json` slots are inferred from a divergent two-extraction diff.
+- **v1 bugs closed.** All Phase 2 open bugs resolved + verified: Ext-clock first-step downbeat alignment, OP-1 Start/Stop/Continue wired, 24 PPQ clock send, voicing audit (~30% inferred slots tightened).
+- **Carried into v2** (captured as todos): host-owned play/latch single source of truth (fragile latch state machine), transport-reset record-sync, variation-change toast, visual-design pass.
 - **Codebase intel.** Full audit at `.planning/codebase/` (ARCHITECTURE / STACK / STRUCTURE / TESTING / CONVENTIONS / CONCERNS / INTEGRATIONS).
 
 ## Constraints
@@ -106,13 +111,13 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 |----------|-----------|---------|
 | **DEC-tick-source-24-ppq** — Single 24 PPQ TickSource (internal `setInterval` OR external MIDI clock); engines subscribe | Decouples timing from engines; one knob switches Int↔Ext clock | ✓ Good |
 | **DEC-engines-time-source-agnostic** — Engines count ticks, never call `Date.now()` / `setInterval` | Engines are testable + clock-source-portable | ✓ Good |
-| **DEC-engine-orchestrator** — `engines/host.ts` routes pad press; applies latch + transpose at the boundary | Engines don't know what a pad is; latch state has one home | ⚠️ Revisit — fragile latch state machine (see `.planning/codebase/CONCERNS.md`) |
+| **DEC-engine-orchestrator** — `engines/host.ts` routes pad press; applies latch + transpose at the boundary | Engines don't know what a pad is; latch state has one home | ⚠️ Revisit in v2 — fragile latch state machine drove several v1 UAT bugs; v2 todo: host-owned play/latch SSOT (see `.planning/codebase/CONCERNS.md`) |
 | **DEC-state-location** — UI state in `state.svelte.ts` (`$state` runes); `App.svelte` bridges via `$effect` | Reactive state + imperative engines stay cleanly separated | ✓ Good |
-| **DEC-banks-data-json-canonical** — `src/banks.data.json` is the verified Roland extraction; never hand-edit | Single source of truth; voicing fixes are JSON-only | ⚠️ Revisit — Phase 2 voicing audit will rewrite ~30% of slots |
+| **DEC-banks-data-json-canonical** — `src/banks.data.json` is the verified Roland extraction; never hand-edit | Single source of truth; voicing fixes are JSON-only | ✓ Good — v1 voicing audit tightened the ~30% inferred slots; JSON-only fix held |
 | **DEC-no-premature-features** — No Web Audio scheduler, no velocity, no persistence, no presets until Phase 3+ | Keeps prototype small + the surface area honest | ✓ Good |
 | **DEC-web-midi-locality** — OP-1 must be on same machine as browser; cannot proxy MIDI over the tunnel | Hard Web-MIDI constraint; drives `just serve` (local) vs `kempenich.ai` (always-on but no MIDI) split | ✓ Good |
 | **DEC-deploy-cloudflare-tunnel + K8s** — `jay-6.kempenich.dev` for local dev tunnel, `jay-6.kempenich.ai` for always-on cluster | Secure context for Web MIDI on iPad + always-on URL for any-browser browsing | ✓ Good |
 | **DEC-browser-target-chrome-edge** — Desktop Chrome/Edge only; iPad via "Web MIDI Browser" app | Only browsers with Web MIDI; iPad workaround is documented | ✓ Good |
 
 ---
-*Last updated: 2026-05-18 — initial bootstrap from existing prototype + Phase 2 in-progress state.*
+*Last updated: 2026-05-23 after v1.0 milestone — all 31 v1 requirements validated (UAT 11/11). Next: v2 sequencer via `/gsd:new-milestone`.*

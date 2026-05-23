@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-status: phase-complete
-stopped_at: Phase 02 UAT signed off (02-UAT-REVERIFY 11/11 pass); v1 milestone complete
-last_updated: "2026-05-23T18:25:56.994Z"
-last_activity: 2026-05-23 -- Phase 02 UAT re-verify 11/11 PASS on hardware; 6 follow-on bugs fixed; UAT signed off
+milestone_name: MVP
+status: Awaiting next milestone
+stopped_at: v1.0 milestone archived (Phases 1–2 complete; UAT 11/11 PASS); awaiting /gsd:new-milestone for v2
+last_updated: "2026-05-23T18:54:38.742Z"
+last_activity: 2026-05-23 — Milestone v1.0 completed and archived
 progress:
   total_phases: 2
   completed_phases: 2
@@ -18,20 +18,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-18)
+See: .planning/PROJECT.md (updated 2026-05-23 after v1.0)
 
 **Core value:** Drive the OP-1 (USB or BT) with the J-6's chord library + playback styles from a browser, without owning the J-6 hardware.
-**Current focus:** Phase 02 — post-prototype-polish-uat-acceptance
+**Current focus:** Planning v2 (sequencer) — run `/gsd:new-milestone`.
 
 ## Current Position
 
-Milestone: v1 (Prototype → UAT acceptance) — ✅ COMPLETE
-Phase: 02 (post-prototype-polish-uat-acceptance) — ✅ SIGNED OFF
-Plan: 9 of 9 (gap-closure complete; UAT re-verify 11/11 pass on hardware)
-Status: Phase 02 UAT signed off — v1 milestone complete. Next: /gsd:new-milestone for v2 sequencer.
-Last activity: 2026-05-23 -- UAT re-verify 11/11 PASS; 6 follow-on bugs fixed; signed off
-
-Progress: [██████████] 100%
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-05-23 — Milestone v1.0 completed and archived
 
 ## Performance Metrics
 
@@ -111,9 +108,18 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 | Backlog | Persist bank / BPM / port | Out of Scope (Phase 3+) | 2026-05-18 |
 | Backlog | Save/recall presets | Out of Scope (Phase 3+) | 2026-05-18 |
 | Tech debt | Web Audio scheduler (replace `setInterval`) | Out of Scope until drift is a real-use problem | 2026-05-18 |
+| Todo (ui) | Iterate Jay-6 visual design via Claude Design | Deferred — out-of-phase polish | 2026-05-23 (v1.0 close) |
+| Todo (architecture, v2) | Host-owned play/latch single source of truth | Deferred to v2 — kills dual-store desync class | 2026-05-23 (v1.0 close) |
+| Todo (engines, v2) | Transport-reset / record-sync for OP-1 Start/Continue | Deferred to v2 — `armedPosition` hook stubbed | 2026-05-23 (v1.0 close) |
+| Todo (ui, polish) | "Variation change applies on next hit" toast | Deferred — UX polish (UAT Test 4) | 2026-05-23 (v1.0 close) |
+| Todo (general, v2+) | Per-bank chord-progression authoring system | Deferred to v2+ — mechanism design | 2026-05-23 (v1.0 close) |
 
 ## Session Continuity
 
 Last session: 2026-05-18T21:00:18.291Z
 Stopped at: Completed 02-04-PLAN.md
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
