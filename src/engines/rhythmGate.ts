@@ -48,6 +48,15 @@ export class RhythmGateEngine implements Engine {
     this.tickCount = 0;
     this.unsubscribe = tickSource.subscribe(() => this.onTick());
     if (notes.length === 0) return;
+    // Ext-clock arm trace — console.debug stays out of the default console (Verbose only),
+    // matching the TRANSPORT-IN convention. Keep for ongoing transport-sync observability.
+    {
+      const m = tickSource.getMode();
+      const et = tickSource.getExternalTick();
+      // mode: clock source · externalTick: OP-1 bar position at press · wait: ticks until
+      // the OP-1 downbeat the first step arms to (0 = fire now; 'int-path' = no Ext arm).
+      console.debug('[ARM] ext-clock downbeat arm —', { mode: m, externalTick: et, wait: m === 'external' ? ticksUntilDownbeatFrom(et) : 'int-path' });
+    }
     // Arm against OP-1's ABSOLUTE bar, not a local beat counted from pad-press:
     // wait = ticks from the OP-1's current position to its next bar downbeat
     // (fixes the measured +278ms off-grid, UAT tests 11 + 16). wait===0 means
