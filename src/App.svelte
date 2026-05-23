@@ -112,40 +112,45 @@
   const downKeys = new Set<string>();
 
   function onKeyDown(ev: KeyboardEvent): void {
-    if (ev.repeat) return;
     // Don't steal input from form elements (BPM number input, dropdowns).
     const t = ev.target as HTMLElement | null;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) {
       return;
     }
     const k = ev.key.toLowerCase();
+    const isAppKey =
+      k in KEY_TO_PAD ||
+      k === 'z' || k === 'x' ||
+      ev.key === 'ArrowLeft' || ev.key === 'ArrowRight' ||
+      ev.key === 'ArrowUp' || ev.key === 'ArrowDown' ||
+      ev.key === ' ' || k === 'spacebar' ||
+      (k >= '1' && k <= '6');
+    // preventDefault must run on key-repeat too — otherwise HOLDING a scroll-default key
+    // (↑/↓/Space) lets the browser scroll the page (UAT re-verify test 7). The repeat-guard
+    // below only dedups the ACTION (note retrigger / bank step), never the scroll-suppression.
+    if (isAppKey) ev.preventDefault();
+    if (ev.repeat) return;
     if (k in KEY_TO_PAD) {
       const padKey = KEY_TO_PAD[k]!;
       const c = getBank(ui.bankIndex).chords.find((c) => c.key === padKey);
       if (!c) return;
       downKeys.add(k);
       press(padKey, c.notes);
-      ev.preventDefault();
       return;
     }
-    if (k === 'z') { bumpTranspose(-1); ev.preventDefault(); return; }
-    if (k === 'x') { bumpTranspose(1);  ev.preventDefault(); return; }
-    if (ev.key === 'ArrowLeft')  { setBank(ui.bankIndex - 1); ev.preventDefault(); return; }
-    if (ev.key === 'ArrowRight') { setBank(ui.bankIndex + 1); ev.preventDefault(); return; }
+    if (k === 'z') { bumpTranspose(-1); return; }
+    if (k === 'x') { bumpTranspose(1);  return; }
+    if (ev.key === 'ArrowLeft')  { setBank(ui.bankIndex - 1); return; }
+    if (ev.key === 'ArrowRight') { setBank(ui.bankIndex + 1); return; }
     // ↑/↓ are unbound but still scroll the page (browser default on a focusable body).
-    // Swallow them so the app never scrolls under the player (UAT test 15). Not wired to
-    // variation-cycling here — that's a Polish Backlog idea, out of scope for gap closure.
-    if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') { ev.preventDefault(); return; }
-    if (ev.key === ' ' || k === 'spacebar') {
-      toggleLatch();
-      ev.preventDefault();
-      return;
-    }
+    // Swallowed above so the app never scrolls under the player (UAT test 15). Not wired to
+    // variation-cycling — that's a Polish Backlog idea, out of scope for gap closure.
+    if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') return;
+    if (ev.key === ' ' || k === 'spacebar') { toggleLatch(); return; }
     // Cycle style: number keys 1-6
     if (k >= '1' && k <= '6') {
       const map = ['hold', 'arp1', 'arp2', 'phraseDur', 'rhythm4', 'rhythm5'] as const;
       setStyle(map[Number(k) - 1]!);
-      ev.preventDefault();
     }
   }
 
