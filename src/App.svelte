@@ -6,6 +6,7 @@
   import { getBank, type Key } from './banks';
   import { subscribeMidi } from './midi';
   import { tickSource } from './tickSource';
+  import { BUILD_ID } from 'virtual:build-id';
   import {
     ui,
     setStyle,
@@ -191,6 +192,7 @@
       host.panic();
     };
   });
+
 </script>
 
 <main>
@@ -202,6 +204,9 @@
       <code>Z / X</code> = transpose · <code>← / →</code> = bank ·
       <code>Space</code> = latch · <code>1–6</code> = style
     </p>
+    {#if import.meta.env.DEV}
+      <p class="dev-tag">dev build {BUILD_ID}</p>
+    {/if}
   </footer>
 </main>
 
@@ -236,6 +241,13 @@
     border-radius: 3px;
     margin: 0 0.05rem;
     font-size: 0.78rem;
+  }
+  .dev-tag {
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: #4a4a4a;
+    font-variant-numeric: tabular-nums;
   }
 
   /* D-08: iPad body scroll lock — prevents iOS rubber-band scroll / address-bar
