@@ -91,15 +91,22 @@
     const next = new Set(heldKeys);
     next.delete(key);
     heldKeys = next;
+    // Mirror host.padReleased: it keeps sounding when latch is LIVE-on at release time
+    // (host.ts), regardless of latch state at press time. The visual must use the same
+    // live rule, else enabling latch mid-hold leaves latchedKey null → highlight clears
+    // while the note keeps sounding (UAT re-verify test 6, second desync).
+    if (ui.latch) latchedKey = key;
   }
 
-  // Clear highlights when latch is turned off. Always drop the latched pad; also clear
-  // the held-pad highlights when nothing is physically down — latch-off while a rhythm
-  // gate sustains must leave no yellow pads lit (UAT test 16, manifestation 1).
+  // Clear the latched pad when latch is turned off. Do NOT touch heldKeys: it already
+  // tracks only physically-held pads (press adds, release removes), so a pad still held
+  // (mouse OR keyboard) stays lit AND sounding, while a latched-then-released pad has an
+  // empty heldKeys and goes dark via latchedKey=null. The old `downKeys.size === 0` guard
+  // was keyboard-only — it wiped the highlight of a MOUSE-held pad while the note kept
+  // sounding (visual/audio desync, UAT re-verify test 6 bonus).
   $effect(() => {
     if (!ui.latch) {
       latchedKey = null;
-      if (downKeys.size === 0) heldKeys = new Set();
     }
   });
 
