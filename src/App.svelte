@@ -4,7 +4,7 @@
   import PianoLayout from './components/PianoLayout.svelte';
   import { EngineHost } from './engines/host';
   import { getBank, type Key } from './banks';
-  import { subscribeMidi } from './midi';
+  import { subscribeMidi, getMidiState } from './midi';
   import { tickSource } from './tickSource';
   import { BUILD_ID } from 'virtual:build-id';
   import {
@@ -46,8 +46,9 @@
   // midi.ts:refreshPorts already nulls selectedInputId when the device disconnects;
   // the clockSource change rides the mode-switch $effect, which panics (clears audio
   // + highlights) too.
-  onMount(() =>
-    subscribeMidi((s) => {
+  onMount(() => {
+    let prevOutputId = getMidiState().selectedOutputId;
+    return subscribeMidi((s) => {
       tickSource.setInputId(s.selectedInputId);
       const inputGone =
         s.selectedInputId === null ||
@@ -55,8 +56,16 @@
       if (ui.clockSource === 'external' && inputGone) {
         setClockSource('internal');
       }
-    }),
-  );
+      // The output we were playing vanished (e.g. OP-1 unplugged): clear stuck audio +
+      // highlight. Ext mode already panics via the clock fallback above; this covers Int
+      // mode, where an output disconnect fires no mode switch so the pad stayed lit (UAT
+      // re-verify test 10).
+      const outputGone =
+        prevOutputId !== null && !s.outputs.find((o) => o.id === prevOutputId);
+      if (outputGone) host.panic();
+      prevOutputId = s.selectedOutputId;
+    });
+  });
 
   // D-04: forward inbound transport to host; host decides arm vs resume vs stop,
   // with D-05 double-trigger guard inside onTransport().
