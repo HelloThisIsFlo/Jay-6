@@ -64,6 +64,14 @@ function refreshPorts(): void {
   notify();
 }
 
+// On (re)connect, clear any note left hung on a device that disconnected mid-sound:
+// note-offs at disconnect couldn't reach the already-gone port (UAT re-verify test 10),
+// so the device kept ringing. Silence the selected output the moment a port reappears.
+function onConnected(): void {
+  refreshPorts();
+  allNotesOff();
+}
+
 export async function initMidi(): Promise<void> {
   if (state.status === 'ready' || state.status === 'requesting') return;
   if (typeof navigator === 'undefined' || !('requestMIDIAccess' in navigator)) {
@@ -79,7 +87,7 @@ export async function initMidi(): Promise<void> {
     await WebMidi.enable();
     state.status = 'ready';
     refreshPorts();
-    WebMidi.addListener('connected', refreshPorts);
+    WebMidi.addListener('connected', onConnected);
     WebMidi.addListener('disconnected', refreshPorts);
   } catch (err) {
     state.status = err instanceof Error && /denied|permission/i.test(err.message) ? 'denied' : 'error';
