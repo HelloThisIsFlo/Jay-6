@@ -85,6 +85,10 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 (`/gsd:capture --list` to browse + action.)
 
 - **Iterate on Jay-6 visual design via Claude Design** (area: ui) — black-key contrast, typography scale collapse, spacing off-grid token, TopBar layout, J-6 hardware-evocative palette. Out-of-phase workflow per Flo's call. See `.planning/todos/pending/2026-05-18-iterate-on-jay-6-visual-design-via-claude-design.md`.
+- **Host-owned single source of truth for play/latch state** (area: architecture, v2) — host owns play/latch truth; UI is a pure projection, never re-derives it; transitions unit-tested. Kills the dual-store desync class behind the 4+ UAT bugs. Intent-level — Svelte mechanism decided at phase time.
+- **Transport-reset / record-sync for OP-1 Start/Continue** (area: engines, v2) — wire OP-1 transport to reset running engine to step 0 so manual record-start syncs arp/pattern to the take. `armedPosition` resume hook stubbed in host.ts (02-06), no consumer yet.
+- **"Variation change applies on next hit" toast** (area: ui, polish) — show a brief bottom toast when a variation change is queued >~0.5s out (slow patterns like Beat V01), so the change reads as registered. UAT Test 4.
+- **Per-bank common chord-progression authoring system** (area: general, v2+) — design a system to author progressions in markdown/YAML (agent-editable) + render them as progression bars per bank. Content authored later; this is the mechanism.
 
 ### Blockers/Concerns
 
