@@ -105,8 +105,8 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 |----------|------|--------|-------------|
 | Backlog | M9 Style 6–9 phrases (no Roland data) | Out of Scope (see PROJECT.md) | 2026-05-18 |
 | Backlog | Velocity control | Out of Scope | 2026-05-18 |
-| Backlog | Persist bank / BPM / port | Out of Scope (Phase 3+) | 2026-05-18 |
-| Backlog | Save/recall presets | Out of Scope (Phase 3+) | 2026-05-18 |
+| Backlog | Persist bank / BPM / port | Out of Scope (future milestone) | 2026-05-18 |
+| Backlog | Save/recall presets | Out of Scope (future milestone) | 2026-05-18 |
 | Tech debt | Web Audio scheduler (replace `setInterval`) | Out of Scope until drift is a real-use problem | 2026-05-18 |
 | Todo (ui) | Iterate Jay-6 visual design via Claude Design | Deferred — out-of-phase polish | 2026-05-23 (v1.0 close) |
 | Todo (architecture, v2) | Host-owned play/latch single source of truth | Deferred to v2 — kills dual-store desync class | 2026-05-23 (v1.0 close) |
