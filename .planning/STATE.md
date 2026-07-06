@@ -2,16 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: MVP
-status: Awaiting next milestone
-stopped_at: v1.0 milestone archived (Phases 1–2 complete; UAT 11/11 PASS); awaiting /gsd:new-milestone for v2
-last_updated: "2026-05-23T18:54:38.742Z"
-last_activity: 2026-05-23 — Milestone v1.0 completed and archived
+current_phase: "02.1"
+status: Phase 02.1 inserted; ready for planning
+stopped_at: Phase 02.1 Visual redesign adoption inserted after archived v1.0 and before v2 sequencer scope
+last_updated: "2026-07-06T12:34:57.812Z"
+last_activity: 2026-07-06
+last_activity_desc: Phase 02.1 Visual redesign adoption inserted
 progress:
-  total_phases: 2
+  total_phases: 3
   completed_phases: 2
   total_plans: 9
   completed_plans: 9
-  percent: 100
+  percent: 67
 ---
 
 # Project State
@@ -21,14 +23,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-23 after v1.0)
 
 **Core value:** Drive the OP-1 (USB or BT) with the J-6's chord library + playback styles from a browser, without owning the J-6 hardware.
-**Current focus:** Planning v2 (sequencer) — run `/gsd:new-milestone`.
+**Current focus:** Planning Phase 02.1 visual redesign adoption before v2 sequencer scope.
 
 ## Current Position
 
-Phase: Milestone v1.0 complete
+Phase: 02.1 Visual redesign adoption
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-05-23 — Milestone v1.0 completed and archived
+Status: Inserted; ready for planning
+Last activity: 2026-07-06 — Phase 02.1 Visual redesign adoption inserted
 
 ## Performance Metrics
 
@@ -97,6 +99,10 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 - **REQ-gate-slider flagged suspect** — retest during UAT to distinguish code bug from OP-1 envelope masking (MIDI monitor evidence in `.research/UAT.md` §12).
 - **Latch state machine fragile** — four parallel booleans across host + App.svelte with zero unit-test coverage. Any latch refactor must trace all paths through `padPressed` / `padReleased` / `setLatch` / `panic`. (`.planning/codebase/CONCERNS.md`.)
 
+### Roadmap Evolution
+
+- Phase 02.1 inserted after Phase 2: Visual redesign adoption (URGENT)
+
 ## Deferred Items
 
 Items acknowledged + tracked elsewhere; not blocking Phase 2.
@@ -122,4 +128,4 @@ Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Run `$gsd-spec-phase 02.1` to scope visual redesign adoption before v2 sequencer work.

@@ -19,8 +19,9 @@ Full detail: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROADMAP.md) · requi
 
 ### 📋 v2 Sequencer (Planned)
 
-Run `/gsd:new-milestone` to scope. Candidate Phase 3:
+Inserted pre-sequencer work, then candidate Phase 3:
 
+- [ ] **Phase 02.1: Visual redesign adoption** (INSERTED) — adopt the committed sketch findings before sequencer scope; visual refresh only, no sequencer behavior.
 - [ ] **Phase 3: Sequencer** — step sequencer on a grid driving chord-pad presses; pattern chaining; basic song mode. Must slot into the existing 24 PPQ TickSource + `engines/host.ts` without violating DEC-engines-time-source-agnostic / DEC-engine-orchestrator.
 
 Carried-in v2 todos (see `.planning/todos/`): host-owned play/latch SSOT, transport-reset record-sync, variation-change toast, visual-design pass.
@@ -31,4 +32,5 @@ Carried-in v2 todos (see `.planning/todos/`): host-owned play/latch SSOT, transp
 |-------|-----------|----------------|--------|-----------|
 | 1. Prototype (M1–M8 + keyboard) | v1.0 | N/A — retrospective | Shipped | 2026-05-18 (code) |
 | 2. Post-prototype polish + UAT acceptance | v1.0 | 9/9 | Complete | 2026-05-23 |
+| 02.1 Visual redesign adoption | pre-v2 | 0/TBD | Not planned | — |
 | 3. Sequencer | v2 | 0/TBD | Not started | — |
