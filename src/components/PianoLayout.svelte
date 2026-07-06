@@ -104,16 +104,24 @@
     display: grid;
     grid-template-columns: repeat(14, minmax(0, 1fr));
     grid-template-rows: 1fr 1.3fr;
-    gap: 0.5rem;
-    padding: 1.5rem;
+    column-gap: var(--space-2);
+    row-gap: var(--space-4);
+    padding: var(--space-6);
     max-width: 1100px;
-    margin: 2rem auto;
+    margin: 0 auto;
     /* D-10 fallback step D: frame dropped to #000 so black keys (#2e2e2e) pop
        against true black. Earlier #181818 frame inverted the visual hierarchy —
        app bg #111 was darker than the frame, making the piano panel feel
        "raised" instead of recessed. */
-    background: #000;
-    border-radius: 12px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 28%),
+      var(--frame);
+    border: 1px solid var(--bg-3);
+    border-radius: var(--radius-lg);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -14px 24px rgba(0, 0, 0, 0.52),
+      0 20px 36px rgba(0, 0, 0, 0.35);
     user-select: none;
     touch-action: none;
   }
@@ -122,14 +130,18 @@
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-start;
-    gap: 0.25rem;
-    padding: 0.75rem 0.6rem;
-    border-radius: 8px;
+    gap: var(--space-1);
+    padding: var(--space-4) var(--space-2) var(--space-2);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    font-family: system-ui, sans-serif;
+    font-family: var(--mono);
     text-align: left;
-    border: 1px solid #333;
-    transition: background-color 60ms, transform 40ms, box-shadow 80ms;
+    border: 1px solid transparent;
+    transition:
+      background-color 60ms,
+      border-color 60ms,
+      transform 40ms,
+      box-shadow 80ms;
     /* .piano has user-select:none but iOS still independently selected the pad's
        text spans on double-tap, and long-press raised the callout menu (UAT test 19).
        Suppress on the button + its text spans + kill the iOS callout. */
@@ -137,7 +149,7 @@
     -webkit-user-select: none;
     -webkit-touch-callout: none;
   }
-  .pad:active { transform: translateY(1px); }
+  .pad:active { transform: translateY(2px); }
   .pad .key,
   .pad .name {
     user-select: none;
@@ -145,23 +157,30 @@
     -webkit-touch-callout: none;
   }
   .pad .key {
-    font-size: 0.7rem;
-    color: #888;
+    font-size: var(--t-eyebrow);
+    font-weight: 600;
+    color: var(--fg-2);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    line-height: 1.2;
   }
   .pad .name {
-    font-size: 1.05rem;
+    font-size: var(--t-readout);
     font-weight: 600;
-    line-height: 1.1;
+    line-height: 1.2;
     word-break: break-word;
   }
   .pad.white {
-    background: #f4f1ea;
-    color: #1a1a1a;
+    background: var(--cream);
+    color: var(--bg-1);
     min-height: 140px;
+    border-color: rgba(255, 255, 255, 0.72);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -12px 18px rgba(96, 78, 54, 0.2),
+      0 7px 0 #c8c0b4,
+      0 14px 20px rgba(0, 0, 0, 0.28);
   }
-  .pad.white .key { color: #888; }
+  .pad.white .key { color: #6f675f; }
   /* D-10 fallback ladder: walked Option B → D (frame to #000 — applied above) after
      desktop eyeball showed Option B alone read muddy: #2e2e2e keys on the original
      #181818 frame gave Δluma ~22 (visible but indistinct), and the 6%-alpha top
@@ -171,17 +190,25 @@
      .planning/phases/02-post-prototype-polish-uat-acceptance/02-UI-SPEC.md §"Fallback
      ladder (executor pivot path)". */
   .pad.black {
-    background: #2e2e2e;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    color: #eee;
+    background: var(--black-key);
+    color: var(--fg-0);
     min-height: 110px;
-    border-color: #2a2a2a;
+    border-color: var(--bg-4);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -12px 18px rgba(0, 0, 0, 0.55),
+      0 7px 0 #161616,
+      0 13px 18px rgba(0, 0, 0, 0.36);
   }
   .pad.held {
-    background: #ff7a1a !important;
-    color: #111 !important;
-    box-shadow: 0 0 24px 4px rgba(255, 122, 26, 0.45);
-    border-color: #ff7a1a;
+    background: var(--accent) !important;
+    color: var(--bg-0) !important;
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.28),
+      inset 0 -10px 18px rgba(80, 34, 0, 0.3),
+      0 0 24px 4px var(--accent-soft),
+      0 7px 0 #9d3e00;
+    border-color: var(--accent);
   }
-  .pad.held .key { color: #1a1a1a !important; }
+  .pad.held .key { color: var(--bg-0) !important; }
 </style>
