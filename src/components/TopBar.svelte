@@ -286,14 +286,41 @@
   .topbar {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(260px, 0.82fr) minmax(0, 2.1fr);
+    /* The performance column's floor must be min-content, not 0: .performance is a
+       nested grid with its own minmax track minimums, and a 0-floor outer track lets
+       the outer grid shrink that cell below what the nested grid actually needs —
+       the nested grid then overflows its own cell (Latch bursting past the topbar's
+       right edge) since the outer grid has no visibility into the inner minimums.
+       setup-zone's floor is 290px (not the old 260px): at 260px the "Internal clock"
+       summary cell truncates to "Internal cl..." (14 mono chars ≈ 118px need 2 columns
+       of ≥120px each within the pill's padding, which needs ≥290px on the outer track). */
+    grid-template-columns: minmax(290px, 0.82fr) minmax(min-content, 2.1fr);
     gap: var(--space-4);
     align-items: start;
+    /* 1370px (border-box, hence box-sizing below) is the measured minimum for the
+       2-col (setup pill | performance row) layout to fit without squeeze:
+       performance's 5 track minimums (220+180+320+140+84 = 944px) + 4×16px gaps
+       (64px) + setup-zone min (290px) + the zone gap (16px) + topbar's own
+       left/right padding+border (34px) = 1348px, plus a small rounding buffer. A
+       tighter cap (e.g. matching .piano's 1100px) reintroduces the squeeze/
+       overflow bug this value was chosen to avoid. */
+    box-sizing: border-box;
+    width: min(100%, 1370px);
+    max-width: 1370px;
+    margin: 0 auto;
     padding: var(--space-4);
     background: var(--bg-1);
     border: 1px solid var(--bg-3);
     border-radius: var(--radius-lg);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+    /* Capping .topbar's own width (above) decouples its available inline size
+       from the viewport, so the reflow breakpoints below must react to that
+       container's real width, not window width — otherwise a wide viewport
+       with a narrow capped topbar never triggers the 2-col reflow and the
+       5-column .performance grid overflows the capped box (Latch bursting
+       past the right edge). */
+    container-type: inline-size;
+    container-name: topbar;
     user-select: none;
     -webkit-user-select: none;
   }
@@ -391,7 +418,13 @@
     display: grid;
     grid-template-columns: minmax(220px, 0.95fr) minmax(180px, 0.85fr) minmax(320px, 1.8fr) minmax(140px, 0.65fr) auto;
     gap: var(--space-4);
-    align-items: end;
+    /* start (not end): the variation-slot is much taller than Bank/Style/Transpose
+       for Arp/Beat/Rhythm Gate styles (a composed multi-row picker vs a single
+       select). end-alignment bottom-anchored the short fields, leaving their
+       labels floating well below the tall picker's label — a staggered,
+       disconnected read. Top-aligning keeps every field's label on one shared
+       line, reading as one coherent row regardless of picker height. */
+    align-items: start;
   }
 
   .field {
@@ -517,7 +550,7 @@
   }
 
   .latch {
-    align-self: end;
+    align-self: start;
     display: grid;
     gap: var(--space-1);
     place-items: center;
@@ -535,15 +568,19 @@
     filter: brightness(1.12);
   }
 
-  /* R5/D-06: below 1120px the topbar stacks to a single column, handing .performance
-     the full row width. The old two-tier split (a squeezed 5-col row from 900-1120px,
-     then a safe 2-col reflow only below 900px) left a "squeeze window" whose summed
-     column minimums (220+180+320+120+auto ≈ 924px + 64px gaps ≈ 988px) exceed the
-     available content width at the mandated iPad-sized 1024px viewport (~930px after
-     main+topbar padding) — clipped by main's `overflow-x: hidden` rather than
-     scrollable. Merging both rules onto the same 1120px breakpoint removes the
-     squeeze window entirely so 1024px always gets the safe 2-col group reflow. */
-  @media (max-width: 1120px) {
+  /* R5/D-06: below 1120px of the topbar's OWN available width, it stacks to a single
+     column, handing .performance the full row width. This is a container query (not
+     a viewport media query) because .topbar now caps its own width at 1370px — on a
+     wide viewport a viewport-based query would never fire even though the capped
+     container is well below the 1120px threshold. The old two-tier split (a squeezed
+     5-col row from 900-1120px, then a safe 2-col reflow only below 900px) left a
+     "squeeze window" whose summed column minimums (220+180+320+120+auto ≈ 924px +
+     64px gaps ≈ 988px) exceed the available content width at the mandated iPad-sized
+     1024px viewport (~930px after main+topbar padding) — clipped by main's
+     `overflow-x: hidden` rather than scrollable. Merging both rules onto the same
+     1120px breakpoint removes the squeeze window entirely so 1024px always gets the
+     safe 2-col group reflow. */
+  @container topbar (max-width: 1120px) {
     .topbar {
       grid-template-columns: 1fr;
     }
@@ -562,7 +599,7 @@
     }
   }
 
-  @media (max-width: 620px) {
+  @container topbar (max-width: 620px) {
     .topbar,
     .setup-popover {
       padding: var(--space-2);
