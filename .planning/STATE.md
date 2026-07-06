@@ -5,16 +5,16 @@ milestone_name: MVP
 current_phase: 02.1
 current_phase_name: visual-redesign-adoption
 status: executing
-stopped_at: Completed 02.1-01-PLAN.md
-last_updated: "2026-07-06T14:49:51.154Z"
+stopped_at: Completed 02.1-02-PLAN.md
+last_updated: "2026-07-06T15:00:09.130Z"
 last_activity: 2026-07-06
-last_activity_desc: Completed 02.1-01 shared redesign tokens and app shell
+last_activity_desc: Completed 02.1-02 TopBar C2 and per-style variation pickers
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
-  percent: 25
+  completed_plans: 2
+  percent: 50
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-05-23 after v1.0)
 ## Current Position
 
 Phase: 02.1 (visual-redesign-adoption) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
-Last activity: 2026-07-06 — Completed 02.1-01 shared redesign tokens and app shell
+Last activity: 2026-07-06 — Completed 02.1-02 TopBar C2 and per-style variation pickers
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Last activity: 2026-07-06 — Completed 02.1-01 shared redesign tokens and app s
 | Phase 02-post-prototype-polish-uat-acceptance PP04 | 2min | 3 tasks tasks | 6 files files |
 | Phase 02-post-prototype-polish-uat-acceptance P05 | 2min | 3 tasks | 4 files |
 | Phase 02.1 P01 | 5min | 3 tasks | 6 files |
+| Phase 02.1 P02 | 7min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,9 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 - [Phase 02.1]: 02.1-01: Use a small shared CSS token layer instead of a component library or larger design-system extraction.
 - [Phase 02.1]: 02.1-01: Keep App.svelte behavior untouched and limit shell work to markup/CSS styling.
 - [Phase 02.1]: 02.1-01: Use narrow test-local Node shims instead of adding @types/node or any new dependency.
+- [Phase 02.1]: Derive every visible variation option from src/phrases.ts rather than duplicating variation truth in Svelte. — Plan 02.1-02 needed exact 1..12 mapping preservation for per-style pickers.
+- [Phase 02.1]: Keep VariationPicker state-less: TopBar passes active style/variation and calls setVariation(index) in the selection callback. — This preserves existing ui.variation semantics and avoids parallel selected state.
+- [Phase 02.1]: Use steel/border selected states for setup, clock, latch, and variation controls; orange remains reserved for active pads. — Matches D-03 semantic color rules and avoids misleading selected control states.
 
 ### Pending Todos
 
@@ -127,8 +131,8 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 
 ## Session Continuity
 
-Last session: 2026-07-06T14:49:51.150Z
-Stopped at: Completed 02.1-01-PLAN.md
+Last session: 2026-07-06T15:00:09.126Z
+Stopped at: Completed 02.1-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
