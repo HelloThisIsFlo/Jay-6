@@ -115,6 +115,12 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 - **REQ-gate-slider flagged suspect** — retest during UAT to distinguish code bug from OP-1 envelope masking (MIDI monitor evidence in `.research/UAT.md` §12).
 - **Latch state machine fragile** — four parallel booleans across host + App.svelte with zero unit-test coverage. Any latch refactor must trace all paths through `padPressed` / `padReleased` / `setLatch` / `panic`. (`.planning/codebase/CONCERNS.md`.)
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260706-nbq | Visually repair Phase 02.1 against imported redesign using fresh screenshots vs design mocks | 2026-07-06 | 0e5a9a7 | [260706-nbq-visually-repair-phase-02-1-against-impor](./quick/260706-nbq-visually-repair-phase-02-1-against-impor/) |
+
 ### Roadmap Evolution
 
 - Phase 02.1 inserted after Phase 2: Visual redesign adoption (URGENT)
@@ -139,7 +145,7 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 ## Session Continuity
 
 Last session: 2026-07-06T15:22:39.719Z
-Stopped at: Completed 02.1-04-PLAN.md
+Stopped at: Completed quick task 260706-nbq: Visually repair Phase 02.1 against imported redesign using fresh screenshots vs design mocks
 Resume file: None
 
 ## Operator Next Steps
