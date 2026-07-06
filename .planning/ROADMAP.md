@@ -26,6 +26,22 @@ Inserted pre-sequencer work, then candidate Phase 3:
 
 Carried-in v2 todos (see `.planning/todos/`): host-owned play/latch SSOT, transport-reset record-sync, variation-change toast, visual-design pass.
 
+## Phase Details
+
+### Phase 02.1: Visual redesign adoption
+**Goal**: Adopt the committed Jay-6 v3 visual redesign for the existing v1 feature set, without adding progression, sequencer, queued-toast, or new playback behavior.
+**Depends on**: Phase 2
+**Requirements**: See `.planning/phases/02.1-visual-redesign-adoption/02.1-SPEC.md` for the six locked requirements covering visual tokens, TopBar C2, pad surface, per-style variation pickers, responsive coverage, and existing behavior preservation.
+**Success Criteria** (what must be TRUE):
+  1. Desktop, iPad-sized, and iPhone-landscape browser views match the v3 sketch direction without clipped controls, unreadable primary labels, or inaccessible pad rows.
+  2. TopBar C2 keeps every existing routing, tempo, and performance control reachable, with BPM visible and read-only under external clock.
+  3. Pads retain the existing 5-black/7-white hardware layout and pointer/keyboard/latch behavior, with orange reserved for currently sounding or latched pads.
+  4. Per-style variation controls map exactly to existing 1..12 variation indices and preserve current engine playback semantics.
+  5. No progression rail, progression authoring, sequencer UI, or queued/countdown toast is added in this phase.
+  6. `just ci` passes and browser smoke covers the existing control surface.
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
