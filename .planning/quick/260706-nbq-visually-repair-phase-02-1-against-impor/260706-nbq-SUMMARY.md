@@ -74,15 +74,51 @@ coverage:
         status: pass
     human_judgment: true
     rationale: "Actually opened the setup popover, actually held a pad (via pointerdown/pointerup) to confirm orange-only-when-sounding, actually switched styles to Arp/Beat/Rhythm Gate 4 and screenshotted each — not a source-only audit."
+  - id: D4
+    description: "TopBar rebuilt into the C2 hardware strip the mocks + locked D-04/RESEARCH require (status pill, one dense control row, variation picker as popover) — replacing the prototype settings-form layout the phase had shipped."
+    requirement: R1-topbar-c2-redesign
+    verification:
+      - kind: other
+        ref: "Playwright live-browser vs mocks 01/02/04/05/06 at desktop/iPad/iPhone; setVariation fires through popover; popover reachable/dismissible (×/Escape/backdrop)"
+        status: pass
+      - kind: other
+        ref: "just ci"
+        status: pass
+    human_judgment: true
+    rationale: "The user, viewing the live app, correctly flagged that it only 'remotely' matched the mock. Root cause: prior execution + the first repair pass worked on the prototype form layout, not the C2 strip the phase locked. Rebuilt TopBar.svelte (commit fd01e00) and re-verified live against every in-scope mock."
 
-duration: ~90min (25min executor + ~65min orchestrator live-verification and fixes)
+duration: ~150min (25min executor + ~125min orchestrator live-verification, width fixes, then full C2 rewrite)
 completed: 2026-07-06
 status: complete
 ---
 
 # Phase 02.1 Quick 260706-nbq: Visual Repair Summary
 
-**Closed the deferred human-verification pass for Phase 02.1 with actual live-browser evidence: fixed TopBar's responsive squeeze window (executor) plus a width/alignment/overflow regression chain the width fix itself introduced (orchestrator), then visually confirmed TopBar, setup popover, pad surface, and all three variation pickers against the five approved mocks at all three mandated viewports.**
+**Closed the deferred human-verification pass for Phase 02.1 with live-browser evidence — and, when the live view revealed the shipped TopBar was still the prototype's settings-form layout rather than the locked C2 hardware strip, rebuilt TopBar.svelte into that strip (status pill + one dense control row + variation picker as a popover) so the in-scope surfaces actually match mocks 01/02/04/05/06.**
+
+## ⚠️ Two-stage story — read this first
+
+1. **Stage 1 (width/alignment repair):** started as a genuine but *shallow* pass — captured screenshots, found + fixed a real TopBar responsive squeeze/overflow/alignment chain (commits a847d7c, 0e5a9a7). Everything below the "structural rewrite" section documents this. It was correct work but on the wrong structure.
+2. **Stage 2 (structural C2 rewrite):** the user looked at the running app and said it "does not look remotely like the screenshot." Correct. The shipped TopBar was the prototype settings-form (5-line setup card + labelled dropdowns + inline variation picker), which contradicts the phase's own locked direction (D-04 "one status pill"; RESEARCH "structural TopBar rewrite, not cosmetic spacing only"). Rebuilt TopBar.svelte into the C2 hardware strip (commit fd01e00). This is the change that actually closes the visual gap. See "## Structural rewrite (Stage 2)" below.
+
+## Structural rewrite (Stage 2)
+
+**What was wrong:** the closed TopBar read as a settings form, not a hardware strip. Big "Open Setup" card with 5 lines of status text; separate Bank/Style/Transpose/Latch controls each with an eyebrow label, spread wide; the variation picker rendered *inline*, so the bar exploded vertically for Arp/Beat/Rhythm Gate. Mocks 01/04 show one dense dark row: `● OP-1 · Ch 1 · 110 BPM · INT ▾  ‹ 01 Pop ›  Arp·8th ∧05 ▾  − +0 +  LATCH`.
+
+**What changed in `src/components/TopBar.svelte`:**
+
+- Setup card → single-line **status pill** (`● OP-1 · Ch 1 · 110 BPM · INT ▾`); opens the existing setup popover unchanged.
+- Stripped per-control eyebrow labels; the whole bar is now one **flex row** (pill, bank stepper, style + variation readout, transpose, latch) that wraps gracefully on iPad/iPhone-landscape.
+- Bank → compact `‹ 01 Pop ›` stepper; the 100-bank direct `<select>` is preserved (styled as the mono readout).
+- **Variation picker moved into a popover** opened from a compact `V05 ▾` trigger (matching how mocks 02/05/06 present it). The rhythm4/5 gate slider lives in that popover. `VariationPicker` component + `setVariation()` wiring unchanged — only *where* it renders moved.
+- Latch stays steel when on (not solid orange) per locked D-03; orange stays reserved for sounding/latched pads.
+- Pill sized content-width (`flex-grow:0`) so latch's `margin-left:auto` pins it right on one row; bank/style widths tuned so all controls fit the 1100px strip (aligned with the pad frame) at desktop without wrapping.
+
+**Verified live (Playwright, desktop/iPad/iPhone-landscape):** closed strip vs 01/04; Arp/Beat/Rhythm-Gate popovers vs 02/05/06; `setVariation` confirmed firing through the popover (trigger readout V01→V03 on axis change); popover reachable + dismissible via ×, Escape, and backdrop. `just ci` green (check + 53 tests + build).
+
+---
+
+## (Stage 1 record below — width/alignment repair on the pre-rewrite layout)
 
 ## Performance
 
