@@ -42,11 +42,11 @@ Carried-in v2 todos (see `.planning/todos/`): host-owned play/latch SSOT, transp
   5. No progression rail, progression authoring, sequencer UI, or queued/countdown toast is added in this phase.
   6. `just ci` passes and browser smoke covers the existing control surface.
 
-**Plans**: 4 plans
+**Plans**: 1/4 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 02.1-01-PLAN.md — shared redesign tokens and app shell
+- [x] 02.1-01-PLAN.md — shared redesign tokens and app shell
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -65,5 +65,5 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 1. Prototype (M1–M8 + keyboard) | v1.0 | N/A — retrospective | Shipped | 2026-05-18 (code) |
 | 2. Post-prototype polish + UAT acceptance | v1.0 | 9/9 | Complete | 2026-05-23 |
-| 02.1 Visual redesign adoption | pre-v2 | 0/4 | Planned | — |
+| 02.1 Visual redesign adoption | pre-v2 | 1/4 | In Progress | — |
 | 3. Sequencer | v2 | 0/TBD | Not started | — |

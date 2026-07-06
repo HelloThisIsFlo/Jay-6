@@ -3,17 +3,18 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: MVP
 current_phase: 02.1
-status: Phase 02.1 inserted; ready for planning
-stopped_at: Phase 02.1 UI-SPEC approved
-last_updated: "2026-07-06T13:49:48.348Z"
+current_phase_name: visual-redesign-adoption
+status: executing
+stopped_at: Completed 02.1-01-PLAN.md
+last_updated: "2026-07-06T14:49:51.154Z"
 last_activity: 2026-07-06
-last_activity_desc: Phase 02.1 Visual redesign adoption inserted
+last_activity_desc: Completed 02.1-01 shared redesign tokens and app shell
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 4
+  completed_plans: 1
+  percent: 25
 ---
 
 # Project State
@@ -23,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-23 after v1.0)
 
 **Core value:** Drive the OP-1 (USB or BT) with the J-6's chord library + playback styles from a browser, without owning the J-6 hardware.
-**Current focus:** Planning Phase 02.1 visual redesign adoption before v2 sequencer scope.
+**Current focus:** Phase 02.1 — visual-redesign-adoption
 
 ## Current Position
 
-Phase: 02.1 Visual redesign adoption
-Plan: —
-Status: Inserted; ready for planning
-Last activity: 2026-07-06 — Phase 02.1 Visual redesign adoption inserted
+Phase: 02.1 (visual-redesign-adoption) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-07-06 — Completed 02.1-01 shared redesign tokens and app shell
 
 ## Performance Metrics
 
@@ -58,6 +59,7 @@ Last activity: 2026-07-06 — Phase 02.1 Visual redesign adoption inserted
 | Phase 02-post-prototype-polish-uat-acceptance P03 | 1min | 3 tasks | 3 files |
 | Phase 02-post-prototype-polish-uat-acceptance PP04 | 2min | 3 tasks tasks | 6 files files |
 | Phase 02-post-prototype-polish-uat-acceptance P05 | 2min | 3 tasks | 4 files |
+| Phase 02.1 P01 | 5min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -78,6 +80,9 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 - [Phase 02]: armedPosition lives on EngineHost with a getArmedPosition() public getter — 'resume' branch is set on Continue but no engine reads it in v1 (live-instrument hybrid means alignment is the only Ext adjustment); consumer ships with the v2 sequencer
 - [Phase 02-post-prototype-polish-uat-acceptance]: 02-05: MANUAL.md ships at repo root — consumer-product tone (TE Pocket Operator anchor), 4 required H1 sections per D-14, designed to grow with v2 sequencer Section 5 without rewriting 1-4 (D-13)
 - [Phase 02-post-prototype-polish-uat-acceptance]: 02-05: REQ-uat-walkthrough handed off to verify-phase via .claude/skills/uat-agent (trigger 'run uat'); UAT §15 extended with 6 transport-sync bullets covering D-03 panic, D-04 downbeat alignment + Record=Start, D-05 200ms guard, Pitfall 8 no-clock-echo
+- [Phase 02.1]: 02.1-01: Use a small shared CSS token layer instead of a component library or larger design-system extraction.
+- [Phase 02.1]: 02.1-01: Keep App.svelte behavior untouched and limit shell work to markup/CSS styling.
+- [Phase 02.1]: 02.1-01: Use narrow test-local Node shims instead of adding @types/node or any new dependency.
 
 ### Pending Todos
 
@@ -122,9 +127,9 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 
 ## Session Continuity
 
-Last session: 2026-07-06T13:49:48.343Z
-Stopped at: Phase 02.1 UI-SPEC approved
-Resume file: .planning/phases/02.1-visual-redesign-adoption/02.1-UI-SPEC.md
+Last session: 2026-07-06T14:49:51.150Z
+Stopped at: Completed 02.1-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
