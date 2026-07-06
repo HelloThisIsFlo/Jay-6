@@ -21,7 +21,7 @@ Full detail: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROADMAP.md) · requi
 
 Inserted pre-sequencer work, then candidate Phase 3:
 
-- [ ] **Phase 02.1: Visual redesign adoption** (INSERTED) — adopt the committed sketch findings before sequencer scope; visual refresh only, no sequencer behavior.
+- [x] **Phase 02.1: Visual redesign adoption** (INSERTED) — adopt the committed sketch findings before sequencer scope; visual refresh only, no sequencer behavior. (completed 2026-07-06)
 - [ ] **Phase 3: Sequencer** — step sequencer on a grid driving chord-pad presses; pattern chaining; basic song mode. Must slot into the existing 24 PPQ TickSource + `engines/host.ts` without violating DEC-engines-time-source-agnostic / DEC-engine-orchestrator.
 
 Carried-in v2 todos (see `.planning/todos/`): host-owned play/latch SSOT, transport-reset record-sync, variation-change toast, visual-design pass.
@@ -42,7 +42,7 @@ Carried-in v2 todos (see `.planning/todos/`): host-owned play/latch SSOT, transp
   5. No progression rail, progression authoring, sequencer UI, or queued/countdown toast is added in this phase.
   6. `just ci` passes and browser smoke covers the existing control surface.
 
-**Plans**: 3/4 plans executed
+**Plans**: 4/4 plans complete
 Plans:
 **Wave 1**
 
@@ -55,7 +55,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 02.1-04-PLAN.md — automated gates and desktop/iPad/iPhone browser smoke
+- [x] 02.1-04-PLAN.md — automated gates and desktop/iPad/iPhone browser smoke
 
 **UI hint**: yes
 
@@ -65,5 +65,5 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 1. Prototype (M1–M8 + keyboard) | v1.0 | N/A — retrospective | Shipped | 2026-05-18 (code) |
 | 2. Post-prototype polish + UAT acceptance | v1.0 | 9/9 | Complete | 2026-05-23 |
-| 02.1 Visual redesign adoption | pre-v2 | 3/4 | In Progress | — |
+| 02.1 Visual redesign adoption | pre-v2 | 4/4 | Complete   | 2026-07-06 |
 | 3. Sequencer | v2 | 0/TBD | Not started | — |

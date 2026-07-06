@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: MVP
 current_phase: 02.1
 current_phase_name: visual-redesign-adoption
-status: executing
-stopped_at: Completed 02.1-03-PLAN.md
-last_updated: "2026-07-06T15:06:09.051Z"
+status: verifying
+stopped_at: Completed 02.1-04-PLAN.md
+last_updated: "2026-07-06T15:22:39.724Z"
 last_activity: 2026-07-06
-last_activity_desc: Completed 02.1-03 lifted pad surface with preserved pointer safety
+last_activity_desc: Completed 02.1-04 final visual verification
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-05-23 after v1.0)
 
 ## Current Position
 
-Phase: 02.1 (visual-redesign-adoption) — EXECUTING
+Phase: 02.1 (visual-redesign-adoption) — VERIFYING
 Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-07-06 — Completed 02.1-03 lifted pad surface with preserved pointer safety
+Status: Phase complete — ready for verification
+Last activity: 2026-07-06 — Completed 02.1-04 final visual verification
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Last activity: 2026-07-06 — Completed 02.1-03 lifted pad surface with preserve
 | Phase 02.1 P01 | 5min | 3 tasks | 6 files |
 | Phase 02.1 P02 | 7min | 3 tasks | 4 files |
 | Phase 02.1 P03 | 5min | 2 tasks | 1 files |
+| Phase 02.1 P04 | 12min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 - [Phase 02.1]: Restyle the existing two-row J-6 hardware pad component in place instead of changing DOM structure or event wiring. — Avoids reintroducing stuck-note or highlight desync risk while adopting the lifted visual treatment.
 - [Phase 02.1]: Use shared token variables for frame, cream pad, black-key, typography, radius, and spacing values. — Keeps Plan 03 aligned with the token layer shipped in Plan 01 and avoids ad hoc visual drift.
 - [Phase 02.1]: Keep orange active styling scoped to .pad.held, driven by App.svelte held/latch projection. — Matches the semantic color contract: orange means currently sounding or latched pad only.
+- [Phase 02.1]: Treat Plan 04 as verification-only; no product source edits were needed. — Automated gates and browser smoke passed without requiring Rule 1-3 fixes.
+- [Phase 02.1]: Record Web MIDI permission-denied browser state as setup reachability coverage, with external-clock BPM read-only source-verified. — Playwright could not select a real MIDI input, but the denied/no-input setup state remained visible and the external BPM binding is explicit in TopBar.svelte.
 
 ### Pending Todos
 
@@ -135,10 +138,10 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 
 ## Session Continuity
 
-Last session: 2026-07-06T15:05:49.878Z
-Stopped at: Completed 02.1-03-PLAN.md
+Last session: 2026-07-06T15:22:39.719Z
+Stopped at: Completed 02.1-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `$gsd-spec-phase 02.1` to scope visual redesign adoption before v2 sequencer work.
+- Run `$gsd-verify-work 02.1` to verify the completed visual redesign adoption phase.
