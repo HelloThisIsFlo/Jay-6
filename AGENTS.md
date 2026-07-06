@@ -11,6 +11,7 @@ Workflow orchestration via [GSD](https://github.com/Get-Shit-Done). Start here:
 - **`.planning/STATE.md`** — current focus
 - **`.planning/phases/`** — per-phase RESEARCH / CONTEXT / PLAN / SUMMARY / UAT artifacts
 - **`MANUAL.md`** — user-facing guide
+- **Sketch findings for Jay-6** (design decisions, CSS patterns, visual direction) → `Skill("sketch-findings-jay-6")`
 
 Use `/gsd:progress` to advance work. `/gsd:help` for command index.
 

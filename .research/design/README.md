@@ -12,6 +12,10 @@
 - `screenshots/02-variations-arp-composed.png`
 - `screenshots/03-progressions-chip-rail.png`
 - `screenshots/04-full-mock-v2-recommended.png`
+- `screenshots/05-variations-beat-grid.png`
+- `screenshots/06-variations-rhythm-gate-tiles.png`
+- `screenshots/07-toast-bottom-center-pill.png`
+  - focused crop of Option A only
 
 ## Current Reading
 
