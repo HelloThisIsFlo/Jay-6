@@ -107,6 +107,8 @@
     column-gap: var(--space-2);
     row-gap: var(--space-4);
     padding: var(--space-6);
+    box-sizing: border-box;
+    width: min(100%, 1100px);
     max-width: 1100px;
     margin: 0 auto;
     /* D-10 fallback step D: frame dropped to #000 so black keys (#2e2e2e) pop
@@ -137,6 +139,8 @@
     font-family: var(--mono);
     text-align: left;
     border: 1px solid transparent;
+    min-width: 0;
+    overflow: hidden;
     transition:
       background-color 60ms,
       border-color 60ms,
@@ -152,6 +156,7 @@
   .pad:active { transform: translateY(2px); }
   .pad .key,
   .pad .name {
+    max-width: 100%;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -168,6 +173,7 @@
     font-weight: 600;
     line-height: 1.2;
     word-break: break-word;
+    overflow-wrap: anywhere;
   }
   .pad.white {
     background: var(--cream);
@@ -211,4 +217,43 @@
     border-color: var(--accent);
   }
   .pad.held .key { color: var(--bg-0) !important; }
+
+  @media (max-width: 760px) {
+    .piano {
+      row-gap: var(--space-2);
+      padding: var(--space-4);
+    }
+    .pad {
+      padding: var(--space-2);
+    }
+    .pad.black {
+      min-height: 88px;
+    }
+    .pad.white {
+      min-height: 112px;
+    }
+    .pad .name {
+      font-size: var(--t-body);
+    }
+  }
+
+  @media (max-height: 480px) {
+    .piano {
+      row-gap: var(--space-2);
+      padding: var(--space-2);
+    }
+    .pad {
+      padding: var(--space-2);
+    }
+    .pad.black {
+      min-height: 64px;
+    }
+    .pad.white {
+      min-height: 80px;
+    }
+    .pad .name {
+      font-size: var(--t-body);
+      line-height: 1.15;
+    }
+  }
 </style>
