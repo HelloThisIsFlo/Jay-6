@@ -65,6 +65,13 @@
   }
 </script>
 
+<!-- Chord label split at the slash so it wraps to two clean lines ("Cadd9" / "/E")
+     instead of breaking mid-token ("Ca dd 9/ E") on narrow phone pads. -->
+{#snippet chordName(label: string)}
+  {@const parts = label.split('/')}
+  <span class="cname-main">{parts[0]}</span>{#if parts.length > 1}<span class="cname-bass">/{parts.slice(1).join('/')}</span>{/if}
+{/snippet}
+
 <div class="piano">
   {#each blackKeys as { key, col } (key)}
     {@const c = chordFor(key)}
@@ -80,7 +87,7 @@
       oncontextmenu={(e) => e.preventDefault()}
     >
       <span class="key">{key}</span>
-      <span class="name">{c ? labelFor(bank, c) : ''}</span>
+      <span class="name">{#if c}{@render chordName(labelFor(bank, c))}{/if}</span>
     </button>
   {/each}
   {#each whiteKeys as { key, col } (key)}
@@ -97,7 +104,7 @@
       oncontextmenu={(e) => e.preventDefault()}
     >
       <span class="key">{key}</span>
-      <span class="name">{c ? labelFor(bank, c) : ''}</span>
+      <span class="name">{#if c}{@render chordName(labelFor(bank, c))}{/if}</span>
     </button>
   {/each}
 </div>
@@ -172,11 +179,22 @@
     line-height: 1.2;
   }
   .pad .name {
-    font-size: var(--t-readout);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    /* Scales with viewport so 7 white pads across a phone still read without
+       breaking mid-token; capped at the readout size on wide screens. */
+    font-size: clamp(10px, 2.7vw, 18px);
     font-weight: 600;
-    line-height: 1.2;
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    line-height: 1.15;
+  }
+  /* Tokens never break internally; wrapping happens only between main + bass. */
+  .pad .cname-main,
+  .pad .cname-bass {
+    white-space: nowrap;
+  }
+  .pad .cname-bass {
+    opacity: 0.72;
   }
   .pad.white {
     background: var(--cream);
@@ -235,9 +253,6 @@
     .pad.white {
       min-height: 112px;
     }
-    .pad .name {
-      font-size: var(--t-body);
-    }
   }
 
   @media (max-height: 480px) {
@@ -253,10 +268,6 @@
     }
     .pad.white {
       min-height: 80px;
-    }
-    .pad .name {
-      font-size: var(--t-body);
-      line-height: 1.15;
     }
   }
 </style>

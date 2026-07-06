@@ -34,9 +34,17 @@
   let selectedInputId = $state<string | null>(null);
   let midiChannel = $state(1);
 
-  // Only one overlay open at a time — opening one closes the other (they share the bar).
-  let setupOpen = $state(false);
-  let variationOpen = $state(false);
+  // One overlay at a time. Custom popovers (not native <select>) so the strip
+  // renders identically on iOS Safari, which ignores <select> styling.
+  type Popover = 'setup' | 'bank' | 'style' | 'variation';
+  let openPopover = $state<Popover | null>(null);
+  const isOpen = (p: Popover) => openPopover === p;
+  function toggle(p: Popover): void {
+    openPopover = openPopover === p ? null : p;
+  }
+  function closeAll(): void {
+    openPopover = null;
+  }
 
   onMount(() => {
     const unsub = subscribeMidi((s) => {
@@ -55,8 +63,21 @@
   const showGate = $derived(ui.style === 'rhythm4' || ui.style === 'rhythm5');
   const hasVariation = $derived(STYLE_VARIATION_COUNT[ui.style] > 0);
 
-  // Compact V-number for the closed-bar variation trigger (e.g. "V05"). The full
-  // per-style picker lives in the popover; the bar only shows the resolved readout.
+  const currentBank = $derived(banks.find((b) => b.index === ui.bankIndex) ?? banks[0]!);
+  const bankNum = $derived(String(ui.bankIndex).padStart(2, '0'));
+
+  // Short style tag for the compact readout (the full label lives in the picker).
+  const styleTag = $derived.by(() => {
+    switch (ui.style) {
+      case 'hold': return 'Hold';
+      case 'arp1': return 'Arp · 8th';
+      case 'arp2': return 'Arp · 16th';
+      case 'phraseDur': return 'Beat';
+      case 'rhythm4': return 'Gate 4';
+      case 'rhythm5': return 'Gate 5';
+    }
+  });
+
   const variationReadout = $derived.by(() => {
     const model = variationOptionsForStyle(ui.style);
     if (model.kind === 'none') return '';
@@ -81,31 +102,27 @@
     return 'MIDI idle';
   }
 
-  function openSetup(): void {
-    variationOpen = false;
-    setupOpen = !setupOpen;
+  function pickBank(index: number): void {
+    setBank(index);
+    closeAll();
   }
 
-  function openVariation(): void {
-    setupOpen = false;
-    variationOpen = !variationOpen;
-  }
-
-  function closeAll(): void {
-    setupOpen = false;
-    variationOpen = false;
+  function pickStyle(kind: StyleKind): void {
+    setStyle(kind);
+    // Keep the panel useful: Hold has no variation, so just close; otherwise
+    // stay open on the style panel so the user can jump straight to variation.
+    closeAll();
   }
 
   function closeOnEscape(event: KeyboardEvent): void {
-    if ((setupOpen || variationOpen) && event.key === 'Escape') closeAll();
+    if (openPopover !== null && event.key === 'Escape') closeAll();
   }
 </script>
 
 <svelte:window onkeydown={closeOnEscape} />
 
 <div class="topbar">
-  <!-- Backdrop: click anywhere off the open popover to dismiss (mirrors hardware "tap away"). -->
-  {#if setupOpen || variationOpen}
+  {#if openPopover !== null}
     <button class="backdrop" type="button" aria-label="Close" onclick={closeAll}></button>
   {/if}
 
@@ -114,10 +131,9 @@
     <button
       type="button"
       class="status-pill"
-      class:open={setupOpen}
-      aria-expanded={setupOpen}
-      aria-controls="setup-popover"
-      onclick={openSetup}
+      class:open={isOpen('setup')}
+      aria-expanded={isOpen('setup')}
+      onclick={() => toggle('setup')}
     >
       <span class="dot" class:live={selectedOutputId !== null} aria-hidden="true"></span>
       <span class="pill-text">
@@ -132,8 +148,8 @@
       <span class="chev" aria-hidden="true">▾</span>
     </button>
 
-    {#if setupOpen}
-      <div class="popover setup-popover" id="setup-popover" role="dialog" aria-label="Setup">
+    {#if isOpen('setup')}
+      <div class="popover setup-popover" role="dialog" aria-label="Setup">
         <div class="popover-head">
           <span>Setup</span>
           <button type="button" class="close" aria-label="Close setup" onclick={closeAll}>×</button>
@@ -235,54 +251,85 @@
     {/if}
   </div>
 
-  <!-- Bank stepper: ‹ 01 Pop › — prev/next flank the direct 100-bank select. -->
+  <!-- Bank: ‹ [01 Pop] › — arrows step; the readout opens a scrollable bank list. -->
   <div class="zone bank-zone">
     <button type="button" class="step" onclick={() => setBank(ui.bankIndex - 1)} aria-label="Prev bank">‹</button>
-    <div class="bank-select">
-      <select
-        aria-label="Bank"
-        value={String(ui.bankIndex)}
-        onchange={(e) => setBank(Number((e.currentTarget as HTMLSelectElement).value))}
-      >
-        {#each banks as bank (bank.index)}
-          <option value={String(bank.index)}>{String(bank.index).padStart(2, '0')} {bank.name}</option>
-        {/each}
-      </select>
-    </div>
+    <button type="button" class="readout bank-readout" class:open={isOpen('bank')} onclick={() => toggle('bank')}>
+      <span class="mono num">{bankNum}</span>
+      <span class="readout-name">{currentBank.name}</span>
+      <span class="chev" aria-hidden="true">▾</span>
+    </button>
     <button type="button" class="step" onclick={() => setBank(ui.bankIndex + 1)} aria-label="Next bank">›</button>
+
+    {#if isOpen('bank')}
+      <div class="popover list-popover" role="dialog" aria-label="Bank">
+        <div class="popover-head">
+          <span>Bank</span>
+          <button type="button" class="close" aria-label="Close bank list" onclick={closeAll}>×</button>
+        </div>
+        <ul class="bank-list">
+          {#each banks as bank (bank.index)}
+            <li>
+              <button
+                type="button"
+                class="list-item"
+                class:selected={bank.index === ui.bankIndex}
+                onclick={() => pickBank(bank.index)}
+              >
+                <span class="mono num">{String(bank.index).padStart(2, '0')}</span>
+                <span class="list-name">{bank.name}</span>
+              </button>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
   </div>
 
-  <!-- Style + variation readout: style select, then a trigger that opens the picker popover. -->
+  <!-- Style readout → style picker; variation readout → variation picker. -->
   <div class="zone style-zone">
-    <div class="style-select">
-      <select
-        aria-label="Style"
-        value={ui.style}
-        onchange={(e) => setStyle((e.currentTarget as HTMLSelectElement).value as StyleKind)}
-      >
-        {#each styleOptions as style (style)}
-          <option value={style}>{STYLE_LABELS[style]}</option>
-        {/each}
-      </select>
-    </div>
+    <button type="button" class="readout style-readout" class:open={isOpen('style')} onclick={() => toggle('style')}>
+      <span class="readout-name">{styleTag}</span>
+      <span class="chev" aria-hidden="true">▾</span>
+    </button>
 
     {#if hasVariation}
       <button
         type="button"
-        class="var-trigger"
-        class:open={variationOpen}
-        aria-expanded={variationOpen}
-        aria-controls="variation-popover"
-        onclick={openVariation}
+        class="readout var-trigger"
+        class:open={isOpen('variation')}
+        onclick={() => toggle('variation')}
       >
         <span class="var-num">{variationReadout}</span>
         <span class="chev" aria-hidden="true">▾</span>
       </button>
     {/if}
 
-    {#if variationOpen && hasVariation}
-      <div class="popover variation-popover" id="variation-popover" role="dialog" aria-label="Variation">
-        <!-- Title/readout comes from VariationPicker's own head; this head is close-only. -->
+    {#if isOpen('style')}
+      <div class="popover list-popover style-popover" role="dialog" aria-label="Style">
+        <div class="popover-head">
+          <span>Style</span>
+          <button type="button" class="close" aria-label="Close style list" onclick={closeAll}>×</button>
+        </div>
+        <ul class="style-list">
+          {#each styleOptions as style (style)}
+            <li>
+              <button
+                type="button"
+                class="list-item"
+                class:selected={style === ui.style}
+                onclick={() => pickStyle(style)}
+              >
+                {STYLE_LABELS[style]}
+              </button>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
+
+    {#if isOpen('variation') && hasVariation}
+      <div class="popover variation-popover" role="dialog" aria-label="Variation">
         <div class="popover-head close-only">
           <button type="button" class="close" aria-label="Close variation" onclick={closeAll}>×</button>
         </div>
@@ -315,11 +362,9 @@
     <button type="button" class="step" onclick={() => bumpTranspose(1)} aria-label="Octave up">+</button>
   </div>
 
-  <!-- Latch: performance control, pushed to the right edge. Steel when on (orange is
-       reserved for sounding/latched pads per D-03), not a solid-orange toggle. -->
+  <!-- Latch: steel when on (orange stays reserved for sounding/latched pads, D-03). -->
   <button type="button" class="latch" class:on={ui.latch} onclick={toggleLatch} aria-pressed={ui.latch}>
-    <span class="latch-word">LATCH</span>
-    <span class="latch-state">{ui.latch ? 'On' : 'Off'}</span>
+    LATCH
   </button>
 </div>
 
@@ -342,7 +387,6 @@
     -webkit-user-select: none;
   }
 
-  /* Each control cluster reads as one dark segment on the strip. */
   .zone {
     position: relative;
     display: flex;
@@ -361,11 +405,6 @@
   }
 
   /* ── Status pill ───────────────────────────────────────────────────── */
-  /* Content-sized (grow:0) so the folded readout ("No output · Ch 1 · 110 BPM
-     · INT") shows in full without ballooning the pill and wrapping LATCH to a
-     second row. Latch's margin-left:auto then absorbs the free space and pins
-     LATCH to the right edge on one row. Shrinks (pill-out ellipsizes) only when
-     the viewport is too narrow for the whole strip. */
   .pill-zone {
     flex: 0 1 auto;
     min-width: 0;
@@ -450,29 +489,11 @@
     font-size: var(--t-eyebrow);
   }
 
-  /* ── Bank ──────────────────────────────────────────────────────────── */
-  .bank-zone .bank-select {
-    position: relative;
-    min-width: 0;
-  }
-
-  .bank-select select {
-    max-width: 120px;
-  }
-
-  /* ── Style + variation ─────────────────────────────────────────────── */
-  .style-zone {
-    z-index: 11;
-  }
-
-  .style-select select {
-    max-width: 210px;
-  }
-
-  .var-trigger {
+  /* ── Shared readout buttons (bank, style, variation) ───────────────── */
+  .readout {
     display: flex;
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--space-2);
     min-height: 44px;
     padding: 0 var(--space-2);
     border: 1px solid var(--bg-4);
@@ -480,13 +501,38 @@
     background: var(--bg-2);
     color: var(--fg-0);
     cursor: pointer;
+    font: inherit;
   }
 
-  .var-trigger:hover,
-  .var-trigger:focus-visible,
-  .var-trigger.open {
+  .readout:hover,
+  .readout:focus-visible,
+  .readout.open {
     border-color: var(--system);
     outline: none;
+  }
+
+  .readout .num {
+    color: var(--fg-2);
+  }
+
+  .readout-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bank-readout {
+    max-width: 160px;
+  }
+
+  .style-readout {
+    max-width: 140px;
+    font-family: var(--mono);
+  }
+
+  .mono {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
   }
 
   .var-num {
@@ -510,8 +556,7 @@
   .latch {
     margin-left: auto;
     display: flex;
-    align-items: baseline;
-    gap: var(--space-2);
+    align-items: center;
     min-height: 44px;
     padding: 0 var(--space-4);
     border: 1px solid var(--bg-4);
@@ -519,6 +564,8 @@
     background: var(--bg-2);
     color: var(--fg-0);
     cursor: pointer;
+    font-weight: 600;
+    font-size: var(--t-body);
     letter-spacing: 0.04em;
   }
 
@@ -531,20 +578,6 @@
   .latch.on {
     border-color: var(--system);
     background: var(--system-soft);
-  }
-
-  .latch-word {
-    font-weight: 600;
-    font-size: var(--t-body);
-  }
-
-  .latch-state {
-    font-family: var(--mono);
-    font-size: var(--t-eyebrow);
-    color: var(--fg-2);
-  }
-
-  .latch.on .latch-state {
     color: var(--fg-0);
   }
 
@@ -570,22 +603,7 @@
     outline: none;
   }
 
-  /* ── Native selects on the strip (bank, style) ─────────────────────── */
-  .bank-select select,
-  .style-select select {
-    min-height: 44px;
-    min-width: 0;
-    width: 100%;
-    padding: 0 var(--space-2);
-    border: 1px solid var(--bg-4);
-    border-radius: var(--radius-md);
-    background: var(--bg-2);
-    color: var(--fg-0);
-    font: inherit;
-    font-family: var(--mono);
-  }
-
-  /* ── Popovers (setup + variation share the visual language) ────────── */
+  /* ── Popovers ──────────────────────────────────────────────────────── */
   .popover {
     position: absolute;
     top: calc(100% + var(--space-2));
@@ -605,30 +623,39 @@
     padding: var(--space-4);
   }
 
+  .list-popover {
+    left: 0;
+    width: min(280px, calc(100vw - var(--space-8)));
+    max-height: min(60vh, 440px);
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-2);
+  }
+
   .variation-popover {
     left: 0;
     display: grid;
     gap: var(--space-3, 12px);
     width: min(560px, calc(100vw - var(--space-8)));
-    max-height: min(70vh, 560px);
+    max-height: min(74vh, 600px);
     overflow-y: auto;
     padding: var(--space-4);
   }
 
   .popover-head {
-    grid-column: 1 / -1;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: var(--space-1) var(--space-2) var(--space-2);
     color: var(--fg-2);
     font-size: var(--t-eyebrow);
     font-weight: 600;
     line-height: 1.2;
   }
 
-  /* Variation popover: close button only, right-aligned (title is the picker's own head). */
   .popover-head.close-only {
     justify-content: flex-end;
+    padding-bottom: 0;
     margin-bottom: calc(-1 * var(--space-2));
   }
 
@@ -647,6 +674,51 @@
   .close:focus-visible {
     border-color: var(--system);
     outline: none;
+  }
+
+  /* Bank / style scrollable lists */
+  .bank-list,
+  .style-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    min-height: 44px;
+    padding: 0 var(--space-2);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--fg-1);
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+  }
+
+  .list-item:hover,
+  .list-item:focus-visible {
+    background: var(--bg-3);
+    color: var(--fg-0);
+    outline: none;
+  }
+
+  .list-item.selected {
+    border-color: var(--system);
+    background: var(--system-soft);
+    color: var(--fg-0);
+  }
+
+  .list-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* Setup popover fields */
@@ -757,23 +829,52 @@
     filter: brightness(1.12);
   }
 
-  /* Narrow viewports: the strip wraps; popovers span the padded viewport width. */
+  /* Portrait / narrow: the pill takes the full first row so the control
+     clusters below line up in a tidy grid instead of orphaning LATCH. */
   @media (max-width: 620px) {
     .topbar {
       padding: var(--space-2);
     }
 
     .pill-zone {
-      flex-basis: 100%;
+      flex: 1 1 100%;
+    }
+
+    .bank-zone,
+    .style-zone {
+      flex: 1 1 auto;
+    }
+
+    .bank-readout {
+      flex: 1 1 auto;
+      max-width: none;
+    }
+
+    .latch {
+      margin-left: 0;
+    }
+
+    /* Anchored dropdowns clip off-screen when their trigger sits mid-strip.
+       On narrow screens present every popover as a centered modal instead
+       (the backdrop already dims behind it). */
+    .popover {
+      position: fixed;
+      left: var(--space-2);
+      right: var(--space-2);
+      top: 50%;
+      transform: translateY(-50%);
+      width: auto;
+      max-width: none;
+      max-height: 86vh;
+      overflow-y: auto;
     }
 
     .setup-popover {
       grid-template-columns: 1fr;
-      width: calc(100vw - var(--space-4));
     }
 
-    .variation-popover {
-      width: calc(100vw - var(--space-4));
+    .list-popover {
+      max-height: 74vh;
     }
   }
 </style>
