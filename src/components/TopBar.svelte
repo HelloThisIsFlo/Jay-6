@@ -1,6 +1,5 @@
 <script lang="ts">
   import {
-    getMidiState,
     initMidi,
     selectInput,
     selectOutput,
@@ -11,6 +10,7 @@
   } from '../midi';
   import { banks } from '../banks';
   import { onMount } from 'svelte';
+  import VariationPicker from './VariationPicker.svelte';
   import {
     ui,
     setStyle,
@@ -22,7 +22,6 @@
     setGatePercent,
     setClockSource,
     STYLE_LABELS,
-    STYLE_VARIATION_COUNT,
     type StyleKind,
   } from '../state.svelte';
 
@@ -31,6 +30,8 @@
   let midiInputs = $state<MidiPortInfo[]>([]);
   let selectedOutputId = $state<string | null>(null);
   let selectedInputId = $state<string | null>(null);
+  let midiChannel = $state(1);
+  let setupOpen = $state(false);
 
   onMount(() => {
     const unsub = subscribeMidi((s) => {
@@ -39,263 +40,539 @@
       midiInputs = [...s.inputs];
       selectedOutputId = s.selectedOutputId;
       selectedInputId = s.selectedInputId;
+      midiChannel = s.channel;
     });
     initMidi();
     return unsub;
   });
 
-  const variationCount = $derived(STYLE_VARIATION_COUNT[ui.style]);
   const styleOptions: StyleKind[] = ['hold', 'arp1', 'arp2', 'phraseDur', 'rhythm4', 'rhythm5'];
   const showGate = $derived(ui.style === 'rhythm4' || ui.style === 'rhythm5');
+
+  const selectedOutputName = $derived(
+    selectedOutputId
+      ? midiOutputs.find((output) => output.id === selectedOutputId)?.name ?? 'Missing output'
+      : outputFallback(),
+  );
+  const selectedInputName = $derived(
+    selectedInputId
+      ? midiInputs.find((input) => input.id === selectedInputId)?.name ?? 'Missing input'
+      : inputFallback(),
+  );
+  const clockLabel = $derived(ui.clockSource === 'external' ? 'Ext' : 'Int');
+  const inputClockSummary = $derived(
+    ui.clockSource === 'external' ? selectedInputName : 'Internal clock',
+  );
+
+  function outputFallback(): string {
+    if (midiStatus === 'unsupported') return 'Use Chrome/Edge';
+    if (midiStatus === 'requesting') return 'Requesting MIDI';
+    if (midiStatus === 'denied') return 'Permission denied';
+    if (midiStatus === 'error') return 'MIDI error';
+    if (midiStatus === 'ready') return 'No outputs';
+    return 'MIDI idle';
+  }
+
+  function inputFallback(): string {
+    if (midiStatus === 'unsupported') return 'Use Chrome/Edge';
+    if (midiStatus === 'requesting') return 'Requesting MIDI';
+    if (midiStatus === 'denied') return 'Permission denied';
+    if (midiStatus === 'error') return 'MIDI error';
+    if (midiStatus === 'ready') return 'No input';
+    return 'MIDI idle';
+  }
+
+  function closeOnEscape(event: KeyboardEvent): void {
+    if (setupOpen && event.key === 'Escape') setupOpen = false;
+  }
 </script>
 
+<svelte:window onkeydown={closeOnEscape} />
+
 <div class="topbar">
-  <label class="field">
-    <span>Output</span>
-    <select
-      disabled={midiStatus !== 'ready'}
-      value={selectedOutputId ?? ''}
-      onchange={(e) => selectOutput((e.currentTarget as HTMLSelectElement).value || null)}
+  <div class="setup-zone">
+    <button
+      type="button"
+      class="setup-pill"
+      aria-expanded={setupOpen}
+      aria-controls="setup-popover"
+      onclick={() => (setupOpen = !setupOpen)}
     >
-      {#if midiStatus === 'requesting'}
-        <option>Requesting MIDI…</option>
-      {:else if midiStatus === 'unsupported'}
-        <option>Use Chrome/Edge</option>
-      {:else if midiStatus === 'denied'}
-        <option>Permission denied</option>
-      {:else if midiStatus === 'error'}
-        <option>MIDI error</option>
-      {:else if midiOutputs.length === 0}
-        <option value="">No outputs</option>
-      {:else}
-        {#each midiOutputs as o (o.id)}
-          <option value={o.id}>{o.name}</option>
-        {/each}
-      {/if}
-    </select>
-  </label>
+      <span class="setup-label">Open Setup</span>
+      <span class="setup-summary">
+        <span>{selectedOutputName}</span>
+        <span>{inputClockSummary}</span>
+        <span>Ch {midiChannel}</span>
+        <span>{ui.bpm} BPM</span>
+        <span>{clockLabel}</span>
+      </span>
+    </button>
 
-  <label class="field">
-    <span>Input</span>
-    <select
-      disabled={midiStatus !== 'ready'}
-      value={selectedInputId ?? ''}
-      onchange={(e) => selectInput((e.currentTarget as HTMLSelectElement).value || null)}
-    >
-      <option value="">— none —</option>
-      {#each midiInputs as i (i.id)}
-        <option value={i.id}>{i.name}</option>
-      {/each}
-    </select>
-  </label>
+    {#if setupOpen}
+      <div class="setup-popover" id="setup-popover" role="dialog" aria-label="Setup">
+        <div class="popover-head">
+          <span>Setup</span>
+          <button type="button" class="close" aria-label="Close setup" onclick={() => (setupOpen = false)}>
+            ×
+          </button>
+        </div>
 
-  <label class="field">
-    <span>Ch</span>
-    <select
-      value={String(getMidiState().channel)}
-      onchange={(e) => setChannel(Number((e.currentTarget as HTMLSelectElement).value))}
-    >
-      {#each Array.from({ length: 16 }, (_, i) => i + 1) as ch (ch)}
-        <option value={String(ch)}>{ch}</option>
-      {/each}
-    </select>
-  </label>
-
-  <label class="field bank">
-    <span>Bank</span>
-    <div class="bank-row">
-      <button class="arrow" onclick={() => setBank(ui.bankIndex - 1)} aria-label="Prev bank">‹</button>
-      <select
-        value={String(ui.bankIndex)}
-        onchange={(e) => setBank(Number((e.currentTarget as HTMLSelectElement).value))}
-      >
-        {#each banks as b (b.index)}
-          <option value={String(b.index)}
-            >{String(b.index).padStart(2, '0')} — {b.name}</option
+        <label class="field">
+          <span>Output</span>
+          <select
+            disabled={midiStatus !== 'ready'}
+            value={selectedOutputId ?? ''}
+            onchange={(e) => selectOutput((e.currentTarget as HTMLSelectElement).value || null)}
           >
-        {/each}
-      </select>
-      <button class="arrow" onclick={() => setBank(ui.bankIndex + 1)} aria-label="Next bank">›</button>
-    </div>
-  </label>
+            {#if midiStatus === 'requesting'}
+              <option>Requesting MIDI...</option>
+            {:else if midiStatus === 'unsupported'}
+              <option>Use Chrome/Edge</option>
+            {:else if midiStatus === 'denied'}
+              <option>Permission denied</option>
+            {:else if midiStatus === 'error'}
+              <option>MIDI error</option>
+            {:else if midiOutputs.length === 0}
+              <option value="">No outputs</option>
+            {:else}
+              {#each midiOutputs as output (output.id)}
+                <option value={output.id}>{output.name}</option>
+              {/each}
+            {/if}
+          </select>
+        </label>
 
-  <label class="field">
-    <span>Transpose</span>
-    <div class="transpose">
-      <button onclick={() => bumpTranspose(-1)} aria-label="Octave down">−12</button>
-      <span class="trval">{ui.transpose >= 0 ? '+' : ''}{ui.transpose}</span>
-      <button onclick={() => bumpTranspose(1)} aria-label="Octave up">+12</button>
-    </div>
-  </label>
+        <label class="field">
+          <span>Input</span>
+          <select
+            disabled={midiStatus !== 'ready'}
+            value={selectedInputId ?? ''}
+            onchange={(e) => selectInput((e.currentTarget as HTMLSelectElement).value || null)}
+          >
+            {#if midiStatus === 'requesting'}
+              <option>Requesting MIDI...</option>
+            {:else if midiStatus === 'unsupported'}
+              <option>Use Chrome/Edge</option>
+            {:else if midiStatus === 'denied'}
+              <option>Permission denied</option>
+            {:else if midiStatus === 'error'}
+              <option>MIDI error</option>
+            {:else}
+              <option value="">No input</option>
+              {#each midiInputs as input (input.id)}
+                <option value={input.id}>{input.name}</option>
+              {/each}
+            {/if}
+          </select>
+        </label>
 
-  <label class="field">
-    <span>Clock</span>
-    <div class="seg">
-      <button
-        class:on={ui.clockSource === 'internal'}
-        onclick={() => setClockSource('internal')}
-      >Int</button>
-      <button
-        class:on={ui.clockSource === 'external'}
-        onclick={() => setClockSource('external')}
-        disabled={!selectedInputId}
-        title={selectedInputId ? '' : 'Select an Input first'}
-      >Ext</button>
-    </div>
-  </label>
+        <label class="field">
+          <span>Channel</span>
+          <select
+            value={String(midiChannel)}
+            onchange={(e) => setChannel(Number((e.currentTarget as HTMLSelectElement).value))}
+          >
+            {#each Array.from({ length: 16 }, (_, i) => i + 1) as ch (ch)}
+              <option value={String(ch)}>{ch}</option>
+            {/each}
+          </select>
+        </label>
 
-  <label class="field">
-    <span>BPM</span>
-    <input
-      type="number"
-      min="40"
-      max="240"
-      value={ui.bpm}
-      disabled={ui.clockSource === 'external'}
-      onchange={(e) => setBpm(Number((e.currentTarget as HTMLInputElement).value))}
-    />
-  </label>
+        <label class="field">
+          <span>Clock</span>
+          <div class="seg">
+            <button
+              type="button"
+              class:on={ui.clockSource === 'internal'}
+              onclick={() => setClockSource('internal')}
+            >Int</button>
+            <button
+              type="button"
+              class:on={ui.clockSource === 'external'}
+              onclick={() => setClockSource('external')}
+              disabled={!selectedInputId}
+              title={selectedInputId ? '' : 'Select an Input first'}
+            >Ext</button>
+          </div>
+        </label>
 
-  <label class="field">
-    <span>Style</span>
-    <select
-      value={ui.style}
-      onchange={(e) => setStyle((e.currentTarget as HTMLSelectElement).value as StyleKind)}
-    >
-      {#each styleOptions as k (k)}
-        <option value={k}>{STYLE_LABELS[k]}</option>
-      {/each}
-    </select>
-  </label>
+        <label class="field">
+          <span>BPM</span>
+          <input
+            type="number"
+            min="40"
+            max="240"
+            value={ui.bpm}
+            disabled={ui.clockSource === 'external'}
+            readonly={ui.clockSource === 'external'}
+            aria-readonly={ui.clockSource === 'external'}
+            onchange={(e) => setBpm(Number((e.currentTarget as HTMLInputElement).value))}
+          />
+        </label>
+      </div>
+    {/if}
+  </div>
 
-  {#if variationCount > 0}
-    <label class="field">
-      <span>Var</span>
+  <div class="performance">
+    <label class="field bank">
+      <span>Bank</span>
+      <div class="bank-row">
+        <button type="button" class="arrow" onclick={() => setBank(ui.bankIndex - 1)} aria-label="Prev bank">
+          ‹
+        </button>
+        <select
+          value={String(ui.bankIndex)}
+          onchange={(e) => setBank(Number((e.currentTarget as HTMLSelectElement).value))}
+        >
+          {#each banks as bank (bank.index)}
+            <option value={String(bank.index)}
+              >{String(bank.index).padStart(2, '0')} - {bank.name}</option
+            >
+          {/each}
+        </select>
+        <button type="button" class="arrow" onclick={() => setBank(ui.bankIndex + 1)} aria-label="Next bank">
+          ›
+        </button>
+      </div>
+    </label>
+
+    <label class="field style">
+      <span>Style</span>
       <select
-        value={String(ui.variation)}
-        onchange={(e) => setVariation(Number((e.currentTarget as HTMLSelectElement).value))}
+        value={ui.style}
+        onchange={(e) => setStyle((e.currentTarget as HTMLSelectElement).value as StyleKind)}
       >
-        {#each Array.from({ length: variationCount }, (_, i) => i + 1) as v (v)}
-          <option value={String(v)}>{v}</option>
+        {#each styleOptions as style (style)}
+          <option value={style}>{STYLE_LABELS[style]}</option>
         {/each}
       </select>
     </label>
-  {/if}
 
-  {#if showGate}
-    <label class="field">
-      <span>Gate</span>
-      <input
-        type="range"
-        min="10"
-        max="100"
-        value={ui.gatePercent}
-        oninput={(e) => setGatePercent(Number((e.currentTarget as HTMLInputElement).value))}
-      />
-      <span class="gateval">{ui.gatePercent}%</span>
+    <div class="variation-slot">
+      <VariationPicker style={ui.style} variation={ui.variation} onSelect={(index) => setVariation(index)} />
+    </div>
+
+    <label class="field transpose-field">
+      <span>Transpose</span>
+      <div class="transpose">
+        <button type="button" onclick={() => bumpTranspose(-1)} aria-label="Octave down">-12</button>
+        <span class="trval">{ui.transpose >= 0 ? '+' : ''}{ui.transpose}</span>
+        <button type="button" onclick={() => bumpTranspose(1)} aria-label="Octave up">+12</button>
+      </div>
     </label>
-  {/if}
 
-  <button class="latch" class:on={ui.latch} onclick={toggleLatch}>
-    Latch {ui.latch ? '⊙' : '○'}
-  </button>
+    {#if showGate}
+      <label class="field gate-field">
+        <span>Gate</span>
+        <input
+          type="range"
+          min="10"
+          max="100"
+          value={ui.gatePercent}
+          oninput={(e) => setGatePercent(Number((e.currentTarget as HTMLInputElement).value))}
+        />
+        <span class="gateval">{ui.gatePercent}%</span>
+      </label>
+    {/if}
+
+    <button type="button" class="latch" class:on={ui.latch} onclick={toggleLatch}>
+      <span>Latch</span>
+      <span>{ui.latch ? 'On' : 'Off'}</span>
+    </button>
+  </div>
 </div>
 
 <style>
   .topbar {
-    display: flex;
-    align-items: flex-end;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-    background: #1a1a1a;
-    border-bottom: 1px solid #2a2a2a;
-    flex-wrap: wrap;
-    /* D-08: mirror PianoLayout — kill iOS text-selection flash on long-press. */
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(260px, 0.82fr) minmax(0, 2.1fr);
+    gap: var(--space-4);
+    align-items: start;
+    padding: var(--space-4);
+    background: var(--bg-1);
+    border: 1px solid var(--bg-3);
+    border-radius: var(--radius-lg);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
     user-select: none;
     -webkit-user-select: none;
   }
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    font-size: 0.75rem;
-    color: #888;
+
+  .setup-zone {
+    position: relative;
+    z-index: 2;
   }
-  .field > span {
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  select, input[type='number'] {
-    background: #2a2a2a;
-    color: #eee;
-    border: 1px solid #3a3a3a;
-    border-radius: 4px;
-    padding: 0.35rem 0.5rem;
-    font-size: 0.9rem;
-    min-width: 4ch;
-  }
-  select:disabled { color: #666; }
-  .bank-row { display: flex; gap: 0.25rem; }
-  .arrow {
-    background: #2a2a2a;
-    color: #eee;
-    border: 1px solid #3a3a3a;
-    border-radius: 4px;
-    padding: 0 0.6rem;
+
+  .setup-pill {
+    width: 100%;
+    min-height: 88px;
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border: 1px solid var(--system-soft);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    color: var(--fg-0);
     cursor: pointer;
-    font-size: 1rem;
+    text-align: left;
   }
-  .arrow:hover { background: #3a3a3a; }
-  .transpose {
+
+  .setup-pill:hover,
+  .setup-pill:focus-visible {
+    border-color: var(--system);
+    outline: none;
+  }
+
+  .setup-label,
+  .popover-head,
+  .field > span,
+  .latch span:first-child {
+    color: var(--fg-2);
+    font-size: var(--t-eyebrow);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .setup-label {
+    color: var(--system);
+  }
+
+  .setup-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-1) var(--space-2);
+    color: var(--fg-0);
+    font-family: var(--mono);
+    font-size: var(--t-body);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .setup-summary span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .setup-popover {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 0;
+    width: min(420px, calc(100vw - var(--space-8)));
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border: 1px solid var(--bg-4);
+    border-radius: var(--radius-lg);
+    background: var(--bg-2);
+    box-shadow: 0 18px 56px rgb(0 0 0 / 0.48);
+  }
+
+  .popover-head {
+    grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    justify-content: space-between;
   }
-  .transpose button {
-    background: #2a2a2a; color: #eee; border: 1px solid #3a3a3a;
-    border-radius: 4px; padding: 0.25rem 0.45rem; cursor: pointer;
-    font-size: 0.75rem;
-  }
-  .trval { min-width: 3ch; text-align: center; color: #eee; font-variant-numeric: tabular-nums; }
-  .latch {
-    align-self: flex-end;
-    background: #2a2a2a; color: #eee; border: 1px solid #3a3a3a;
-    border-radius: 4px; padding: 0.45rem 0.9rem; cursor: pointer;
-    font-size: 0.9rem;
-  }
-  .latch.on { background: #ff7a1a; color: #111; border-color: #ff7a1a; }
-  .gateval { color: #eee; font-variant-numeric: tabular-nums; min-width: 4ch; }
-  input[type='range'] { accent-color: #ff7a1a; }
-  input[type='number']:disabled { color: #555; }
-  .seg { display: flex; gap: 0; }
-  .seg button {
-    background: #2a2a2a;
-    color: #eee;
-    border: 1px solid #3a3a3a;
-    padding: 0.35rem 0.7rem;
-    cursor: pointer;
-    font-size: 0.85rem;
-  }
-  .seg button:first-child { border-radius: 4px 0 0 4px; }
-  .seg button:last-child  { border-radius: 0 4px 4px 0; border-left: none; }
-  .seg button.on { background: #ff7a1a; color: #111; border-color: #ff7a1a; }
-  .seg button:disabled { color: #555; cursor: not-allowed; }
 
-  /* D-08: kill 300ms tap delay + double-tap zoom on controls. <select> intentionally
-     excluded (Pitfall 6) — touch-action there breaks the native iOS dropdown gesture. */
-  button, input[type='number'], input[type='range'] {
+  .close {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--bg-4);
+    border-radius: var(--radius-md);
+    background: var(--bg-3);
+    color: var(--fg-0);
+    cursor: pointer;
+    font-size: var(--t-readout);
+  }
+
+  .performance {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.95fr) minmax(180px, 0.85fr) minmax(320px, 1.8fr) minmax(140px, 0.65fr) auto;
+    gap: var(--space-4);
+    align-items: end;
+  }
+
+  .field {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  select,
+  input[type='number'] {
+    min-height: 44px;
+    min-width: 0;
+    width: 100%;
+    padding: var(--space-2);
+    border: 1px solid var(--bg-4);
+    border-radius: var(--radius-md);
+    background: var(--bg-2);
+    color: var(--fg-0);
+    font: inherit;
+  }
+
+  select:disabled,
+  input:disabled {
+    color: var(--fg-3);
+    border-color: var(--bg-3);
+  }
+
+  .bank-row,
+  .transpose,
+  .seg {
+    display: flex;
+    align-items: center;
+  }
+
+  .bank-row {
+    gap: var(--space-1);
+  }
+
+  .bank-row select {
+    flex: 1 1 auto;
+  }
+
+  .arrow,
+  .transpose button,
+  .seg button,
+  .latch {
+    min-width: 44px;
+    min-height: 44px;
+    border: 1px solid var(--bg-4);
+    background: var(--bg-2);
+    color: var(--fg-0);
+    cursor: pointer;
+    font: inherit;
     touch-action: manipulation;
   }
 
-  /* D-08: Apple HIG 44pt min tap targets. Per-element, NOT global on `button` — a
-     global rule would distort native <select> option rendering on iPad (Pitfall 6). */
-  .arrow, .latch, .seg button, .transpose button {
-    min-width: 44px;
-    min-height: 44px;
+  .arrow {
+    border-radius: var(--radius-md);
+    font-size: var(--t-readout);
   }
 
-  /* D-08: :active = touch substitute for :hover (iOS hover is sticky after tap-release). */
-  .arrow:active, .latch:active, .seg button:active, .transpose button:active {
-    filter: brightness(1.15);
+  .transpose {
+    gap: var(--space-2);
+  }
+
+  .transpose button {
+    border-radius: var(--radius-md);
+    padding: var(--space-2);
+    font-family: var(--mono);
+  }
+
+  .trval,
+  .gateval {
+    min-width: 4ch;
+    color: var(--fg-0);
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .seg {
+    gap: 0;
+  }
+
+  .seg button {
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .seg button:first-child {
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+  }
+
+  .seg button:last-child {
+    border-left: none;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  }
+
+  .seg button.on,
+  .latch.on {
+    border-color: var(--system);
+    background: var(--system-soft);
+    color: var(--fg-0);
+  }
+
+  .seg button:disabled {
+    color: var(--fg-3);
+    cursor: not-allowed;
+  }
+
+  .variation-slot {
+    min-width: 0;
+  }
+
+  .gate-field {
+    grid-column: 3 / span 2;
+  }
+
+  input[type='range'] {
+    width: 100%;
+    min-height: 44px;
+    accent-color: var(--system);
+    touch-action: manipulation;
+  }
+
+  .latch {
+    align-self: end;
+    display: grid;
+    gap: var(--space-1);
+    place-items: center;
+    min-width: 84px;
+    border-radius: var(--radius-md);
+    padding: var(--space-2);
+  }
+
+  .latch span:last-child {
+    font-family: var(--mono);
+    font-size: var(--t-body);
+  }
+
+  button:active {
+    filter: brightness(1.12);
+  }
+
+  @media (max-width: 1120px) {
+    .topbar {
+      grid-template-columns: 1fr;
+    }
+
+    .performance {
+      grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.8fr) minmax(320px, 1.6fr) minmax(120px, 0.6fr) auto;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .performance {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .variation-slot,
+    .gate-field {
+      grid-column: 1 / -1;
+    }
+
+    .latch {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .topbar,
+    .setup-popover {
+      padding: var(--space-2);
+    }
+
+    .setup-popover {
+      grid-template-columns: 1fr;
+      width: calc(100vw - var(--space-4));
+    }
+
+    .performance {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
