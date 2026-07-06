@@ -221,9 +221,16 @@
 
 <style>
   main {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    overflow-x: hidden;
+    padding: var(--space-4) clamp(var(--space-2), 3vw, var(--space-12)) var(--space-6);
     font-family: system-ui, sans-serif;
-    color: #eee;
-    background: #111;
+    font-size: var(--t-body);
+    color: var(--fg-0);
+    background: var(--bg-0);
     min-height: 100vh;
     /* 02-03 only covered .topbar; iPhone double-tap still selected pad labels and
        other surfaces (UAT test 19). Suppress selection app-wide by default and
@@ -232,6 +239,10 @@
     -webkit-user-select: none;
     -webkit-touch-callout: none;
   }
+  :global(body) {
+    margin: 0;
+    background: var(--bg-0);
+  }
   /* Form fields stay editable/selectable despite the app-wide suppression. */
   main :global(input),
   main :global(textarea) {
@@ -239,23 +250,32 @@
     -webkit-user-select: text;
   }
   footer {
+    width: min(100%, 1100px);
+    margin: 0 auto;
+    padding: 0 var(--space-2) var(--space-4);
     text-align: center;
-    color: #666;
-    font-size: 0.8rem;
-    padding: 1rem 1rem 2rem;
+    color: var(--fg-3);
+    font-size: var(--t-eyebrow);
+    line-height: 1.5;
   }
+  footer p { margin: 0; }
   footer code {
-    background: #222;
-    padding: 0.1rem 0.35rem;
-    border-radius: 3px;
-    margin: 0 0.05rem;
-    font-size: 0.78rem;
+    display: inline-block;
+    margin: 0 var(--space-1);
+    padding: 0 var(--space-1);
+    border: 1px solid var(--bg-3);
+    border-radius: var(--radius-sm);
+    background: var(--bg-1);
+    color: var(--fg-1);
+    font-family: var(--mono);
+    font-size: var(--t-eyebrow);
+    line-height: 1.5;
   }
   .dev-tag {
-    margin-top: 0.5rem;
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    color: #4a4a4a;
+    margin-top: var(--space-2);
+    font-family: var(--mono);
+    font-size: var(--t-eyebrow);
+    color: var(--fg-3);
     font-variant-numeric: tabular-nums;
   }
 
