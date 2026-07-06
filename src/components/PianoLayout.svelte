@@ -56,8 +56,11 @@
     // Idempotent: only release if this pointer is the one still captured for this pad.
     if (captured.get(k) !== e.pointerId) return;
     captured.delete(k);
-    (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
     e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
+    if (target.hasPointerCapture?.(e.pointerId)) {
+      target.releasePointerCapture(e.pointerId);
+    }
     onRelease(k);
   }
 </script>

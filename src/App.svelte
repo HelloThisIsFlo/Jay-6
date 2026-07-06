@@ -128,12 +128,18 @@
   // Tracks which physical keys are down to ignore key-repeat noise.
   const downKeys = new Set<string>();
 
+  function isEditableOrControlTarget(target: EventTarget | null): boolean {
+    const element = target instanceof HTMLElement ? target : null;
+    return Boolean(
+      element?.closest(
+        'input, select, textarea, button, [contenteditable="true"], [role="button"], [role="switch"], [role="menuitem"]',
+      ),
+    );
+  }
+
   function onKeyDown(ev: KeyboardEvent): void {
-    // Don't steal input from form elements (BPM number input, dropdowns).
-    const t = ev.target as HTMLElement | null;
-    if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) {
-      return;
-    }
+    // Let focused controls keep their native keyboard activation.
+    if (isEditableOrControlTarget(ev.target)) return;
     const k = ev.key.toLowerCase();
     const isAppKey =
       k in KEY_TO_PAD ||
