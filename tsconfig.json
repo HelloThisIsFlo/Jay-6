@@ -18,5 +18,5 @@
     "skipLibCheck": true,
     "types": ["vitest/globals", "svelte"]
   },
-  "include": ["src/**/*.ts", "src/**/*.svelte", "src/**/*.d.ts", "test/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.svelte", "src/**/*.d.ts", "test/**/*.ts", "test/**/*.d.ts"]
 }

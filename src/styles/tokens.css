@@ -1,0 +1,43 @@
+:root {
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --bg-0: #0e0e0e;
+  --bg-1: #171717;
+  --bg-2: #1f1f1f;
+  --bg-3: #2a2a2a;
+  --bg-4: #3a3a3a;
+  --bg-5: #4a4a4a;
+
+  --fg-0: #eeeeee;
+  --fg-1: #b8b8b8;
+  --fg-2: #7a7a7a;
+  --fg-3: #555555;
+
+  /* Active pad sound only: held or latched pads that are currently sounding. */
+  --accent: #ff7a1a;
+  --accent-soft: rgba(255, 122, 26, 0.18);
+
+  /* Secondary system status: external, disabled, read-only, or setup emphasis. */
+  --system: oklch(0.68 0.045 250);
+  --system-soft: oklch(0.42 0.04 250 / 0.35);
+
+  --cream: #f4f1ea;
+  --black-key: #2e2e2e;
+  --frame: #000000;
+
+  --t-eyebrow: 11px;
+  --t-body: 14px;
+  --t-readout: 18px;
+  --t-display: 28px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+}

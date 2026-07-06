@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import mainSource from '../src/main.ts?raw';
 
 const root = resolve(__dirname, '..');
 
@@ -52,12 +53,11 @@ describe('shared visual tokens', () => {
   });
 
   it('imports the shared token layer exactly once before App mounts', () => {
-    const main = readProjectFile('src/main.ts');
-    const imports = main.match(/import '\.\/styles\/tokens\.css';/g) ?? [];
+    const imports = mainSource.match(/import '\.\/styles\/tokens\.css';/g) ?? [];
 
     expect(imports).toHaveLength(1);
-    expect(main.indexOf("import './styles/tokens.css';")).toBeLessThan(
-      main.indexOf("import App from './App.svelte';"),
+    expect(mainSource.indexOf("import './styles/tokens.css';")).toBeLessThan(
+      mainSource.indexOf("import App from './App.svelte';"),
     );
   });
 });
