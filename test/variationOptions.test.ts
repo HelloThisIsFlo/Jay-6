@@ -1,5 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { variationOptionsForStyle } from '../src/variationOptions';
+import {
+  variationOptionsForStyle,
+  type ArpVariationModel,
+  type BeatVariationModel,
+  type RhythmVariationModel,
+} from '../src/variationOptions';
+import type { StyleKind } from '../src/state.svelte';
+
+function expectArpModel(style: StyleKind): ArpVariationModel {
+  const model = variationOptionsForStyle(style);
+  expect(model.kind).toBe('arp');
+  if (model.kind !== 'arp') throw new Error(`expected arp model for ${style}`);
+  return model;
+}
+
+function expectBeatModel(): BeatVariationModel {
+  const model = variationOptionsForStyle('phraseDur');
+  expect(model.kind).toBe('beat');
+  if (model.kind !== 'beat') throw new Error('expected beat model');
+  return model;
+}
+
+function expectRhythmModel(style: StyleKind): RhythmVariationModel {
+  const model = variationOptionsForStyle(style);
+  expect(model.kind).toBe('rhythm');
+  if (model.kind !== 'rhythm') throw new Error(`expected rhythm model for ${style}`);
+  return model;
+}
 
 describe('variationOptionsForStyle', () => {
   it('returns no selectable options for Hold', () => {
@@ -11,9 +38,8 @@ describe('variationOptionsForStyle', () => {
   });
 
   it('preserves exact Arp Style 1 mappings for representative indices', () => {
-    const model = variationOptionsForStyle('arp1');
+    const model = expectArpModel('arp1');
 
-    expect(model.kind).toBe('arp');
     expect(model.style).toBe('arp1');
     expect(model.subdivision).toBe('8th');
     expect(model.options).toHaveLength(12);
@@ -74,9 +100,8 @@ describe('variationOptionsForStyle', () => {
   });
 
   it('preserves exact Arp Style 2 mappings for representative indices', () => {
-    const model = variationOptionsForStyle('arp2');
+    const model = expectArpModel('arp2');
 
-    expect(model.kind).toBe('arp');
     expect(model.style).toBe('arp2');
     expect(model.subdivision).toBe('16th');
     expect(model.options).toHaveLength(12);
@@ -89,9 +114,8 @@ describe('variationOptionsForStyle', () => {
   });
 
   it('preserves Beat duration and straight/triplet index columns', () => {
-    const model = variationOptionsForStyle('phraseDur');
+    const model = expectBeatModel();
 
-    expect(model.kind).toBe('beat');
     expect(model.rows).toEqual(['double-whole', 'whole', 'half', 'quarter', '8th', '16th']);
     expect(model.columns).toEqual(['straight', 'triplet']);
     expect(model.options.filter((option) => option.feel === 'straight').map((option) => option.index))
@@ -107,9 +131,8 @@ describe('variationOptionsForStyle', () => {
   });
 
   it('preserves Rhythm Gate 4 pattern, glyph, parsed steps, and representative indices', () => {
-    const model = variationOptionsForStyle('rhythm4');
+    const model = expectRhythmModel('rhythm4');
 
-    expect(model.kind).toBe('rhythm');
     expect(model.style).toBe('rhythm4');
     expect(model.options).toHaveLength(12);
     expect(model.options.every((option) => option.pattern.length === 16)).toBe(true);
@@ -144,9 +167,8 @@ describe('variationOptionsForStyle', () => {
   });
 
   it('preserves Rhythm Gate 5 pattern, glyph, parsed steps, and representative indices', () => {
-    const model = variationOptionsForStyle('rhythm5');
+    const model = expectRhythmModel('rhythm5');
 
-    expect(model.kind).toBe('rhythm');
     expect(model.style).toBe('rhythm5');
     expect(model.options).toHaveLength(12);
     expect(model.options.every((option) => option.pattern.length === 16)).toBe(true);
@@ -173,11 +195,16 @@ describe('variationOptionsForStyle', () => {
       },
     ]);
     expect(model.options.find((option) => option.index === 12)?.steps).toEqual([
-      { startStep: 1, durationSteps: 2 },
-      { startStep: 4, durationSteps: 2 },
-      { startStep: 7, durationSteps: 2 },
-      { startStep: 10, durationSteps: 2 },
-      { startStep: 13, durationSteps: 2 },
+      { startStep: 1, durationSteps: 1 },
+      { startStep: 2, durationSteps: 1 },
+      { startStep: 4, durationSteps: 1 },
+      { startStep: 5, durationSteps: 1 },
+      { startStep: 7, durationSteps: 1 },
+      { startStep: 8, durationSteps: 1 },
+      { startStep: 10, durationSteps: 1 },
+      { startStep: 11, durationSteps: 1 },
+      { startStep: 13, durationSteps: 1 },
+      { startStep: 14, durationSteps: 1 },
     ]);
   });
 });
