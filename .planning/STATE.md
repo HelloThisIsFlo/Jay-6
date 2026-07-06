@@ -5,16 +5,16 @@ milestone_name: MVP
 current_phase: 02.1
 current_phase_name: visual-redesign-adoption
 status: executing
-stopped_at: Completed 02.1-02-PLAN.md
-last_updated: "2026-07-06T15:00:09.130Z"
+stopped_at: Completed 02.1-03-PLAN.md
+last_updated: "2026-07-06T15:06:09.051Z"
 last_activity: 2026-07-06
-last_activity_desc: Completed 02.1-02 TopBar C2 and per-style variation pickers
+last_activity_desc: Completed 02.1-03 lifted pad surface with preserved pointer safety
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-05-23 after v1.0)
 ## Current Position
 
 Phase: 02.1 (visual-redesign-adoption) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
-Last activity: 2026-07-06 — Completed 02.1-02 TopBar C2 and per-style variation pickers
+Last activity: 2026-07-06 — Completed 02.1-03 lifted pad surface with preserved pointer safety
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Last activity: 2026-07-06 — Completed 02.1-02 TopBar C2 and per-style variatio
 | Phase 02-post-prototype-polish-uat-acceptance P05 | 2min | 3 tasks | 4 files |
 | Phase 02.1 P01 | 5min | 3 tasks | 6 files |
 | Phase 02.1 P02 | 7min | 3 tasks | 4 files |
+| Phase 02.1 P03 | 5min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,9 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 - [Phase 02.1]: Derive every visible variation option from src/phrases.ts rather than duplicating variation truth in Svelte. — Plan 02.1-02 needed exact 1..12 mapping preservation for per-style pickers.
 - [Phase 02.1]: Keep VariationPicker state-less: TopBar passes active style/variation and calls setVariation(index) in the selection callback. — This preserves existing ui.variation semantics and avoids parallel selected state.
 - [Phase 02.1]: Use steel/border selected states for setup, clock, latch, and variation controls; orange remains reserved for active pads. — Matches D-03 semantic color rules and avoids misleading selected control states.
+- [Phase 02.1]: Restyle the existing two-row J-6 hardware pad component in place instead of changing DOM structure or event wiring. — Avoids reintroducing stuck-note or highlight desync risk while adopting the lifted visual treatment.
+- [Phase 02.1]: Use shared token variables for frame, cream pad, black-key, typography, radius, and spacing values. — Keeps Plan 03 aligned with the token layer shipped in Plan 01 and avoids ad hoc visual drift.
+- [Phase 02.1]: Keep orange active styling scoped to .pad.held, driven by App.svelte held/latch projection. — Matches the semantic color contract: orange means currently sounding or latched pad only.
 
 ### Pending Todos
 
@@ -131,8 +135,8 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 
 ## Session Continuity
 
-Last session: 2026-07-06T15:00:09.126Z
-Stopped at: Completed 02.1-02-PLAN.md
+Last session: 2026-07-06T15:05:49.878Z
+Stopped at: Completed 02.1-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
