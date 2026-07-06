@@ -535,17 +535,19 @@
     filter: brightness(1.12);
   }
 
+  /* R5/D-06: below 1120px the topbar stacks to a single column, handing .performance
+     the full row width. The old two-tier split (a squeezed 5-col row from 900-1120px,
+     then a safe 2-col reflow only below 900px) left a "squeeze window" whose summed
+     column minimums (220+180+320+120+auto ≈ 924px + 64px gaps ≈ 988px) exceed the
+     available content width at the mandated iPad-sized 1024px viewport (~930px after
+     main+topbar padding) — clipped by main's `overflow-x: hidden` rather than
+     scrollable. Merging both rules onto the same 1120px breakpoint removes the
+     squeeze window entirely so 1024px always gets the safe 2-col group reflow. */
   @media (max-width: 1120px) {
     .topbar {
       grid-template-columns: 1fr;
     }
 
-    .performance {
-      grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.8fr) minmax(320px, 1.6fr) minmax(120px, 0.6fr) auto;
-    }
-  }
-
-  @media (max-width: 900px) {
     .performance {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
