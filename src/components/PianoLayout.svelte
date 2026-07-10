@@ -113,27 +113,18 @@
   .piano {
     display: grid;
     grid-template-columns: repeat(14, minmax(0, 1fr));
-    grid-template-rows: 1fr 1.3fr;
+    grid-template-rows: 101px 129px;
     column-gap: var(--space-2);
-    row-gap: var(--space-4);
-    padding: var(--space-6);
+    row-gap: var(--space-2);
+    padding: 18px;
     box-sizing: border-box;
-    width: min(100%, 1100px);
-    max-width: 1100px;
-    margin: 0 auto;
-    /* D-10 fallback step D: frame dropped to #000 so black keys (#2e2e2e) pop
-       against true black. Earlier #181818 frame inverted the visual hierarchy —
-       app bg #111 was darker than the frame, making the piano panel feel
-       "raised" instead of recessed. */
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 28%),
-      var(--frame);
-    border: 1px solid var(--bg-3);
-    border-radius: var(--radius-lg);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      inset 0 -14px 24px rgba(0, 0, 0, 0.52),
-      0 20px 36px rgba(0, 0, 0, 0.35);
+    width: min(calc(100% - 56px), 1180px);
+    max-width: 1180px;
+    margin: 20px auto 0;
+    background: var(--frame);
+    border: 1px solid #161616;
+    border-radius: 14px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
     user-select: none;
     touch-action: none;
   }
@@ -143,8 +134,8 @@
     justify-content: flex-end;
     align-items: flex-start;
     gap: var(--space-1);
-    padding: var(--space-4) var(--space-2) var(--space-2);
-    border-radius: var(--radius-md);
+    padding: 12px 12px 14px;
+    border-radius: 10px;
     cursor: pointer;
     font-family: var(--mono);
     text-align: left;
@@ -163,7 +154,7 @@
     -webkit-user-select: none;
     -webkit-touch-callout: none;
   }
-  .pad:active { transform: translateY(2px); }
+  .pad:active { transform: translateY(1px); }
   .pad .key,
   .pad .name {
     max-width: 100%;
@@ -172,9 +163,10 @@
     -webkit-touch-callout: none;
   }
   .pad .key {
-    font-size: var(--t-eyebrow);
+    font-size: 10px;
     font-weight: 600;
     color: var(--fg-2);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     line-height: 1.2;
   }
@@ -182,11 +174,9 @@
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    /* Scales with viewport so 7 white pads across a phone still read without
-       breaking mid-token; capped at the readout size on wide screens. */
-    font-size: clamp(10px, 2.7vw, 18px);
+    font-size: 16px;
     font-weight: 600;
-    line-height: 1.15;
+    line-height: 1.1;
   }
   /* Tokens never break internally; wrapping happens only between main + bass. */
   .pad .cname-main,
@@ -199,53 +189,46 @@
   .pad.white {
     background: var(--cream);
     color: var(--bg-1);
-    min-height: 140px;
-    border-color: rgba(255, 255, 255, 0.72);
-    box-shadow:
-      inset 0 2px 0 rgba(255, 255, 255, 0.9),
-      inset 0 -12px 18px rgba(96, 78, 54, 0.2),
-      0 7px 0 #c8c0b4,
-      0 14px 20px rgba(0, 0, 0, 0.28);
+    min-height: 129px;
+    border-color: #d8d3c5;
+    box-shadow: none;
   }
   .pad.white .key { color: #6f675f; }
-  /* D-10 fallback ladder: walked Option B → D (frame to #000 — applied above) after
-     desktop eyeball showed Option B alone read muddy: #2e2e2e keys on the original
-     #181818 frame gave Δluma ~22 (visible but indistinct), and the 6%-alpha top
-     highlight was lost at desktop zoom. Frame → #000 restores depth contrast.
-     Keeping the inset highlight + #2e2e2e fill — if this still reads weak on real
-     iPad, drop the highlight and bump fill toward #262626. UI-SPEC ref:
-     .planning/phases/02-post-prototype-polish-uat-acceptance/02-UI-SPEC.md §"Fallback
-     ladder (executor pivot path)". */
   .pad.black {
     background: var(--black-key);
     color: var(--fg-0);
-    min-height: 110px;
-    border-color: var(--bg-4);
+    min-height: 101px;
+    border-color: var(--bg-3);
     box-shadow:
-      inset 0 2px 0 rgba(255, 255, 255, 0.1),
-      inset 0 -12px 18px rgba(0, 0, 0, 0.55),
-      0 7px 0 #161616,
-      0 13px 18px rgba(0, 0, 0, 0.36);
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.4);
   }
   .pad.held {
     background: var(--accent) !important;
     color: var(--bg-0) !important;
     box-shadow:
-      inset 0 2px 0 rgba(255, 255, 255, 0.28),
-      inset 0 -10px 18px rgba(80, 34, 0, 0.3),
-      0 0 24px 4px var(--accent-soft),
-      0 7px 0 #9d3e00;
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 0 24px 4px rgba(255, 122, 26, 0.45);
     border-color: var(--accent);
   }
   .pad.held .key { color: var(--bg-0) !important; }
 
   @media (max-width: 760px) {
     .piano {
+      grid-template-rows: 88px 112px;
       row-gap: var(--space-2);
-      padding: var(--space-4);
+      width: calc(100% - 24px);
+      margin-top: 12px;
+      padding: 12px;
     }
     .pad {
-      padding: var(--space-2);
+      padding: var(--space-2) var(--space-2) 10px;
+    }
+    .pad .key {
+      font-size: 9px;
+    }
+    .pad .name {
+      font-size: clamp(10px, 2.7vw, 14px);
     }
     .pad.black {
       min-height: 88px;
@@ -257,7 +240,10 @@
 
   @media (max-height: 480px) {
     .piano {
+      grid-template-rows: 64px 80px;
       row-gap: var(--space-2);
+      width: calc(100% - 16px);
+      margin-top: var(--space-2);
       padding: var(--space-2);
     }
     .pad {

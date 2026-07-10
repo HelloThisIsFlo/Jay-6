@@ -152,10 +152,14 @@
       <div class="popover setup-popover" role="dialog" aria-label="Setup">
         <div class="popover-head">
           <span>Setup</span>
+          <span class="setup-state">
+            <span class="setup-dot" class:live={selectedOutputId !== null} aria-hidden="true"></span>
+            {selectedOutputId !== null ? 'Connected' : midiStatus === 'ready' ? 'Ready' : 'Offline'}
+          </span>
           <button type="button" class="close" aria-label="Close setup" onclick={closeAll}>×</button>
         </div>
 
-        <label class="field">
+        <label class="field full">
           <span>Output</span>
           <select
             disabled={midiStatus !== 'ready'}
@@ -163,13 +167,13 @@
             onchange={(e) => selectOutput((e.currentTarget as HTMLSelectElement).value || null)}
           >
             {#if midiStatus === 'requesting'}
-              <option>Requesting MIDI...</option>
+              <option value="">Requesting MIDI...</option>
             {:else if midiStatus === 'unsupported'}
-              <option>Use Chrome/Edge</option>
+              <option value="">Use Chrome/Edge</option>
             {:else if midiStatus === 'denied'}
-              <option>Permission denied</option>
+              <option value="">Permission denied</option>
             {:else if midiStatus === 'error'}
-              <option>MIDI error</option>
+              <option value="">MIDI error</option>
             {:else if midiOutputs.length === 0}
               <option value="">No outputs</option>
             {:else}
@@ -180,7 +184,7 @@
           </select>
         </label>
 
-        <label class="field">
+        <label class="field full">
           <span>Input</span>
           <select
             disabled={midiStatus !== 'ready'}
@@ -188,13 +192,13 @@
             onchange={(e) => selectInput((e.currentTarget as HTMLSelectElement).value || null)}
           >
             {#if midiStatus === 'requesting'}
-              <option>Requesting MIDI...</option>
+              <option value="">Requesting MIDI...</option>
             {:else if midiStatus === 'unsupported'}
-              <option>Use Chrome/Edge</option>
+              <option value="">Use Chrome/Edge</option>
             {:else if midiStatus === 'denied'}
-              <option>Permission denied</option>
+              <option value="">Permission denied</option>
             {:else if midiStatus === 'error'}
-              <option>MIDI error</option>
+              <option value="">MIDI error</option>
             {:else}
               <option value="">No input</option>
               {#each midiInputs as input (input.id)}
@@ -234,18 +238,32 @@
           </div>
         </label>
 
-        <label class="field">
+        <label class="field full">
           <span>BPM</span>
-          <input
-            type="number"
-            min="40"
-            max="240"
-            value={ui.bpm}
-            disabled={ui.clockSource === 'external'}
-            readonly={ui.clockSource === 'external'}
-            aria-readonly={ui.clockSource === 'external'}
-            onchange={(e) => setBpm(Number((e.currentTarget as HTMLInputElement).value))}
-          />
+          <div class="bpm-stepper">
+            <button
+              type="button"
+              aria-label="Decrease BPM"
+              disabled={ui.clockSource === 'external'}
+              onclick={() => setBpm(ui.bpm - 1)}
+            >−</button>
+            <input
+              type="number"
+              min="40"
+              max="240"
+              value={ui.bpm}
+              disabled={ui.clockSource === 'external'}
+              readonly={ui.clockSource === 'external'}
+              aria-readonly={ui.clockSource === 'external'}
+              onchange={(e) => setBpm(Number((e.currentTarget as HTMLInputElement).value))}
+            />
+            <button
+              type="button"
+              aria-label="Increase BPM"
+              disabled={ui.clockSource === 'external'}
+              onclick={() => setBpm(ui.bpm + 1)}
+            >+</button>
+          </div>
         </label>
       </div>
     {/if}
@@ -288,7 +306,13 @@
 
   <!-- Style readout → style picker; variation readout → variation picker. -->
   <div class="zone style-zone">
-    <button type="button" class="readout style-readout" class:open={isOpen('style')} onclick={() => toggle('style')}>
+    <button
+      type="button"
+      class="readout style-readout"
+      class:joined={hasVariation}
+      class:open={isOpen('style')}
+      onclick={() => toggle('style')}
+    >
       <span class="readout-name">{styleTag}</span>
       <span class="chev" aria-hidden="true">▾</span>
     </button>
@@ -300,7 +324,22 @@
         class:open={isOpen('variation')}
         onclick={() => toggle('variation')}
       >
-        <span class="var-num">{variationReadout}</span>
+        <span class="mini-glyph" aria-hidden="true">
+          {#if ui.style === 'arp1' || ui.style === 'arp2'}
+            <svg viewBox="0 0 30 16">
+              <polyline points="3,13 10,10 17,6 25,3" />
+              <circle cx="3" cy="13" r="1.5" />
+              <circle cx="10" cy="10" r="1.5" />
+              <circle cx="17" cy="6" r="1.5" />
+              <circle cx="25" cy="3" r="1.5" />
+            </svg>
+          {:else if ui.style === 'phraseDur'}
+            <span class="note-mark">♪</span>
+          {:else}
+            <span class="gate-mark"><i></i><i></i><i></i><i></i></span>
+          {/if}
+        </span>
+        <span class="var-num">{variationReadout.slice(1)}</span>
         <span class="chev" aria-hidden="true">▾</span>
       </button>
     {/if}
@@ -362,8 +401,9 @@
     <button type="button" class="step" onclick={() => bumpTranspose(1)} aria-label="Octave up">+</button>
   </div>
 
-  <!-- Latch: steel when on (orange stays reserved for sounding/latched pads, D-03). -->
+  <!-- The approved C2 strip uses active latch as its far-right performance anchor. -->
   <button type="button" class="latch" class:on={ui.latch} onclick={toggleLatch} aria-pressed={ui.latch}>
+    <span class="latch-icon" aria-hidden="true">⊙</span>
     LATCH
   </button>
 </div>
@@ -375,14 +415,15 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2);
-    width: min(100%, 1100px);
-    margin: 0 auto;
-    padding: var(--space-2) var(--space-3, 12px);
-    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
-    border: 1px solid var(--bg-3);
-    border-radius: var(--radius-lg);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+    gap: 12px;
+    width: 100%;
+    margin: 0;
+    padding: 12px 18px;
+    background: var(--bg-1);
+    border: 0;
+    border-bottom: 1px solid var(--bg-3);
+    border-radius: 0;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.035);
     user-select: none;
     -webkit-user-select: none;
   }
@@ -406,7 +447,7 @@
 
   /* ── Status pill ───────────────────────────────────────────────────── */
   .pill-zone {
-    flex: 0 1 auto;
+    flex: 0 1 280px;
     min-width: 0;
     z-index: 12;
   }
@@ -414,13 +455,13 @@
   .status-pill {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    width: 100%;
-    min-height: 44px;
-    padding: 0 var(--space-3, 12px);
+    gap: 10px;
+    width: min(100%, 280px);
+    min-height: 58px;
+    padding: 0 14px 0 12px;
     border: 1px solid var(--bg-4);
-    border-radius: var(--radius-md);
-    background: var(--bg-0);
+    border-radius: 999px;
+    background: var(--bg-2);
     color: var(--fg-0);
     cursor: pointer;
     text-align: left;
@@ -443,18 +484,18 @@
   }
 
   .dot.live {
-    background: var(--system);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--system) 22%, transparent);
+    background: #3eb45c;
+    box-shadow: 0 0 0 3px rgb(62 180 92 / 0.2);
   }
 
   .pill-text {
     flex: 1 1 auto;
     display: flex;
     align-items: baseline;
-    gap: var(--space-2);
+    gap: 6px;
     min-width: 0;
     font-family: var(--mono);
-    font-size: var(--t-body);
+    font-size: var(--t-eyebrow);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     overflow: hidden;
@@ -462,7 +503,7 @@
 
   .pill-out {
     min-width: 0;
-    max-width: 16ch;
+    max-width: 12ch;
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--fg-0);
@@ -494,7 +535,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    min-height: 44px;
+    min-height: 54px;
     padding: 0 var(--space-2);
     border: 1px solid var(--bg-4);
     border-radius: var(--radius-md);
@@ -522,12 +563,28 @@
   }
 
   .bank-readout {
+    min-width: 88px;
+    min-height: 58px;
     max-width: 160px;
   }
 
   .style-readout {
     max-width: 140px;
     font-family: var(--mono);
+  }
+
+  .style-zone {
+    gap: 0;
+  }
+
+  .style-readout.joined {
+    border-right: 0;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+  }
+
+  .var-trigger {
+    gap: 6px;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
   }
 
   .mono {
@@ -538,8 +595,53 @@
   .var-num {
     font-family: var(--mono);
     font-variant-numeric: tabular-nums;
-    color: var(--system);
+    color: var(--fg-1);
     font-weight: 600;
+  }
+
+  .mini-glyph {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 18px;
+    color: var(--fg-2);
+  }
+
+  .mini-glyph svg {
+    width: 30px;
+    height: 16px;
+    overflow: visible;
+  }
+
+  .mini-glyph polyline {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mini-glyph circle {
+    fill: currentColor;
+  }
+
+  .note-mark {
+    font-family: var(--mono);
+    font-size: var(--t-readout);
+    line-height: 1;
+  }
+
+  .gate-mark {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .gate-mark i {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
   }
 
   /* ── Transpose ─────────────────────────────────────────────────────── */
@@ -557,8 +659,10 @@
     margin-left: auto;
     display: flex;
     align-items: center;
-    min-height: 44px;
-    padding: 0 var(--space-4);
+    justify-content: center;
+    min-width: 110px;
+    min-height: 66px;
+    padding: 0 22px;
     border: 1px solid var(--bg-4);
     border-radius: var(--radius-md);
     background: var(--bg-2);
@@ -576,9 +680,16 @@
   }
 
   .latch.on {
-    border-color: var(--system);
-    background: var(--system-soft);
-    color: var(--fg-0);
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg-0);
+  }
+
+  .latch-icon {
+    margin-right: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1;
   }
 
   /* ── Shared step buttons (bank arrows + transpose) ─────────────────── */
@@ -586,7 +697,7 @@
     display: grid;
     place-items: center;
     min-width: 40px;
-    min-height: 44px;
+    min-height: 50px;
     border: 1px solid var(--bg-4);
     border-radius: var(--radius-md);
     background: var(--bg-2);
@@ -595,6 +706,15 @@
     font-size: var(--t-readout);
     font-family: var(--mono);
     touch-action: manipulation;
+  }
+
+  .bank-zone .step {
+    min-width: 52px;
+  }
+
+  .transpose-zone .step {
+    min-width: 40px;
+    min-height: 36px;
   }
 
   .step:hover,
@@ -606,11 +726,12 @@
   /* ── Popovers ──────────────────────────────────────────────────────── */
   .popover {
     position: absolute;
+    box-sizing: border-box;
     top: calc(100% + var(--space-2));
     z-index: 11;
     border: 1px solid var(--bg-4);
-    border-radius: var(--radius-lg);
-    background: var(--bg-2);
+    border-radius: 12px;
+    background: #1a1a1a;
     box-shadow: 0 18px 56px rgb(0 0 0 / 0.48);
   }
 
@@ -619,8 +740,35 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-4);
-    width: min(420px, calc(100vw - var(--space-8)));
-    padding: var(--space-4);
+    width: min(380px, calc(100vw - var(--space-8)));
+    padding: 14px;
+  }
+
+  .setup-popover > .popover-head {
+    grid-column: 1 / -1;
+  }
+
+  .setup-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    color: var(--fg-3);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .setup-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--fg-3);
+  }
+
+  .setup-dot.live {
+    background: #3eb45c;
+    box-shadow: 0 0 0 2px rgb(62 180 92 / 0.18);
   }
 
   .list-popover {
@@ -636,10 +784,11 @@
     left: 0;
     display: grid;
     gap: var(--space-3, 12px);
-    width: min(560px, calc(100vw - var(--space-8)));
+    width: min(720px, calc(100vw - var(--space-8)));
     max-height: min(74vh, 600px);
     overflow-y: auto;
-    padding: var(--space-4);
+    padding: 12px;
+    background: #111111;
   }
 
   .popover-head {
@@ -660,8 +809,8 @@
   }
 
   .close {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     border: 1px solid var(--bg-4);
     border-radius: var(--radius-md);
     background: var(--bg-3);
@@ -728,6 +877,39 @@
     min-width: 0;
   }
 
+  .field.full {
+    grid-column: 1 / -1;
+  }
+
+  .bpm-stepper {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    gap: var(--space-1);
+  }
+
+  .bpm-stepper button {
+    min-height: 44px;
+    border: 1px solid var(--bg-4);
+    border-radius: var(--radius-md);
+    background: var(--bg-2);
+    color: var(--fg-0);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: var(--t-readout);
+  }
+
+  .bpm-stepper input[type='number'] {
+    font-family: var(--mono);
+    font-size: var(--t-readout);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .bpm-stepper button:disabled {
+    color: var(--fg-3);
+    cursor: not-allowed;
+  }
+
   .field > span {
     color: var(--fg-2);
     font-size: var(--t-eyebrow);
@@ -750,7 +932,7 @@
 
   .field select:disabled,
   .field input:disabled {
-    color: var(--fg-3);
+    color: var(--fg-2);
     border-color: var(--bg-3);
   }
 
@@ -829,20 +1011,73 @@
     filter: brightness(1.12);
   }
 
-  /* Portrait / narrow: the pill takes the full first row so the control
-     clusters below line up in a tidy grid instead of orphaning LATCH. */
+  /* The large per-style picker stops being a trigger-anchored popover before
+     it can run past the viewport edge. Compact setup/list popovers stay put. */
+  @media (max-width: 1200px) {
+    .variation-popover {
+      position: fixed;
+      left: 50%;
+      right: auto;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(720px, calc(100vw - 24px));
+      max-height: calc(100vh - 24px);
+      overflow-y: auto;
+    }
+  }
+
+  /* The approved iPad layout is an intentional two-row instrument strip,
+     not whatever happens to fit before flex wraps. */
+  @media (max-width: 900px) {
+    .topbar {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        'pill pill transpose'
+        'bank style latch';
+      gap: var(--space-2);
+      padding: 12px;
+    }
+
+    .pill-zone { grid-area: pill; }
+    .bank-zone { grid-area: bank; }
+    .style-zone { grid-area: style; }
+    .transpose-zone { grid-area: transpose; }
+    .latch { grid-area: latch; }
+
+    .pill-zone,
+    .style-zone {
+      min-width: 0;
+    }
+
+    .latch {
+      margin-left: 0;
+    }
+
+    .close {
+      width: 44px;
+      height: 44px;
+    }
+  }
+
   @media (max-width: 620px) {
     .topbar {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'pill pill'
+        'bank latch'
+        'style style'
+        'transpose transpose';
       padding: var(--space-2);
     }
 
     .pill-zone {
-      flex: 1 1 100%;
+      width: 100%;
     }
 
     .bank-zone,
     .style-zone {
-      flex: 1 1 auto;
+      width: 100%;
     }
 
     .bank-readout {
@@ -852,6 +1087,11 @@
 
     .latch {
       margin-left: 0;
+    }
+
+    .style-readout {
+      flex: 1 1 auto;
+      max-width: none;
     }
 
     /* Anchored dropdowns clip off-screen when their trigger sits mid-strip.

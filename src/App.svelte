@@ -230,9 +230,9 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: var(--space-6);
+    gap: 0;
     overflow-x: hidden;
-    padding: var(--space-4) clamp(var(--space-2), 3vw, var(--space-12)) var(--space-6);
+    padding: 0 0 var(--space-6);
     font-family: system-ui, sans-serif;
     font-size: var(--t-body);
     color: var(--fg-0);
@@ -256,10 +256,16 @@
     -webkit-user-select: text;
   }
   footer {
-    width: min(100%, 1100px);
-    margin: 0 auto;
-    padding: 0 var(--space-2) var(--space-4);
-    text-align: center;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    width: min(calc(100% - 56px), 1180px);
+    margin: 12px auto 0;
+    padding: 12px 16px 0;
+    border-top: 1px solid var(--bg-2);
+    text-align: left;
     color: var(--fg-3);
     font-size: var(--t-eyebrow);
     line-height: 1.5;
@@ -278,11 +284,26 @@
     line-height: 1.5;
   }
   .dev-tag {
-    margin-top: var(--space-2);
+    flex: 0 0 auto;
+    margin-left: auto;
     font-family: var(--mono);
     font-size: var(--t-eyebrow);
     color: var(--fg-3);
     font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 760px) {
+    footer {
+      flex-wrap: wrap;
+      justify-content: center;
+      width: calc(100% - 24px);
+      padding-inline: var(--space-2);
+      text-align: center;
+    }
+    .dev-tag {
+      flex-basis: 100%;
+      margin-left: 0;
+    }
   }
 
   /* D-08: iPad body scroll lock — prevents iOS rubber-band scroll / address-bar
