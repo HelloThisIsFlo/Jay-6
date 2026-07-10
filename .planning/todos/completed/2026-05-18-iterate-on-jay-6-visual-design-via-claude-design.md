@@ -1,12 +1,15 @@
+completed: 2026-07-10
 ---
 created: 2026-05-18T21:19:21.163Z
 title: Iterate on Jay-6 visual design via Claude Design
 area: ui
 files:
+
   - src/components/PianoLayout.svelte
   - src/components/TopBar.svelte
   - src/App.svelte
   - .planning/phases/02-post-prototype-polish-uat-acceptance/02-UI-SPEC.md
+
 ---
 
 ## Problem

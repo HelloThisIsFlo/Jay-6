@@ -53,6 +53,12 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 - ✓ **REQ-deploy-k8s-always-on** — v1.0
 - ✓ **REQ-lan-exposure** — v1.0
 
+**Pre-v2 visual redesign (Phase 02.1):**
+
+- ✓ **REQ-visual-redesign-v3** — shared visual tokens, TopBar C2, lifted pad surface, and per-style variation controls adopted
+- ✓ **REQ-responsive-redesign-coverage** — desktop, iPad-sized, and iPhone-landscape layouts browser-verified
+- ✓ **REQ-existing-behavior-preservation** — existing routing, tempo, variation, pointer, keyboard, and latch paths preserved
+
 ### Active
 
 <!-- v2 scope. Refined via /gsd:new-milestone. -->
@@ -86,7 +92,8 @@ If everything else regresses, *that loop must still work*: pick a bank → press
   - `https://jay-6.kempenich.dev` — `just serve` (local Mac, dev tunnel — use when OP-1 is plugged into the Mac).
   - `https://jay-6.kempenich.ai` — always-on K8s cluster behind a cluster-wide Cloudflare Tunnel.
 - **v1 bugs closed.** All Phase 2 open bugs resolved + verified: Ext-clock first-step downbeat alignment, OP-1 Start/Stop/Continue wired, 24 PPQ clock send, voicing audit (~30% inferred slots tightened).
-- **Carried into v2** (captured as todos): host-owned play/latch single source of truth (fragile latch state machine), transport-reset record-sync, variation-change toast, visual-design pass.
+- **Pre-v2 visual refresh shipped** (2026-07-10) — Jay-6 v3 treatment verified across desktop, iPad-sized, and iPhone-landscape layouts without changing playback behavior.
+- **Carried into v2** (captured as todos): host-owned play/latch single source of truth (fragile latch state machine), transport-reset record-sync, and variation-change toast.
 - **Codebase intel.** Full audit at `.planning/codebase/` (ARCHITECTURE / STACK / STRUCTURE / TESTING / CONVENTIONS / CONCERNS / INTEGRATIONS).
 
 ## Constraints
@@ -118,6 +125,9 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 | **DEC-web-midi-locality** — OP-1 must be on same machine as browser; cannot proxy MIDI over the tunnel | Hard Web-MIDI constraint; drives `just serve` (local) vs `kempenich.ai` (always-on but no MIDI) split | ✓ Good |
 | **DEC-deploy-cloudflare-tunnel + K8s** — `jay-6.kempenich.dev` for local dev tunnel, `jay-6.kempenich.ai` for always-on cluster | Secure context for Web MIDI on iPad + always-on URL for any-browser browsing | ✓ Good |
 | **DEC-browser-target-chrome-edge** — Desktop Chrome/Edge only; iPad via "Web MIDI Browser" app | Only browsers with Web MIDI; iPad workaround is documented | ✓ Good |
+| **DEC-ui-small-token-layer** — Shared CSS tokens plus scoped component styles | Captures the approved instrument language without introducing a component framework | ✓ Good — Phase 02.1 |
+| **DEC-variation-models-derived** — Variation controls derive from phrase metadata and remain stateless | Prevents duplicated mappings and preserves the existing `ui.variation` path | ✓ Good — Phase 02.1 |
+| **DEC-orange-means-sounding** — Orange is reserved for sounding or latched pads | Keeps active playback distinct from setup, selection, and system state | ✓ Good — Phase 02.1 |
 
 ---
-*Last updated: 2026-05-23 after v1.0 milestone — all 31 v1 requirements validated (UAT 11/11). Next: v2 sequencer via `/gsd:new-milestone`.*
+*Last updated: 2026-07-10 after Phase 02.1 verification. Between milestones; next: define v2 via `$gsd-new-milestone`.*

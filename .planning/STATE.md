@@ -2,13 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: MVP
-current_phase: 02.1
-current_phase_name: visual-redesign-adoption
-status: verifying
-stopped_at: Completed 02.1-04-PLAN.md
-last_updated: "2026-07-06T15:22:39.724Z"
-last_activity: 2026-07-06
-last_activity_desc: Completed 02.1-04 final visual verification
+status: Awaiting next milestone
+stopped_at: Phase 02.1 verified and shipped; awaiting $gsd-new-milestone for v2
+last_updated: "2026-07-10T21:09:55Z"
+last_activity: 2026-07-10
+last_activity_desc: Phase 02.1 verified and shipped
 progress:
   total_phases: 1
   completed_phases: 1
@@ -21,23 +19,23 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-23 after v1.0)
+See: .planning/PROJECT.md (updated 2026-07-10 after Phase 02.1)
 
 **Core value:** Drive the OP-1 (USB or BT) with the J-6's chord library + playback styles from a browser, without owning the J-6 hardware.
-**Current focus:** Phase 02.1 — visual-redesign-adoption
+**Current focus:** Between milestones — define v2 Sequencer
 
 ## Current Position
 
-Phase: 02.1 (visual-redesign-adoption) — VERIFYING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-07-06 — Completed 02.1-04 final visual verification
+Phase: Between milestones
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-07-10 — Phase 02.1 verified and shipped
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0 (GSD plans — pre-GSD work shipped without plan files)
+- Total plans completed: 4 (GSD plans — pre-GSD work shipped without plan files)
 - Average duration: N/A
 - Total execution time: N/A
 
@@ -47,6 +45,7 @@ Last activity: 2026-07-06 — Completed 02.1-04 final visual verification
 |-------|-------|-------|----------|
 | 1. Prototype | retrospective | — | — |
 | 2. Post-prototype polish + UAT | 0 / TBD | — | — |
+| 02.1 | 4 | - | - |
 
 **Recent Trend:**
 
@@ -68,7 +67,7 @@ Last activity: 2026-07-06 — Completed 02.1-04 final visual verification
 
 ### Decisions
 
-Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`. Currently load-bearing for Phase 2:
+Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`. Currently load-bearing for future work:
 
 - DEC-tick-source-24-ppq + DEC-engines-time-source-agnostic — Phase 2 transport sync + rhythm phase alignment must respect these.
 - DEC-engine-orchestrator — latch state machine flagged fragile in `.planning/codebase/CONCERNS.md`; touch carefully when wiring transport.
@@ -99,7 +98,6 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 
 (`/gsd:capture --list` to browse + action.)
 
-- **Iterate on Jay-6 visual design via Claude Design** (area: ui) — black-key contrast, typography scale collapse, spacing off-grid token, TopBar layout, J-6 hardware-evocative palette. Out-of-phase workflow per Flo's call. See `.planning/todos/pending/2026-05-18-iterate-on-jay-6-visual-design-via-claude-design.md`.
 - **Host-owned single source of truth for play/latch state** (area: architecture, v2) — host owns play/latch truth; UI is a pure projection, never re-derives it; transitions unit-tested. Kills the dual-store desync class behind the 4+ UAT bugs. Intent-level — Svelte mechanism decided at phase time.
 - **Transport-reset / record-sync for OP-1 Start/Continue** (area: engines, v2) — wire OP-1 transport to reset running engine to step 0 so manual record-start syncs arp/pattern to the take. `armedPosition` resume hook stubbed in host.ts (02-06), no consumer yet.
 - **"Variation change applies on next hit" toast** (area: ui, polish) — show a brief bottom toast when a variation change is queued >~0.5s out (slow patterns like Beat V01), so the change reads as registered. UAT Test 4.
@@ -107,13 +105,7 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 
 ### Blockers/Concerns
 
-- **Rhythm phase alignment bug under Ext clock** — engine `start()` fires immediately → off-beat. Phase 2 open. (`src/engines/rhythmGate.ts` line 48; also `phraseDuration.ts` + `arp.ts`.)
-- **`subscribeTransport` plumbing exists but is unwired** — OP-1 Start/Stop/Continue is silently dropped. Phase 2 transport-sync work must wire `host.ts` (or `App.svelte`) to it.
-- **No MIDI clock send** despite infrastructure being in place. Phase 2 work.
-- **~30% of `banks.data.json` slots inferred** from a divergent extraction diff. Phase 2 voicing audit.
-- **iPad TopBar text-selection on long-press** — missing `user-select: none` on `src/components/TopBar.svelte`. Phase 2 polish.
-- **REQ-gate-slider flagged suspect** — retest during UAT to distinguish code bug from OP-1 envelope masking (MIDI monitor evidence in `.research/UAT.md` §12).
-- **Latch state machine fragile** — four parallel booleans across host + App.svelte with zero unit-test coverage. Any latch refactor must trace all paths through `padPressed` / `padReleased` / `setLatch` / `panic`. (`.planning/codebase/CONCERNS.md`.)
+- **Latch state machine fragile** — four parallel booleans across host + App.svelte with zero unit-test coverage. The v2 host-owned play/latch SSOT todo should trace every path through `padPressed`, `padReleased`, `setLatch`, and `panic`. (`.planning/codebase/CONCERNS.md`.)
 
 ### Quick Tasks Completed
 
@@ -144,10 +136,10 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 
 ## Session Continuity
 
-Last session: 2026-07-06T15:22:39.719Z
-Stopped at: Completed quick task 260706-nbq: Visually repair Phase 02.1 against imported redesign using fresh screenshots vs design mocks
+Last session: 2026-07-10T21:09:55Z
+Stopped at: Phase 02.1 verified and shipped; awaiting `$gsd-new-milestone` for v2
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `$gsd-verify-work 02.1` to verify the completed visual redesign adoption phase.
+- Run `$gsd-new-milestone v2.0 Sequencer` to define the next milestone and replace the candidate Phase 3 scope with a real requirements-backed roadmap.

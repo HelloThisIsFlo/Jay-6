@@ -32,7 +32,7 @@ Carried-in v2 todos (see `.planning/todos/`): host-owned play/latch SSOT, transp
 
 **Goal**: Adopt the committed Jay-6 v3 visual redesign for the existing v1 feature set, without adding progression, sequencer, queued-toast, or new playback behavior.
 **Depends on**: Phase 2
-**Requirements**: See `.planning/phases/02.1-visual-redesign-adoption/02.1-SPEC.md` for the six locked requirements covering visual tokens, TopBar C2, pad surface, per-style variation pickers, responsive coverage, and existing behavior preservation.
+**Requirements**: See `.planning/milestones/pre-v2-phases/02.1-visual-redesign-adoption/02.1-SPEC.md` for the six locked requirements covering visual tokens, TopBar C2, pad surface, per-style variation pickers, responsive coverage, and existing behavior preservation.
 **Success Criteria** (what must be TRUE):
 
   1. Desktop, iPad-sized, and iPhone-landscape browser views match the v3 sketch direction without clipped controls, unreadable primary labels, or inaccessible pad rows.
@@ -65,5 +65,5 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 1. Prototype (M1–M8 + keyboard) | v1.0 | N/A — retrospective | Shipped | 2026-05-18 (code) |
 | 2. Post-prototype polish + UAT acceptance | v1.0 | 9/9 | Complete | 2026-05-23 |
-| 02.1 Visual redesign adoption | pre-v2 | 4/4 | Complete   | 2026-07-06 |
+| 02.1 Visual redesign adoption | pre-v2 | 4/4 | Complete | 2026-07-06 |
 | 3. Sequencer | v2 | 0/TBD | Not started | — |
