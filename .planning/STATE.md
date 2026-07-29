@@ -104,6 +104,7 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 - **Per-bank common chord-progression authoring system** (area: general, v2+) — design a system to author progressions in markdown/YAML (agent-editable) + render them as progression bars per bank. Content authored later; this is the mechanism.
 - **Measure and display external MIDI-clock BPM** (area: engines, future) — derive a stable BPM from incoming 24 PPQ ticks and show it in Ext mode without overwriting the saved internal tempo.
 - **Cycle variations with up/down keyboard shortcuts** (area: ui, future) — use the already-swallowed arrow keys to wrap through variations while preserving Hold behavior and page-scroll suppression.
+- **Design touch-oriented Bank and Channel selectors** (area: ui, future) — explore tactile touch controls without regressing mouse, keyboard, or responsive TopBar behavior.
 
 ### Blockers/Concerns
 
