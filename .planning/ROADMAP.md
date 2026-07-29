@@ -1,69 +1,114 @@
 # Roadmap: Jay-6
 
+## Overview
+
+Jay-6 v2.0 ships the mechanism for read-only bank-aware chord suggestions, not a catalogue-production process. A validated, agent-editable catalogue with deliberately tiny representative bootstrap data feeds the approved chord-chip rail; direct data edits can expand it later. Variation feedback and measured external BPM complete the milestone, with every feature proving itself through its own automation, browser checks, and hardware verification.
+
 ## Milestones
 
-- ✅ **v1.0 MVP** — Phases 1–2 (shipped 2026-05-23) — J-6 chord pads → OP-1, 6 styles, latch, keyboard, bidirectional transport sync. UAT 11/11 PASS.
-- 🧭 **v2 Sequencer candidate** — Phase 3+ direction only: step sequencer driving chord-pad presses, pattern chaining, and basic song mode. Requirements and phases remain unscoped; define them with `$gsd-new-milestone v2.0 Sequencer`.
+- ✅ **v1.0 MVP** — Phases 1–2 (shipped 2026-05-23) — J-6 chord pads → OP-1, six styles, latch, keyboard, and bidirectional transport sync. UAT 11/11 PASS.
+- ✅ **Pre-v2 visual redesign** — Phase 02.1 (shipped 2026-07-06) — approved instrument surface, responsive layouts, and per-style variation controls.
+- 📋 **v2.0 Musical Companion** — Phases 3–6 (planned) — suggestion mechanism and rail plus focused variation and external-clock feedback.
 
 ## Phases
 
 <details>
-<summary>✅ v1.0 MVP (Phases 1–2) — SHIPPED 2026-05-23</summary>
+<summary>✅ Shipped work (Phases 1–2 and 02.1)</summary>
 
-- [x] **Phase 1: Prototype (M1–M8 + keyboard)** — retrospective (no plan files) — completed 2026-05-18 (code), signed off via Phase 2 UAT
-- [x] **Phase 2: Post-prototype polish + UAT acceptance** (9/9 plans) — completed 2026-05-23
+- [x] **Phase 1: Prototype (M1–M8 + keyboard)** — completed 2026-05-18; signed off through Phase 2 UAT.
+- [x] **Phase 2: Post-prototype polish + UAT acceptance** — 9/9 plans completed 2026-05-23.
+- [x] **Phase 02.1: Visual redesign adoption** — 4/4 plans completed 2026-07-06.
 
-Full detail: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROADMAP.md) · requirements: [`milestones/v1.0-REQUIREMENTS.md`](milestones/v1.0-REQUIREMENTS.md)
+Full v1 detail: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROADMAP.md) · requirements: [`milestones/v1.0-REQUIREMENTS.md`](milestones/v1.0-REQUIREMENTS.md)
 
 </details>
 
-### 🧭 v2 Sequencer (Candidate, Unscoped)
+### 📋 v2.0 Musical Companion
 
-Pre-sequencer visual work is complete. The next milestone direction remains a candidate until `$gsd-new-milestone` defines its requirements and phases:
+**Milestone Goal:** Ship a read-only bank-aware suggestion mechanism with minimal representative data and truthful performance feedback.
 
-- [x] **Phase 02.1: Visual redesign adoption** (INSERTED) — adopt the committed sketch findings before sequencer scope; visual refresh only, no sequencer behavior. (completed 2026-07-06)
-- [ ] **Phase 3: Sequencer** — step sequencer on a grid driving chord-pad presses; pattern chaining; basic song mode. Must slot into the existing 24 PPQ TickSource + `engines/host.ts` without violating DEC-engines-time-source-agnostic / DEC-engine-orchestrator.
+- [ ] **Phase 3: Catalogue Mechanism & Bootstrap** - Flo and agents can maintain validated bank-aware suggestion data, with only enough bundled content to prove the mechanism.
+- [ ] **Phase 4: Read-Only Suggestion Rail** - Users can browse bank-aware chord suggestions without affecting performance or the core MIDI loop.
+- [ ] **Phase 5: Variation Cycling & Queued Feedback** - Keyboard cycling and queued feedback make variation changes fast and truthful.
+- [ ] **Phase 6: Measured External BPM** - External clock shows a stable measured tempo without changing the internal tempo setting.
 
-Primary carried-in v2 candidates (see `.planning/todos/`): host-owned play/latch SSOT, transport-reset record-sync, variation-change toast, and per-bank progression authoring.
+**Dependency note:** Phase 4 depends on Phase 3. Phases 5 and 6 each depend only on shipped Phase 02.1, so they can be reordered or planned as independent workstreams even though phase numbering remains fixed.
 
 ## Phase Details
 
-### Phase 02.1: Visual redesign adoption
+Completed Phase 02.1 detail is preserved in [its archived phase directory](milestones/pre-v2-phases/02.1-visual-redesign-adoption/).
 
-**Goal**: Adopt the committed Jay-6 v3 visual redesign for the existing v1 feature set, without adding progression, sequencer, queued-toast, or new playback behavior.
-**Depends on**: Phase 2
-**Requirements**: See `.planning/milestones/pre-v2-phases/02.1-visual-redesign-adoption/02.1-SPEC.md` for the six locked requirements covering visual tokens, TopBar C2, pad surface, per-style variation pickers, responsive coverage, and existing behavior preservation.
+### Phase 3: Catalogue Mechanism & Bootstrap
+
+**Goal**: Flo and agents can maintain trustworthy bank-aware suggestion data without changing application code.
+**Depends on**: Phase 02.1
+**Requirements**: PROG-01, PROG-02, PROG-03, PROG-04, PROG-05, PROG-06, PROG-07, BOOT-01
 **Success Criteria** (what must be TRUE):
 
-  1. Desktop, iPad-sized, and iPhone-landscape browser views match the v3 sketch direction without clipped controls, unreadable primary labels, or inaccessible pad rows.
-  2. TopBar C2 keeps every existing routing, tempo, and performance control reachable, with BPM visible and read-only under external clock.
-  3. Pads retain the existing 5-black/7-white hardware layout and pointer/keyboard/latch behavior, with orange reserved for currently sounding or latched pads.
-  4. Per-style variation controls map exactly to existing 1..12 variation indices and preserve current engine playback semantics.
-  5. No progression rail, progression authoring, sequencer UI, or queued/countdown toast is added in this phase.
-  6. `just ci` passes and browser smoke covers the existing control surface.
+  1. Flo or an agent can add or revise suggestions in one plain data catalogue whose entries identify a factory bank, ordered pad keys, and an honest `progression` or `movement` kind.
+  2. A factory bank resolves zero, one, or several suggestions in deterministic catalogue order, with chord names always derived from canonical bank data.
+  3. Invalid banks, pad keys, duplicate IDs, same-bank duplicate sequences, blank labels, and malformed entries fail validation with actionable errors.
+  4. The bundled catalogue contains only a tiny representative set sufficient to exercise the mechanism and supported kinds; every other bank resolves cleanly to no suggestion.
+  5. Automated checks prove catalogue integrity, canonical resolution, deterministic lookup, supported-kind handling, and honest empty-bank results.
 
-**Plans**: 4/4 plans complete
-Plans:
-**Wave 1**
+**Plans**: TBD
 
-- [x] 02.1-01-PLAN.md — shared redesign tokens and app shell
+### Phase 4: Read-Only Suggestion Rail
 
-**Wave 2** *(blocked on Wave 1 completion)*
+**Goal**: Users can browse bank-aware chord suggestions beneath the pads without affecting performance.
+**Depends on**: Phase 3
+**Requirements**: RAIL-01, RAIL-02, RAIL-03, RAIL-04, RAIL-05, RAIL-06, RAIL-07, RAIL-08
+**Success Criteria** (what must be TRUE):
 
-- [x] 02.1-02-PLAN.md — TopBar C2 and exact per-style variation pickers
-- [x] 02.1-03-PLAN.md — lifted pad surface with preserved pointer safety
+  1. Selecting a factory bank shows its bundled suggestions or an honest “no curated suggestions yet” state.
+  2. Every chip shows its pad key and canonically resolved chord name, including a useful fallback for unnamed stack-bank pads.
+  3. Users can browse suggestions without triggering MIDI or changing pads, latch, engines, transport, clock, scoring, or progression position.
+  4. Browser verification proves the rail, honest empty state, and long or unusual labels remain subordinate and usable on desktop, iPad-sized, and iPhone-landscape layouts.
+  5. OP-1 and MIDI-monitor verification proves browsing is inert and the existing bank → pad → style → MIDI performance loop remains intact.
 
-**Wave 3** *(blocked on Wave 2 completion)*
+**Plans**: TBD
+**UI hint**: yes
 
-- [x] 02.1-04-PLAN.md — automated gates and desktop/iPad/iPhone browser smoke
+### Phase 5: Variation Cycling & Queued Feedback
 
+**Goal**: Keyboard cycling and queued feedback make variation changes fast and truthful.
+**Depends on**: Phase 02.1
+**Requirements**: VAR-01, VAR-02, VAR-03, VAR-04, VAR-05, VAR-06, VAR-07, VAR-08
+**Success Criteria** (what must be TRUE):
+
+  1. Up/Down cycles the current style’s variations backward or forward with wraparound, while Hold remains inert and existing focus, repeat, scrolling, and keyboard safety is preserved.
+  2. A genuinely slow queued change shows one bottom-centre steel toast only while the delay could feel ambiguous; immediate and fast changes add no toast noise.
+  3. The user manual makes the new Up/Down variation shortcuts discoverable.
+  4. Automated and browser checks prove wraparound, Hold no-op behaviour, focus and scroll safety, keyboard cycling, and slow-versus-immediate toast behaviour.
+  5. Hardware verification proves the toast reports the authoritative queued/applied transition without changing variation playback semantics.
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 6: Measured External BPM
+
+**Goal**: External clock shows a stable measured tempo without changing the user’s internal tempo setting.
+**Depends on**: Phase 02.1
+**Requirements**: BPM-01, BPM-02, BPM-03, BPM-04, BPM-05, BPM-06, BPM-07
+**Success Criteria** (what must be TRUE):
+
+  1. External mode derives and displays a stable read-only BPM after enough valid incoming 24 PPQ clock data exists.
+  2. The external measurement becomes unavailable when its input disconnects, changes, or goes stale instead of leaving a misleading value on screen.
+  3. Measuring external tempo never overwrites the configured internal BPM, and returning to internal mode restores that configured value.
+  4. Automated checks prove estimator behaviour under jitter, outliers, reset, stale input, and Int↔Ext mode transitions.
+  5. Real OP-1 external-clock verification proves truthful display and internal-BPM preservation across clock start, stop, staleness, input change, and mode transitions.
+
+**Plans**: TBD
 **UI hint**: yes
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. Prototype (M1–M8 + keyboard) | v1.0 | N/A — retrospective | Shipped | 2026-05-18 (code) |
-| 2. Post-prototype polish + UAT acceptance | v1.0 | 9/9 | Complete | 2026-05-23 |
+| 1. Prototype | v1.0 | Retrospective | Shipped | 2026-05-18 |
+| 2. Post-prototype polish + UAT | v1.0 | 9/9 | Complete | 2026-05-23 |
 | 02.1 Visual redesign adoption | pre-v2 | 4/4 | Complete | 2026-07-06 |
-| 3. Sequencer | v2 | 0/TBD | Not started | — |
+| 3. Catalogue Mechanism & Bootstrap | v2.0 | 0/TBD | Not started | - |
+| 4. Read-Only Suggestion Rail | v2.0 | 0/TBD | Not started | - |
+| 5. Variation Cycling & Queued Feedback | v2.0 | 0/TBD | Not started | - |
+| 6. Measured External BPM | v2.0 | 0/TBD | Not started | - |

@@ -12,11 +12,12 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 
 ## Current Milestone: v2.0 Musical Companion
 
-**Goal:** Help players discover useful chord combinations while keeping performance and musical decisions in their hands.
+**Goal:** Ship a read-only mechanism for bank-aware chord suggestions, with minimal representative bootstrap data and focused performance feedback, while keeping performance and musical decisions in the player's hands.
 
 **Target features:**
 
-- Bank-aware chord-progression suggestions backed by a plain, agent-editable catalogue with useful initial content.
+- Bank-aware suggestion mechanism backed by a plain, validated, agent-editable catalogue.
+- Deliberately tiny representative bootstrap content that proves the mechanism and honest empty-bank behaviour.
 - Implement the previously designed chord-chip rail beneath the pads.
 - Complete focused performance polish: Up/Down variation cycling, queued-change toast feedback, and measured external-clock BPM.
 
@@ -73,9 +74,9 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 
 <!-- v2.0 scope. Refined into requirement IDs after milestone research. -->
 
-- [ ] **Bank-aware progression suggestions** — show useful chord combinations for the selected factory bank without automating playback.
-- [ ] **Agent-editable progression catalogue** — keep progression content simple to inspect and extend with an agent.
-- [ ] **Initial progression content** — ship a useful starting catalogue rather than an empty authoring mechanism.
+- [ ] **Bank-aware suggestion mechanism** — resolve catalogue entries for the selected factory bank without automating playback.
+- [ ] **Agent-editable progression catalogue** — keep suggestion data simple to inspect, validate, and extend directly with an agent.
+- [ ] **Minimal representative bootstrap** — ship only enough simple entries to exercise the mechanism, supported kinds, rail, and honest empty state.
 - [ ] **Previously designed chord-chip rail** — render suggestions beneath the pads while keeping the performance surface primary.
 - [ ] **Variation keyboard cycling** — Up/Down cycles the current style's variations with wraparound.
 - [ ] **Queued variation toast** — confirm slow pending changes using the existing toast design.
@@ -97,6 +98,7 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 - **Safari / Firefox support** — no Web MIDI implementation. iPad workaround = "Web MIDI Browser" app.
 - **Multi-channel / multi-output routing** — single output, single channel by design.
 - **User-defined banks / chord import** — Roland J-6 factory set is the whole point; the editable catalogue describes progressions, not banks.
+- **Comprehensive catalogue coverage or a catalogue-generation workflow** — expansion and curation are direct data edits by Flo or agents after the mechanism ships, not a GSD phase.
 - **Backend / accounts / multi-user** — solo tool, static SPA, no server logic.
 
 ## Context
@@ -109,7 +111,8 @@ If everything else regresses, *that loop must still work*: pick a bank → press
   - `https://jay-6.kempenich.ai` — always-on K8s cluster behind a cluster-wide Cloudflare Tunnel.
 - **v1 bugs closed.** All Phase 2 open bugs resolved + verified: Ext-clock first-step downbeat alignment, OP-1 Start/Stop/Continue wired, 24 PPQ clock send, voicing audit (~30% inferred slots tightened).
 - **Pre-v2 visual refresh shipped** (2026-07-10) — Jay-6 v3 treatment verified across desktop, iPad-sized, and iPhone-landscape layouts without changing playback behavior.
-- **v2.0 focus:** bank-aware progression discovery plus three already-defined performance improvements: variation keyboard cycling, queued-change feedback, and measured external-clock BPM.
+- **v2.0 focus:** the bank-aware suggestion mechanism, a tiny representative bootstrap, and three focused performance improvements: the read-only rail, variation cycling/queued feedback, and measured external-clock BPM.
+- **Catalogue growth after v2.0:** Flo or agents can extend the validated data file directly as useful ideas emerge; no separate content-planning workflow or comprehensive coverage target is required.
 - **Progression rail design exists, implementation does not.** The approved chord-chip rail sits below the pads, resolves pad letters to the current bank's chord names, and remains visually subordinate to the performance surface.
 - **Deferred technical debt remains explicit.** Host-owned play/latch truth and transport-reset record sync stay captured as todos but are not part of v2.0.
 - **Codebase intel.** Full audit at `.planning/codebase/` (ARCHITECTURE / STACK / STRUCTURE / TESTING / CONVENTIONS / CONCERNS / INTEGRATIONS).

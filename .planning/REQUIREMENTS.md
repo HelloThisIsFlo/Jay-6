@@ -15,13 +15,11 @@ Requirements for the Musical Companion milestone. Each maps to exactly one roadm
 - [ ] **PROG-04**: Suggestions resolve chord names from canonical bank data rather than duplicating them.
 - [ ] **PROG-05**: A bank can contain zero, one, or several suggestions in deterministic catalogue order.
 - [ ] **PROG-06**: Suggestions distinguish genuine harmonic `progression` entries from interval or voicing `movement` entries.
+- [ ] **PROG-07**: Automated checks validate catalogue integrity, canonical bank resolution, deterministic lookup, supported kinds, and clean empty-bank results.
 
-### Initial Musical Content
+### Minimal Bootstrap
 
-- [ ] **MUSIC-01**: Users receive a reviewed launch catalogue covering a deliberately selected range of useful factory banks.
-- [ ] **MUSIC-02**: The launch catalogue includes both a genuine progression and a useful movement study where musically defensible.
-- [ ] **MUSIC-03**: Flo reviews the launch catalogue as a single musical UAT and can approve, revise, or remove each suggestion before release.
-- [ ] **MUSIC-04**: Banks without approved content show no fabricated or placeholder suggestions.
+- [ ] **BOOT-01**: The bundled catalogue contains only a deliberately tiny set of simple representative entries sufficient to exercise the mechanism and rail, including a basic progression and a movement example when useful to prove both supported kinds; every other bank resolves cleanly to no entry.
 
 ### Chord-Chip Rail
 
@@ -31,6 +29,8 @@ Requirements for the Musical Companion milestone. Each maps to exactly one roadm
 - [ ] **RAIL-04**: The rail remains completely read-only and does not track, score, advance with, or correct the player's performance.
 - [ ] **RAIL-05**: The rail remains subordinate to the pad surface on desktop and uses the previously designed contained mobile treatment.
 - [ ] **RAIL-06**: Suggestion display remains usable with long, altered, slash, repeated, and unnamed chord labels.
+- [ ] **RAIL-07**: Browser verification covers the rail, honest empty state, and target desktop, iPad-sized, and iPhone-landscape layouts.
+- [ ] **RAIL-08**: OP-1 and MIDI-monitor verification confirms that browsing suggestions emits no MIDI, changes no playback state, and preserves the core pad-to-MIDI loop.
 
 ### Variation Controls
 
@@ -39,6 +39,9 @@ Requirements for the Musical Companion milestone. Each maps to exactly one roadm
 - [ ] **VAR-03**: The user manual documents the new variation shortcuts.
 - [ ] **VAR-04**: A slow queued variation change shows the existing bottom-centre steel toast only when the delay would otherwise feel ambiguous.
 - [ ] **VAR-05**: Immediate or fast variation changes do not produce unnecessary toast noise.
+- [ ] **VAR-06**: Automated checks cover variation wraparound, Hold no-op behaviour, focus ownership, and page-scroll suppression.
+- [ ] **VAR-07**: Browser verification confirms keyboard variation cycling and truthful queued-toast behaviour for slow versus immediate changes.
+- [ ] **VAR-08**: Hardware verification confirms that queued feedback reflects the authoritative delayed/applied variation transition without changing playback semantics.
 
 ### External MIDI-Clock BPM
 
@@ -47,12 +50,8 @@ Requirements for the Musical Companion milestone. Each maps to exactly one roadm
 - [ ] **BPM-03**: The measurement resets or becomes unavailable when clock input disconnects, changes, or becomes stale.
 - [ ] **BPM-04**: Measuring external BPM never overwrites the configured internal BPM.
 - [ ] **BPM-05**: Returning to internal mode restores the user's configured internal BPM.
-
-### Acceptance
-
-- [ ] **QA-01**: Automated checks validate catalogue integrity, bank resolution, keyboard cycling, and external-BPM estimation edge cases.
-- [ ] **QA-02**: Browser verification covers the rail, empty state, toast, keyboard behaviour, and target responsive layouts.
-- [ ] **QA-03**: OP-1 hardware verification confirms useful musical content, truthful external BPM, inert suggestions, and no regression to the core pad-to-MIDI loop.
+- [ ] **BPM-06**: Automated checks cover external-BPM jitter, outliers, reset, stale input, and Int↔Ext mode transitions.
+- [ ] **BPM-07**: Real OP-1 external-clock verification confirms truthful measurement across start, stop, stale clock, input change, and Int↔Ext transitions while preserving the configured internal BPM.
 
 ## Future Requirements
 
@@ -60,8 +59,8 @@ Deferred beyond v2.0 and not included in this roadmap.
 
 ### Catalogue Growth
 
-- **FUTURE-01**: Extend catalogue coverage after the launch set is musically validated.
-- **FUTURE-02**: Add more suggestions to especially fruitful banks.
+- **FUTURE-01**: Flo or agents extend catalogue coverage through direct validated data edits outside the GSD phase workflow.
+- **FUTURE-02**: Curate or revise suggestions as useful musical ideas emerge, without a comprehensive coverage target.
 - **FUTURE-03**: Add runtime progression editing or validated import.
 
 ### Guidance
@@ -86,16 +85,47 @@ Explicit exclusions prevent the companion from drifting into a sequencer or unre
 
 ## Traceability
 
-Populated during roadmap creation. Every v2.0 requirement must map to exactly one phase.
+Every v2.0 requirement maps to exactly one roadmap phase.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| PROG-01 | Phase 3 | Pending |
+| PROG-02 | Phase 3 | Pending |
+| PROG-03 | Phase 3 | Pending |
+| PROG-04 | Phase 3 | Pending |
+| PROG-05 | Phase 3 | Pending |
+| PROG-06 | Phase 3 | Pending |
+| PROG-07 | Phase 3 | Pending |
+| BOOT-01 | Phase 3 | Pending |
+| RAIL-01 | Phase 4 | Pending |
+| RAIL-02 | Phase 4 | Pending |
+| RAIL-03 | Phase 4 | Pending |
+| RAIL-04 | Phase 4 | Pending |
+| RAIL-05 | Phase 4 | Pending |
+| RAIL-06 | Phase 4 | Pending |
+| RAIL-07 | Phase 4 | Pending |
+| RAIL-08 | Phase 4 | Pending |
+| VAR-01 | Phase 5 | Pending |
+| VAR-02 | Phase 5 | Pending |
+| VAR-03 | Phase 5 | Pending |
+| VAR-04 | Phase 5 | Pending |
+| VAR-05 | Phase 5 | Pending |
+| VAR-06 | Phase 5 | Pending |
+| VAR-07 | Phase 5 | Pending |
+| VAR-08 | Phase 5 | Pending |
+| BPM-01 | Phase 6 | Pending |
+| BPM-02 | Phase 6 | Pending |
+| BPM-03 | Phase 6 | Pending |
+| BPM-04 | Phase 6 | Pending |
+| BPM-05 | Phase 6 | Pending |
+| BPM-06 | Phase 6 | Pending |
+| BPM-07 | Phase 6 | Pending |
 
 **Coverage:**
-- v2.0 requirements: 29 total
-- Mapped to phases: 0
-- Unmapped: 29 ⚠️
+- v2.0 requirements: 31 total
+- Mapped to phases: 31
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-29*
-*Last updated: 2026-07-29 after milestone requirements approval*
+*Last updated: 2026-07-29 after mechanism-focused milestone rescope*
