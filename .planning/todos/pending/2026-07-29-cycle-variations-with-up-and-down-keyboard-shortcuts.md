@@ -2,6 +2,7 @@
 created: 2026-07-29T17:22:09.941Z
 title: Cycle variations with up/down keyboard shortcuts
 area: ui
+resolves_phase: 5
 files:
   - src/App.svelte
   - src/state.svelte.ts

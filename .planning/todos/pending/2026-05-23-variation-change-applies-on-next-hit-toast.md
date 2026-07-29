@@ -2,6 +2,7 @@
 created: 2026-05-23T18:25:56.994Z
 title: "Variation change applies on next hit" toast
 area: ui
+resolves_phase: 5
 files:
   - src/App.svelte
 ---

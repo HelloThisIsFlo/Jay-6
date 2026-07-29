@@ -2,6 +2,7 @@
 created: 2026-07-29T17:21:38.331Z
 title: Measure and display external MIDI-clock BPM
 area: engines
+resolves_phase: 6
 files:
   - src/tickSource.ts
   - src/state.svelte.ts

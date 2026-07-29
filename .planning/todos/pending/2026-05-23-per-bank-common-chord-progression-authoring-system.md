@@ -2,6 +2,7 @@
 created: 2026-05-23T18:25:56.994Z
 title: Per-bank common chord-progression authoring system
 area: general
+resolves_phase: 4
 files: []
 ---
 
