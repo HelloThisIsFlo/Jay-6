@@ -205,10 +205,6 @@ export class EngineHost {
   // D-04: forward inbound transport from tickSource. Master mode ignores inbound;
   // only slave (Ext) reacts. Stop reuses panic() per Pitfall 5 (verified all-clean path).
   onTransport(kind: 'start' | 'stop' | 'continue'): void {
-    // Intentional UAT instrumentation for the transport re-verify (test 16 step 4):
-    // proves inbound transport reaches the engine. console.debug (not log) keeps it
-    // out of the default prod console. Tracked-removal follow-up in 02-06-SUMMARY.
-    console.debug('TRANSPORT-IN', kind);
     if (this.cfg.clockMode !== 'external') return;
     if (kind === 'start' || kind === 'continue') {
       // OP-1 emits Continue (0xFB) on Play, NEVER Start (0xFA) — confirmed in the

@@ -48,8 +48,8 @@ export class RhythmGateEngine implements Engine {
     this.tickCount = 0;
     this.unsubscribe = tickSource.subscribe(() => this.onTick());
     if (notes.length === 0) return;
-    // Ext-clock arm trace — console.debug stays out of the default console (Verbose only),
-    // matching the TRANSPORT-IN convention. Keep for ongoing transport-sync observability.
+    // Ext-clock arm trace stays in the verbose console for ongoing transport-sync
+    // observability without polluting the default console.
     {
       const m = tickSource.getMode();
       const et = tickSource.getExternalTick();

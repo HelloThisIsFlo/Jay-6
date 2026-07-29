@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1–2 (shipped 2026-05-23) — J-6 chord pads → OP-1, 6 styles, latch, keyboard, bidirectional transport sync. UAT 11/11 PASS.
-- 📋 **v2 Sequencer** — Phase 3+ (planned) — step sequencer driving chord-pad presses; pattern chaining; basic song mode. Scope via `/gsd:new-milestone`.
+- 🧭 **v2 Sequencer candidate** — Phase 3+ direction only: step sequencer driving chord-pad presses, pattern chaining, and basic song mode. Requirements and phases remain unscoped; define them with `$gsd-new-milestone v2.0 Sequencer`.
 
 ## Phases
 
@@ -17,14 +17,14 @@ Full detail: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROADMAP.md) · requi
 
 </details>
 
-### 📋 v2 Sequencer (Planned)
+### 🧭 v2 Sequencer (Candidate, Unscoped)
 
-Inserted pre-sequencer work, then candidate Phase 3:
+Pre-sequencer visual work is complete. The next milestone direction remains a candidate until `$gsd-new-milestone` defines its requirements and phases:
 
 - [x] **Phase 02.1: Visual redesign adoption** (INSERTED) — adopt the committed sketch findings before sequencer scope; visual refresh only, no sequencer behavior. (completed 2026-07-06)
 - [ ] **Phase 3: Sequencer** — step sequencer on a grid driving chord-pad presses; pattern chaining; basic song mode. Must slot into the existing 24 PPQ TickSource + `engines/host.ts` without violating DEC-engines-time-source-agnostic / DEC-engine-orchestrator.
 
-Carried-in v2 todos (see `.planning/todos/`): host-owned play/latch SSOT, transport-reset record-sync, variation-change toast, visual-design pass.
+Primary carried-in v2 candidates (see `.planning/todos/`): host-owned play/latch SSOT, transport-reset record-sync, variation-change toast, and per-bank progression authoring.
 
 ## Phase Details
 

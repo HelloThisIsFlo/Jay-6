@@ -37,7 +37,7 @@ class TickSourceImpl {
     this.resetExternalTick();
     // Under Ext, transport (Start/Stop/Continue) must be observable the moment a
     // clock source is selected — independent of whether an engine has subscribed
-    // yet (UAT root cause #2: TRANSPORT-IN never logged because the listener only
+    // yet (UAT root cause #2: transport was missed because the listener only
     // attached on first tick subscriber). attachInputListener no-ops without an
     // inputId, so this is safe pre-selection. Int still only needs a timer when
     // an engine is listening.

@@ -91,7 +91,10 @@
       : outputFallback(),
   );
   const clockLabel = $derived(ui.clockSource === 'external' ? 'EXT' : 'INT');
-  const transposeLabel = $derived(`${ui.transpose >= 0 ? '+' : ''}${ui.transpose}`);
+  const transposeOctaves = $derived(ui.transpose / 12);
+  const transposeLabel = $derived(
+    `${transposeOctaves > 0 ? '+' : ''}${transposeOctaves} OCT`,
+  );
 
   function outputFallback(): string {
     if (midiStatus === 'unsupported') return 'Use Chrome/Edge';
@@ -646,7 +649,7 @@
 
   /* ── Transpose ─────────────────────────────────────────────────────── */
   .trval {
-    min-width: 3ch;
+    min-width: 6ch;
     padding: 0 var(--space-1);
     color: var(--fg-0);
     font-family: var(--mono);

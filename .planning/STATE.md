@@ -131,7 +131,6 @@ Items acknowledged + tracked elsewhere; not blocking Phase 2.
 | Backlog | Persist bank / BPM / port | Out of Scope (future milestone) | 2026-05-18 |
 | Backlog | Save/recall presets | Out of Scope (future milestone) | 2026-05-18 |
 | Tech debt | Web Audio scheduler (replace `setInterval`) | Out of Scope until drift is a real-use problem | 2026-05-18 |
-| Todo (ui) | Iterate Jay-6 visual design via Claude Design | Deferred — out-of-phase polish | 2026-05-23 (v1.0 close) |
 | Todo (architecture, v2) | Host-owned play/latch single source of truth | Deferred to v2 — kills dual-store desync class | 2026-05-23 (v1.0 close) |
 | Todo (engines, v2) | Transport-reset / record-sync for OP-1 Start/Continue | Deferred to v2 — `armedPosition` hook stubbed | 2026-05-23 (v1.0 close) |
 | Todo (ui, polish) | "Variation change applies on next hit" toast | Deferred — UX polish (UAT Test 4) | 2026-05-23 (v1.0 close) |

@@ -23,8 +23,6 @@
 
 **Known deferred items at close:** 5 (see STATE.md → Deferred Items) — all intentional v2/polish captures, none blocking.
 
-**Trailing cleanup (non-blocking):** remove the `console.debug('TRANSPORT-IN', kind)` UAT instrumentation from `src/engines/host.ts` (now that UAT 16.4 passed on hardware).
-
 **Archives:** `milestones/v1.0-ROADMAP.md` · `milestones/v1.0-REQUIREMENTS.md`
 
 ---
