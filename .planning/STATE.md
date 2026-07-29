@@ -102,6 +102,7 @@ Full decision log in PROJECT.md "Key Decisions" + `.planning/intel/decisions.md`
 - **Transport-reset / record-sync for OP-1 Start/Continue** (area: engines, v2) — wire OP-1 transport to reset running engine to step 0 so manual record-start syncs arp/pattern to the take. `armedPosition` resume hook stubbed in host.ts (02-06), no consumer yet.
 - **"Variation change applies on next hit" toast** (area: ui, polish) — show a brief bottom toast when a variation change is queued >~0.5s out (slow patterns like Beat V01), so the change reads as registered. UAT Test 4.
 - **Per-bank common chord-progression authoring system** (area: general, v2+) — design a system to author progressions in markdown/YAML (agent-editable) + render them as progression bars per bank. Content authored later; this is the mechanism.
+- **Measure and display external MIDI-clock BPM** (area: engines, future) — derive a stable BPM from incoming 24 PPQ ticks and show it in Ext mode without overwriting the saved internal tempo.
 
 ### Blockers/Concerns
 
