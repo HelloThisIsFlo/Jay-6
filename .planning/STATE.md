@@ -1,18 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: Awaiting next milestone
-stopped_at: Phase 02.1 verified and shipped; awaiting $gsd-new-milestone for v2
-last_updated: "2026-07-10T21:09:55Z"
-last_activity: 2026-07-10
-last_activity_desc: Phase 02.1 verified and shipped
+milestone: v2.0
+milestone_name: Musical Companion
+status: planning
+last_updated: "2026-07-29T18:09:55.190Z"
+last_activity: 2026-07-29
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -26,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-07-10 after Phase 02.1)
 
 ## Current Position
 
-Phase: Between milestones
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-07-10 — Phase 02.1 verified and shipped
+Status: Defining requirements
+Last activity: 2026-07-29 — Milestone v2.0 started
 
 ## Performance Metrics
 

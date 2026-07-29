@@ -2,13 +2,23 @@
 
 ## What This Is
 
-Browser app that turns J-6-style chord pads into MIDI — primarily for the Teenage Engineering OP-1 (incl. OP-1 field over Bluetooth MIDI). Solo tool for Flo. Click (or keyboard-press) a chord pad → MIDI flows out to the OP-1 → the OP-1 plays. Goal: reproduce the Roland J-6 chord-pad experience in any (Web-MIDI-capable) browser, extensible toward a v2 sequencer.
+Browser app that turns J-6-style chord pads into MIDI — primarily for the Teenage Engineering OP-1 (incl. OP-1 field over Bluetooth MIDI). Solo tool for Flo. Click (or keyboard-press) a chord pad → MIDI flows out to the OP-1 → the OP-1 plays. Jay-6 is evolving into a musical companion that helps players discover useful chord combinations without taking over performance or musical decisions.
 
 ## Core Value
 
 **Drive the OP-1 (USB or BT) with the J-6's chord library + playback styles from a browser, without owning the J-6 hardware.**
 
 If everything else regresses, *that loop must still work*: pick a bank → press a pad → OP-1 plays the right chord through the right style.
+
+## Current Milestone: v2.0 Musical Companion
+
+**Goal:** Help players discover useful chord combinations while keeping performance and musical decisions in their hands.
+
+**Target features:**
+
+- Bank-aware chord-progression suggestions backed by a plain, agent-editable catalogue with useful initial content.
+- Implement the previously designed chord-chip rail beneath the pads.
+- Complete focused performance polish: Up/Down variation cycling, queued-change toast feedback, and measured external-clock BPM.
 
 ## Requirements
 
@@ -61,26 +71,32 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 
 ### Active
 
-<!-- v2 scope. Refined via /gsd:new-milestone. -->
+<!-- v2.0 scope. Refined into requirement IDs after milestone research. -->
 
-- [ ] **Sequencer** (v2 Phase 1) — step sequencer driving chord-pad presses on a grid; pattern chaining; basic song mode. Must slot into the existing 24 PPQ TickSource + `engines/host.ts` without violating DEC-engines-time-source-agnostic or DEC-engine-orchestrator.
-- [ ] **Host-owned play/latch single source of truth** (v2, architecture) — host owns play/latch truth; UI is a pure projection. Kills the dual-store desync class behind the v1 UAT bugs. (See `.planning/todos/`.)
-- [ ] **Transport-reset / record-sync** (v2, engines) — wire OP-1 Start/Continue to reset a running engine to step 0 so manual record-start syncs to the take. `armedPosition` resume hook already stubbed in `host.ts`.
+- [ ] **Bank-aware progression suggestions** — show useful chord combinations for the selected factory bank without automating playback.
+- [ ] **Agent-editable progression catalogue** — keep progression content simple to inspect and extend with an agent.
+- [ ] **Initial progression content** — ship a useful starting catalogue rather than an empty authoring mechanism.
+- [ ] **Previously designed chord-chip rail** — render suggestions beneath the pads while keeping the performance surface primary.
+- [ ] **Variation keyboard cycling** — Up/Down cycles the current style's variations with wraparound.
+- [ ] **Queued variation toast** — confirm slow pending changes using the existing toast design.
+- [ ] **Measured external-clock BPM** — show a stable BPM derived from incoming 24 PPQ MIDI clock while preserving the internal BPM setting.
 
 ### Out of Scope
 
 <!-- Explicit, with reasoning. Captured from REQ-out-of-scope-prototype + project conventions. -->
 
-<!-- Sequencer promoted to Active for v2 after the v1.0 UAT pass — see Active above. -->
-
-- **Style 6–9 phrases** — Roland publishes no note data; reverse-engineering or hand-rolling is high-cost / low-confidence. May revisit in v2 if sequencer needs them.
+- **Sequencer** — v2.0 suggests what to play but never schedules or performs a progression for the player.
+- **Host-owned play/latch architecture refactor** — valuable technical debt, but unrelated to the focused musical-companion outcome.
+- **OP-1 transport reset / record sync** — deferred; v2.0 does not expand transport behavior.
+- **Touch-oriented Bank and Channel selector exploration** — separate UX exploration, not required for the progression companion.
+- **Style 6–9 phrases or other new styles** — Roland publishes no note data; reverse-engineering or hand-rolling is high-cost / low-confidence.
 - **Velocity control** — prototype intentionally fixed-velocity; adds complexity without changing the core loop.
-- **Persistence (last bank / BPM / port / latch)** — deferred to Phase 3+; current "load with defaults" is fine for a solo tool.
+- **Persistence (last bank / BPM / port / latch)** — current "load with defaults" is fine for a solo tool.
 - **Save/recall favourite presets** — Phase 3+ alongside persistence.
 - **Web Audio API scheduler** — `setInterval` is "good enough" per DEC-no-premature-features; revisit only if drift becomes a real-use problem.
 - **Safari / Firefox support** — no Web MIDI implementation. iPad workaround = "Web MIDI Browser" app.
 - **Multi-channel / multi-output routing** — single output, single channel by design.
-- **User-defined banks / chord import** — Roland J-6 factory set is the whole point.
+- **User-defined banks / chord import** — Roland J-6 factory set is the whole point; the editable catalogue describes progressions, not banks.
 - **Backend / accounts / multi-user** — solo tool, static SPA, no server logic.
 
 ## Context
@@ -93,7 +109,9 @@ If everything else regresses, *that loop must still work*: pick a bank → press
   - `https://jay-6.kempenich.ai` — always-on K8s cluster behind a cluster-wide Cloudflare Tunnel.
 - **v1 bugs closed.** All Phase 2 open bugs resolved + verified: Ext-clock first-step downbeat alignment, OP-1 Start/Stop/Continue wired, 24 PPQ clock send, voicing audit (~30% inferred slots tightened).
 - **Pre-v2 visual refresh shipped** (2026-07-10) — Jay-6 v3 treatment verified across desktop, iPad-sized, and iPhone-landscape layouts without changing playback behavior.
-- **Carried into v2** (captured as todos): host-owned play/latch single source of truth (fragile latch state machine), transport-reset record-sync, and variation-change toast.
+- **v2.0 focus:** bank-aware progression discovery plus three already-defined performance improvements: variation keyboard cycling, queued-change feedback, and measured external-clock BPM.
+- **Progression rail design exists, implementation does not.** The approved chord-chip rail sits below the pads, resolves pad letters to the current bank's chord names, and remains visually subordinate to the performance surface.
+- **Deferred technical debt remains explicit.** Host-owned play/latch truth and transport-reset record sync stay captured as todos but are not part of v2.0.
 - **Codebase intel.** Full audit at `.planning/codebase/` (ARCHITECTURE / STACK / STRUCTURE / TESTING / CONVENTIONS / CONCERNS / INTEGRATIONS).
 
 ## Constraints
@@ -118,7 +136,7 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 |----------|-----------|---------|
 | **DEC-tick-source-24-ppq** — Single 24 PPQ TickSource (internal `setInterval` OR external MIDI clock); engines subscribe | Decouples timing from engines; one knob switches Int↔Ext clock | ✓ Good |
 | **DEC-engines-time-source-agnostic** — Engines count ticks, never call `Date.now()` / `setInterval` | Engines are testable + clock-source-portable | ✓ Good |
-| **DEC-engine-orchestrator** — `engines/host.ts` routes pad press; applies latch + transpose at the boundary | Engines don't know what a pad is; latch state has one home | ⚠️ Revisit in v2 — fragile latch state machine drove several v1 UAT bugs; v2 todo: host-owned play/latch SSOT (see `.planning/codebase/CONCERNS.md`) |
+| **DEC-engine-orchestrator** — `engines/host.ts` routes pad press; applies latch + transpose at the boundary | Engines don't know what a pad is; latch state has one home | ⚠️ Revisit later — fragile latch state machine is captured technical debt but explicitly excluded from v2.0 |
 | **DEC-state-location** — UI state in `state.svelte.ts` (`$state` runes); `App.svelte` bridges via `$effect` | Reactive state + imperative engines stay cleanly separated | ✓ Good |
 | **DEC-banks-data-json-canonical** — `src/banks.data.json` is the verified Roland extraction; never hand-edit | Single source of truth; voicing fixes are JSON-only | ✓ Good — v1 voicing audit tightened the ~30% inferred slots; JSON-only fix held |
 | **DEC-no-premature-features** — No Web Audio scheduler, no velocity, no persistence, no presets until Phase 3+ | Keeps prototype small + the surface area honest | ✓ Good |
@@ -129,5 +147,22 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 | **DEC-variation-models-derived** — Variation controls derive from phrase metadata and remain stateless | Prevents duplicated mappings and preserves the existing `ui.variation` path | ✓ Good — Phase 02.1 |
 | **DEC-orange-means-sounding** — Orange is reserved for sounding or latched pads | Keeps active playback distinct from setup, selection, and system state | ✓ Good — Phase 02.1 |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `$gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `$gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-07-10 after Phase 02.1 verification. Between milestones; next: define v2 via `$gsd-new-milestone`.*
+*Last updated: 2026-07-29 after starting milestone v2.0 Musical Companion.*
