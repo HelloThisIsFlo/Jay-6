@@ -2,9 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Musical Companion
+current_phase: 3
+current_phase_name: Catalogue Mechanism & Bootstrap
 status: planning
-last_updated: "2026-07-29"
+stopped_at: Phase 3 context gathered
+last_updated: "2026-08-07T14:42:30.143Z"
 last_activity: 2026-07-29
+last_activity_desc: v2.0 rescoped to four mechanism-focused phases with 31/31 requirements mapped
 progress:
   total_phases: 4
   completed_phases: 0
@@ -84,6 +88,6 @@ Full decision log: PROJECT.md “Key Decisions” and `.planning/intel/decisions
 
 ## Session Continuity
 
-Last session: 2026-07-29
-Stopped at: v2.0 rescoped to four phases; Phase 3 ready for planning
-Resume file: None
+Last session: 2026-08-07T14:42:30.130Z
+Stopped at: Phase 3 context gathered
+Resume file: .planning/phases/03-catalogue-mechanism-bootstrap/03-CONTEXT.md
