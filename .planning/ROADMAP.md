@@ -51,7 +51,7 @@ Completed Phase 02.1 detail is preserved in [its archived phase directory](miles
   4. The bundled catalogue contains only a tiny representative set sufficient to exercise the mechanism and supported kinds; every other bank resolves cleanly to no suggestion.
   5. Automated checks prove catalogue integrity, canonical resolution, deterministic lookup, supported-kind handling, and honest empty-bank results.
 
-**Plans**: 3/3 plans executed
+**Plans**: 4/4 plans executed
 
 Plans:
 **Wave 1**
@@ -65,6 +65,10 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] 03-03-PLAN.md — Close sparse-array and hidden-own-key validation gaps with adversarial regression coverage.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 03-04-PLAN.md — Close descriptor, invisible-text, and diagnostic-path validation gaps with public regressions.
 
 ### Phase 4: Read-Only Suggestion Rail
 
@@ -121,7 +125,7 @@ Plans:
 | 1. Prototype | v1.0 | Retrospective | Shipped | 2026-05-18 |
 | 2. Post-prototype polish + UAT | v1.0 | 9/9 | Complete | 2026-05-23 |
 | 02.1 Visual redesign adoption | pre-v2 | 4/4 | Complete | 2026-07-06 |
-| 3. Catalogue Mechanism & Bootstrap | v2.0 | 3/3 | In Progress | - |
+| 3. Catalogue Mechanism & Bootstrap | v2.0 | 4/4 | In Progress | - |
 | 4. Read-Only Suggestion Rail | v2.0 | 0/TBD | Not started | - |
 | 5. Variation Cycling & Queued Feedback | v2.0 | 0/TBD | Not started | - |
 | 6. Measured External BPM | v2.0 | 0/TBD | Not started | - |
