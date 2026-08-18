@@ -469,13 +469,13 @@ Vitest exact deep equality is appropriate because issue ordering is part of the 
 |---|-------|---------|---------------|
 | — | None. All implementation claims are grounded in locked context, repository inspection, registry checks, or official documentation. | — | — |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 No planning blocker remains. [VERIFIED: CONTEXT.md]
 
-- `steps` should reject an empty array because it cannot represent an ordered suggestion. [VERIFIED: PROG-02 semantics]
-- Do not invent a stricter musical minimum in Phase 3; the locked contract does not require one. [VERIFIED: CONTEXT.md D-02/D-05]
-- Stable IDs and labels are discretionary. Use short kebab-case IDs and concise labels, then validate IDs and labels as nonblank trimmed strings. [VERIFIED: CONTEXT.md discretion + D-09]
+- **RESOLVED:** `steps` rejects an empty array because it cannot represent an ordered suggestion. [VERIFIED: PROG-02 semantics]
+- **RESOLVED:** Phase 3 adds no stricter musical minimum because the locked contract does not require one. [VERIFIED: CONTEXT.md D-02/D-05]
+- **RESOLVED:** Use short kebab-case IDs and concise labels, then validate IDs and labels as nonblank trimmed strings. [VERIFIED: CONTEXT.md discretion + D-09]
 
 ## Environment Availability
 
