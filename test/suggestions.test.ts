@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  getSuggestionsForBank,
   SUGGESTION_KINDS,
+  suggestionCatalogue,
   validateSuggestionCatalogue,
 } from '../src/suggestions';
 
@@ -17,6 +19,30 @@ function validEntry(overrides: Record<string, unknown> = {}): Record<string, unk
     ...overrides,
   };
 }
+
+const BOOTSTRAP_CATALOGUE = [
+  {
+    id: 'pop-homeward',
+    bankIndex: 1,
+    label: 'Homeward',
+    kind: 'progression',
+    steps: ['C', 'A', 'B', 'C'],
+  },
+  {
+    id: 'pop-step-up',
+    bankIndex: 1,
+    label: 'Step up',
+    kind: 'progression',
+    steps: ['C', 'D', 'F', 'C'],
+  },
+  {
+    id: 'oct-stack-rise-fall',
+    bankIndex: 14,
+    label: 'Rise and fall',
+    kind: 'movement',
+    steps: ['C', 'D', 'E', 'D'],
+  },
+];
 
 describe('suggestion catalogue validation', () => {
   it('accepts both kinds and preserves authored strings, ordering, and repeated steps', () => {
@@ -350,4 +376,108 @@ describe('suggestion catalogue validation', () => {
     expect(validInput, 'valid input unchanged').toEqual(validClone);
     expect(invalidInput, 'invalid input unchanged').toEqual(invalidClone);
   });
+});
+
+describe('production suggestion catalogue', () => {
+  it('contains exactly the three locked records in source order', () => {
+    expect(suggestionCatalogue).toEqual(BOOTSTRAP_CATALOGUE);
+  });
+
+  it('contains only authoring fields and proves both supported kinds', () => {
+    for (const suggestion of suggestionCatalogue) {
+      expect(Object.keys(suggestion).sort()).toEqual([...ENTRY_FIELDS].sort());
+    }
+    expect(new Set(suggestionCatalogue.map((suggestion) => suggestion.kind))).toEqual(
+      new Set(SUGGESTION_KINDS),
+    );
+  });
+});
+
+describe('canonical suggestion resolution', () => {
+  it('resolves both Bank 1 progressions in catalogue order', () => {
+    expect(getSuggestionsForBank(1)).toEqual([
+      {
+        id: 'pop-homeward',
+        bankIndex: 1,
+        bankName: 'Pop',
+        label: 'Homeward',
+        kind: 'progression',
+        steps: [
+          { key: 'C', chordName: 'Cadd9', displayLabel: 'Cadd9' },
+          { key: 'A', chordName: 'FM/A', displayLabel: 'FM/A' },
+          { key: 'B', chordName: 'G/B', displayLabel: 'G/B' },
+          { key: 'C', chordName: 'Cadd9', displayLabel: 'Cadd9' },
+        ],
+      },
+      {
+        id: 'pop-step-up',
+        bankIndex: 1,
+        bankName: 'Pop',
+        label: 'Step up',
+        kind: 'progression',
+        steps: [
+          { key: 'C', chordName: 'Cadd9', displayLabel: 'Cadd9' },
+          { key: 'D', chordName: 'Dm7', displayLabel: 'Dm7' },
+          { key: 'F', chordName: 'FM9', displayLabel: 'FM9' },
+          { key: 'C', chordName: 'Cadd9', displayLabel: 'Cadd9' },
+        ],
+      },
+    ]);
+  });
+
+  it('keeps Bank 14 chordName empty and derives displayLabel through the fallback', () => {
+    expect(getSuggestionsForBank(14)).toEqual([
+      {
+        id: 'oct-stack-rise-fall',
+        bankIndex: 14,
+        bankName: 'Oct Stack',
+        label: 'Rise and fall',
+        kind: 'movement',
+        steps: [
+          { key: 'C', chordName: '', displayLabel: 'C Oct Stack' },
+          { key: 'D', chordName: '', displayLabel: 'D Oct Stack' },
+          { key: 'E', chordName: '', displayLabel: 'E Oct Stack' },
+          { key: 'D', chordName: '', displayLabel: 'D Oct Stack' },
+        ],
+      },
+    ]);
+  });
+
+  it('exposes only inert canonical text fields', () => {
+    for (const suggestion of [
+      ...getSuggestionsForBank(1),
+      ...getSuggestionsForBank(14),
+    ]) {
+      expect(Object.keys(suggestion).sort()).toEqual(
+        ['id', 'bankIndex', 'bankName', 'label', 'kind', 'steps'].sort(),
+      );
+      for (const step of suggestion.steps) {
+        expect(Object.keys(step).sort()).toEqual(
+          ['key', 'chordName', 'displayLabel'].sort(),
+        );
+        expect(Object.values(step).every((value) => typeof value === 'string')).toBe(true);
+      }
+    }
+  });
+});
+
+describe('suggestion lookup', () => {
+  it('returns exact empty arrays for every unpopulated canonical bank', () => {
+    for (let bankIndex = 1; bankIndex <= 100; bankIndex++) {
+      if (bankIndex === 1) {
+        expect(getSuggestionsForBank(bankIndex)).toHaveLength(2);
+      } else if (bankIndex === 14) {
+        expect(getSuggestionsForBank(bankIndex)).toHaveLength(1);
+      } else {
+        expect(getSuggestionsForBank(bankIndex)).toEqual([]);
+      }
+    }
+  });
+
+  it.each([0, 101, 1.5, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    'throws RangeError instead of wrapping invalid bank index %s',
+    (bankIndex) => {
+      expect(() => getSuggestionsForBank(bankIndex)).toThrow(RangeError);
+    },
+  );
 });
