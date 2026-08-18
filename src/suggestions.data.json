@@ -1,0 +1,38 @@
+[
+  {
+    "id": "pop-homeward",
+    "bankIndex": 1,
+    "label": "Homeward",
+    "kind": "progression",
+    "steps": [
+      "C",
+      "A",
+      "B",
+      "C"
+    ]
+  },
+  {
+    "id": "pop-step-up",
+    "bankIndex": 1,
+    "label": "Step up",
+    "kind": "progression",
+    "steps": [
+      "C",
+      "D",
+      "F",
+      "C"
+    ]
+  },
+  {
+    "id": "oct-stack-rise-fall",
+    "bankIndex": 14,
+    "label": "Rise and fall",
+    "kind": "movement",
+    "steps": [
+      "C",
+      "D",
+      "E",
+      "D"
+    ]
+  }
+]
