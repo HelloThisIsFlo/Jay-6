@@ -2,6 +2,7 @@
   "workflow": {
     "_auto_chain_active": false,
     "nyquist_validation": true,
-    "ai_integration_phase": true
+    "ai_integration_phase": true,
+    "security_enforcement": false
   }
 }
