@@ -54,7 +54,12 @@ Completed Phase 02.1 detail is preserved in [its archived phase directory](miles
 **Plans**: 2 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 03-01-PLAN.md — Write the fail-first validator, resolver, and exact bootstrap test contract.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 03-02-PLAN.md — Implement the validated catalogue and canonical bank-aware resolver.
 
 ### Phase 4: Read-Only Suggestion Rail
