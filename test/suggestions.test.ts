@@ -7,6 +7,7 @@ import {
 } from '../src/suggestions';
 
 const ENTRY_FIELDS = ['id', 'bankIndex', 'label', 'kind', 'steps'];
+const TEXT_RULE = 'a nonblank string without surrounding whitespace';
 const PAD_KEY_RULE = 'one of: C, C#, D, D#, E, F, F#, G, G#, A, A#, B';
 
 function validEntry(overrides: Record<string, unknown> = {}): Record<string, unknown> {
@@ -141,6 +142,102 @@ describe('suggestion catalogue validation', () => {
     });
   });
 
+  it('rejects inherited sparse slots instead of projecting prototype values', () => {
+    const inheritedCatalogue = new Array(1);
+    Object.setPrototypeOf(inheritedCatalogue, { 0: validEntry() });
+
+    const inheritedSteps = ['C', , 'E'];
+    Object.setPrototypeOf(inheritedSteps, { 1: 'D' });
+
+    expect({
+      catalogue: validateSuggestionCatalogue(inheritedCatalogue),
+      steps: validateSuggestionCatalogue([validEntry({ steps: inheritedSteps })]),
+    }).toEqual({
+      catalogue: {
+        ok: false,
+        issues: [
+          {
+            code: 'entry-object',
+            path: '$[0]',
+            value: undefined,
+            expected: 'a non-null object',
+          },
+        ],
+      },
+      steps: {
+        ok: false,
+        issues: [
+          {
+            code: 'invalid-step',
+            path: '$[0].steps[1]',
+            entryId: 'fixture-one',
+            bankIndex: 1,
+            value: undefined,
+            expected: PAD_KEY_RULE,
+          },
+        ],
+      },
+    });
+  });
+
+  it('rejects a top-level accessor slot without invoking its getter', () => {
+    let getterCalls = 0;
+    let result: ReturnType<typeof validateSuggestionCatalogue> | undefined;
+    const input = new Array(1);
+    Object.defineProperty(input, '0', {
+      get() {
+        getterCalls += 1;
+        throw new Error('top-level getter executed');
+      },
+    });
+
+    expect(() => {
+      result = validateSuggestionCatalogue(input);
+    }).not.toThrow();
+    expect(result).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'entry-object',
+          path: '$[0]',
+          value: undefined,
+          expected: 'a non-null object',
+        },
+      ],
+    });
+    expect(getterCalls).toBe(0);
+  });
+
+  it('rejects a steps accessor slot without invoking its getter', () => {
+    let getterCalls = 0;
+    let result: ReturnType<typeof validateSuggestionCatalogue> | undefined;
+    const steps = ['C', , 'E'];
+    Object.defineProperty(steps, '1', {
+      get() {
+        getterCalls += 1;
+        throw new Error('steps getter executed');
+      },
+    });
+
+    expect(() => {
+      result = validateSuggestionCatalogue([validEntry({ steps })]);
+    }).not.toThrow();
+    expect(result).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'invalid-step',
+          path: '$[0].steps[1]',
+          entryId: 'fixture-one',
+          bankIndex: 1,
+          value: undefined,
+          expected: PAD_KEY_RULE,
+        },
+      ],
+    });
+    expect(getterCalls).toBe(0);
+  });
+
   it('reports missing fields in fixed field order before unexpected fields', () => {
     const input = [{ surprise: 'nope' }];
 
@@ -182,6 +279,155 @@ describe('suggestion catalogue validation', () => {
     };
 
     expect(validateSuggestionCatalogue(input)).toEqual({ ok: false, issues: [issue] });
+  });
+
+  it('rejects inherited and accessor record fields without invoking getters', () => {
+    const inheritedId = validEntry();
+    delete inheritedId.id;
+    Object.setPrototypeOf(inheritedId, { id: 'prototype-id' });
+
+    const accessorCases = [
+      {
+        field: 'id',
+        issue: {
+          code: 'invalid-id',
+          path: '$[0].id',
+          bankIndex: 1,
+          value: undefined,
+          expected: TEXT_RULE,
+        },
+      },
+      {
+        field: 'bankIndex',
+        issue: {
+          code: 'invalid-bank-index',
+          path: '$[0].bankIndex',
+          entryId: 'fixture-one',
+          value: undefined,
+          expected: 'an integer from 1 to 100',
+        },
+      },
+      {
+        field: 'label',
+        issue: {
+          code: 'invalid-label',
+          path: '$[0].label',
+          entryId: 'fixture-one',
+          bankIndex: 1,
+          value: undefined,
+          expected: TEXT_RULE,
+        },
+      },
+      {
+        field: 'kind',
+        issue: {
+          code: 'invalid-kind',
+          path: '$[0].kind',
+          entryId: 'fixture-one',
+          bankIndex: 1,
+          value: undefined,
+          expected: 'one of: progression, movement',
+        },
+      },
+      {
+        field: 'steps',
+        issue: {
+          code: 'invalid-steps',
+          path: '$[0].steps',
+          entryId: 'fixture-one',
+          bankIndex: 1,
+          value: undefined,
+          expected: 'a nonempty array of canonical pad keys',
+        },
+      },
+      {
+        field: 'surprise',
+        issue: {
+          code: 'unexpected-field',
+          path: '$[0].surprise',
+          entryId: 'fixture-one',
+          bankIndex: 1,
+          value: undefined,
+          expected: 'only id, bankIndex, label, kind, and steps',
+        },
+      },
+    ];
+    let getterCalls = 0;
+    const captures = accessorCases.map(({ field }) => {
+      const input = validEntry();
+      Object.defineProperty(input, field, {
+        get() {
+          getterCalls += 1;
+          throw new Error(`${field} getter executed`);
+        },
+        enumerable: true,
+      });
+      try {
+        return { result: validateSuggestionCatalogue([input]), error: undefined };
+      } catch (error) {
+        return { result: undefined, error };
+      }
+    });
+
+    expect(captures.map(({ error }) => error), 'record validation does not throw').toEqual(
+      accessorCases.map(() => undefined),
+    );
+    expect(getterCalls).toBe(0);
+    expect(validateSuggestionCatalogue([inheritedId])).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'missing-field',
+          path: '$[0].id',
+          bankIndex: 1,
+          value: undefined,
+          expected: 'required field id',
+        },
+      ],
+    });
+    expect(captures.map(({ result }) => result)).toEqual(
+      accessorCases.map(({ issue }) => ({ ok: false, issues: [issue] })),
+    );
+  });
+
+  it('rejects format and control only ids and labels', () => {
+    const invisibleCases = [
+      ['id', '\u200B'],
+      ['id', '\u0000'],
+      ['id', '\t\u200B\u0000'],
+      ['label', '\u200B'],
+      ['label', '\u0000'],
+      ['label', '\t\u200B\u0000'],
+    ] as const;
+
+    expect(
+      invisibleCases.map(([field, value]) => validateSuggestionCatalogue([
+        validEntry({ [field]: value }),
+      ])),
+    ).toEqual(
+      invisibleCases.map(([field, value]) => ({
+        ok: false,
+        issues: [
+          {
+            code: field === 'id' ? 'invalid-id' : 'invalid-label',
+            path: `$[0].${field}`,
+            ...(field === 'label' ? { entryId: 'fixture-one' } : {}),
+            bankIndex: 1,
+            value,
+            expected: TEXT_RULE,
+          },
+        ],
+      })),
+    );
+
+    const visibleLabel = 'É\u200Blan';
+    const visibleInput = [validEntry({ label: visibleLabel })];
+    const visibleResult = validateSuggestionCatalogue(visibleInput);
+    expect(visibleResult).toEqual({ ok: true, value: visibleInput });
+    if (!visibleResult.ok) {
+      throw new Error('expected visible Unicode label to validate');
+    }
+    expect(visibleResult.value[0]!.label).toBe(visibleLabel);
   });
 
   it.each([0, 101, 1.5, '1'])('rejects invalid bankIndex %j', (bankIndex) => {
@@ -268,24 +514,54 @@ describe('suggestion catalogue validation', () => {
     });
   });
 
-  it('rejects a symbol unexpected own field', () => {
+  it('encodes unsafe string and same-description symbol paths unambiguously', () => {
     const input = validEntry();
-    const hidden = Symbol('hidden');
-    Object.defineProperty(input, hidden, { value: 'extra', enumerable: true });
+    const extras = [
+      ['safeExtra', 'safe'],
+      ['with.dot', 'dot'],
+      ['with[brackets]', 'brackets'],
+      ['with"quote', 'quote'],
+      ['with\nnewline', 'newline'],
+      ['with\u2028separator', 'line-separator'],
+      ['with\u2029separator', 'paragraph-separator'],
+    ] as const;
+    for (const [key, value] of extras) {
+      Object.defineProperty(input, key, { value, enumerable: true });
+    }
+    const firstHidden = Symbol('hidden\u2028\u2029');
+    const secondHidden = Symbol('hidden\u2028\u2029');
+    Object.defineProperty(input, firstHidden, { value: 'first symbol', enumerable: true });
+    Object.defineProperty(input, secondHidden, { value: 'second symbol', enumerable: true });
 
-    expect(validateSuggestionCatalogue([input])).toEqual({
+    const expectedPaths = [
+      '$[0].safeExtra',
+      '$[0]["with.dot"]',
+      '$[0]["with[brackets]"]',
+      '$[0]["with\\"quote"]',
+      '$[0]["with\\nnewline"]',
+      '$[0]["with\\u2028separator"]',
+      '$[0]["with\\u2029separator"]',
+      '$[0][#12:Symbol(hidden\\u2028\\u2029)]',
+      '$[0][#13:Symbol(hidden\\u2028\\u2029)]',
+    ];
+    const result = validateSuggestionCatalogue([input]);
+
+    expect(result).toEqual({
       ok: false,
-      issues: [
-        {
+      issues: expectedPaths.map((path, index) => ({
           code: 'unexpected-field',
-          path: '$[0][Symbol(hidden)]',
+          path,
           entryId: 'fixture-one',
           bankIndex: 1,
-          value: 'extra',
+          value: [...extras.map(([, value]) => value), 'first symbol', 'second symbol'][index],
           expected: 'only id, bankIndex, label, kind, and steps',
-        },
-      ],
+      })),
     });
+    if (result.ok) {
+      throw new Error('expected unexpected fields to fail validation');
+    }
+    expect(result.issues.map(({ path }) => path)).toEqual(expectedPaths);
+    expect(result.issues.every(({ path }) => !/[\r\n\u2028\u2029]/u.test(path))).toBe(true);
   });
 
   it('reports independent field issues before unexpected fields and step issues', () => {
