@@ -62,11 +62,19 @@ describe('suggestion catalogue validation', () => {
       }),
     ];
 
+    const result = validateSuggestionCatalogue(input);
+
     expect(SUGGESTION_KINDS).toEqual(['progression', 'movement']);
-    expect(validateSuggestionCatalogue(input)).toEqual({
+    expect(result).toEqual({
       ok: true,
       value: input,
     });
+    if (!result.ok) {
+      throw new Error('expected valid catalogue');
+    }
+    expect(result.value).not.toBe(input);
+    expect(result.value[0]).not.toBe(input[0]);
+    expect(result.value[0]!.steps).not.toBe(input[0]!.steps);
   });
 
   it('accepts an empty catalogue but rejects an entry with empty steps', () => {
@@ -114,6 +122,22 @@ describe('suggestion catalogue validation', () => {
         value,
         expected: 'a non-null object',
       })),
+    });
+  });
+
+  it('rejects a sparse top-level catalogue slot', () => {
+    const input = new Array(1);
+
+    expect(validateSuggestionCatalogue(input)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'entry-object',
+          path: '$[0]',
+          value: undefined,
+          expected: 'a non-null object',
+        },
+      ],
     });
   });
 
@@ -202,6 +226,63 @@ describe('suggestion catalogue validation', () => {
           bankIndex: 1,
           value: steps,
           expected: 'a nonempty array of canonical pad keys',
+        },
+      ],
+    });
+  });
+
+  it('rejects sparse steps at each physical slot', () => {
+    const steps = ['C', , 'E'];
+
+    expect(validateSuggestionCatalogue([validEntry({ steps })])).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'invalid-step',
+          path: '$[0].steps[1]',
+          entryId: 'fixture-one',
+          bankIndex: 1,
+          value: undefined,
+          expected: PAD_KEY_RULE,
+        },
+      ],
+    });
+  });
+
+  it('rejects a non-enumerable unexpected own field', () => {
+    const input = validEntry();
+    Object.defineProperty(input, 'hidden', { value: 'extra', enumerable: false });
+
+    expect(validateSuggestionCatalogue([input])).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'unexpected-field',
+          path: '$[0].hidden',
+          entryId: 'fixture-one',
+          bankIndex: 1,
+          value: 'extra',
+          expected: 'only id, bankIndex, label, kind, and steps',
+        },
+      ],
+    });
+  });
+
+  it('rejects a symbol unexpected own field', () => {
+    const input = validEntry();
+    const hidden = Symbol('hidden');
+    Object.defineProperty(input, hidden, { value: 'extra', enumerable: true });
+
+    expect(validateSuggestionCatalogue([input])).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'unexpected-field',
+          path: '$[0][Symbol(hidden)]',
+          entryId: 'fixture-one',
+          bankIndex: 1,
+          value: 'extra',
+          expected: 'only id, bankIndex, label, kind, and steps',
         },
       ],
     });
@@ -441,6 +522,17 @@ describe('canonical suggestion resolution', () => {
         ],
       },
     ]);
+  });
+
+  it('returns fresh nested projections across resolver calls', () => {
+    const first = getSuggestionsForBank(1);
+    const second = getSuggestionsForBank(1);
+
+    expect(first).toEqual(second);
+    expect(first).not.toBe(second);
+    expect(first[0]).not.toBe(second[0]);
+    expect(first[0]!.steps).not.toBe(second[0]!.steps);
+    expect(first[0]!.steps[0]).not.toBe(second[0]!.steps[0]);
   });
 
   it('exposes only inert canonical text fields', () => {
