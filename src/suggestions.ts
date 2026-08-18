@@ -64,6 +64,8 @@ const BANK_INDEX_RULE = `an integer from 1 to ${banks.length}`;
 const KIND_RULE = `one of: ${SUGGESTION_KINDS.join(', ')}`;
 const STEPS_RULE = 'a nonempty array of canonical pad keys';
 const PAD_KEY_RULE = `one of: ${KEYS.join(', ')}`;
+const VISIBLE_TEXT = /[^\p{White_Space}\p{Cf}\p{Cc}]/u;
+const SAFE_PATH_KEY = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
 interface ValidatedEntry {
   readonly sourceIndex: number;
@@ -75,7 +77,31 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isAuthoredText(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && value.trim() === value;
+  return typeof value === 'string' && value.trim() === value && VISIBLE_TEXT.test(value);
+}
+
+function dataValue(descriptor: PropertyDescriptor | undefined): unknown {
+  return descriptor && 'value' in descriptor ? descriptor.value : undefined;
+}
+
+function ownDataValue(record: object, key: PropertyKey): unknown {
+  return dataValue(Object.getOwnPropertyDescriptor(record, key));
+}
+
+function escapedJsonString(value: string): string {
+  return JSON.stringify(value)
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+function unexpectedKeyPath(base: string, key: string | symbol, ordinal: number): string {
+  if (typeof key === 'symbol') {
+    const escapedSymbol = escapedJsonString(String(key)).slice(1, -1);
+    return `${base}[#${ordinal}:${escapedSymbol}]`;
+  }
+  return SAFE_PATH_KEY.test(key)
+    ? `${base}.${key}`
+    : `${base}[${escapedJsonString(key)}]`;
 }
 
 function isBankIndex(value: unknown): value is number {
@@ -125,7 +151,7 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
   const validEntries: ValidatedEntry[] = [];
 
   for (let sourceIndex = 0; sourceIndex < input.length; sourceIndex++) {
-    const candidate = input[sourceIndex];
+    const candidate = ownDataValue(input, String(sourceIndex));
     const entryPath = `$[${sourceIndex}]`;
     if (!isRecord(candidate)) {
       issues.push({
@@ -138,15 +164,18 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
     }
 
     const issueCountBeforeEntry = issues.length;
-    const id = candidate.id;
-    const bankIndex = candidate.bankIndex;
-    const label = candidate.label;
-    const kind = candidate.kind;
-    const steps = candidate.steps;
+    const descriptors = new Map(
+      ENTRY_FIELDS.map((field) => [field, Object.getOwnPropertyDescriptor(candidate, field)]),
+    );
+    const id = dataValue(descriptors.get('id'));
+    const bankIndex = dataValue(descriptors.get('bankIndex'));
+    const label = dataValue(descriptors.get('label'));
+    const kind = dataValue(descriptors.get('kind'));
+    const steps = dataValue(descriptors.get('steps'));
     const context = issueContext(id, bankIndex);
 
     for (const field of ENTRY_FIELDS) {
-      if (!Object.prototype.hasOwnProperty.call(candidate, field)) {
+      if (descriptors.get(field) === undefined) {
         issues.push({
           code: 'missing-field',
           path: `${entryPath}.${field}`,
@@ -157,7 +186,7 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
       }
     }
 
-    if (Object.prototype.hasOwnProperty.call(candidate, 'id') && !isAuthoredText(id)) {
+    if (descriptors.get('id') !== undefined && !isAuthoredText(id)) {
       issues.push({
         code: 'invalid-id',
         path: `${entryPath}.id`,
@@ -167,7 +196,7 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
       });
     }
 
-    if (Object.prototype.hasOwnProperty.call(candidate, 'bankIndex') && !isBankIndex(bankIndex)) {
+    if (descriptors.get('bankIndex') !== undefined && !isBankIndex(bankIndex)) {
       issues.push({
         code: 'invalid-bank-index',
         path: `${entryPath}.bankIndex`,
@@ -177,7 +206,7 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
       });
     }
 
-    if (Object.prototype.hasOwnProperty.call(candidate, 'label') && !isAuthoredText(label)) {
+    if (descriptors.get('label') !== undefined && !isAuthoredText(label)) {
       issues.push({
         code: 'invalid-label',
         path: `${entryPath}.label`,
@@ -187,7 +216,7 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
       });
     }
 
-    if (Object.prototype.hasOwnProperty.call(candidate, 'kind') && !isSuggestionKind(kind)) {
+    if (descriptors.get('kind') !== undefined && !isSuggestionKind(kind)) {
       issues.push({
         code: 'invalid-kind',
         path: `${entryPath}.kind`,
@@ -198,7 +227,7 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
     }
 
     if (
-      Object.prototype.hasOwnProperty.call(candidate, 'steps')
+      descriptors.get('steps') !== undefined
       && (!Array.isArray(steps) || steps.length === 0)
     ) {
       issues.push({
@@ -210,15 +239,14 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
       });
     }
 
-    for (const field of Reflect.ownKeys(candidate)) {
+    const ownKeys = Reflect.ownKeys(candidate);
+    for (const [ordinal, field] of ownKeys.entries()) {
       if (typeof field === 'symbol' || !ENTRY_FIELD_SET.has(field)) {
         issues.push({
           code: 'unexpected-field',
-          path: typeof field === 'symbol'
-            ? `${entryPath}[${String(field)}]`
-            : `${entryPath}.${field}`,
+          path: unexpectedKeyPath(entryPath, field, ordinal),
           ...context,
-          value: Reflect.get(candidate, field),
+          value: ownDataValue(candidate, field),
           expected: ENTRY_FIELD_RULE,
         });
       }
@@ -229,7 +257,7 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
     if (Array.isArray(steps) && steps.length > 0) {
       stepsAreValid = true;
       for (let stepIndex = 0; stepIndex < steps.length; stepIndex++) {
-        const step = steps[stepIndex];
+        const step = ownDataValue(steps, String(stepIndex));
         if (isKey(step)) {
           validatedSteps.push(step);
         } else {
