@@ -38,14 +38,14 @@ created: 2026-08-18
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| TBD | TBD | 0 | PROG-01 | — | N/A | integration | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
-| TBD | TBD | 0 | PROG-02 | — | Invalid bank and pad-key references fail closed | unit | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
-| TBD | TBD | 0 | PROG-03 | — | Malformed and duplicate records cannot enter the resolved catalogue | table-driven unit | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
-| TBD | TBD | 0 | PROG-04 | — | N/A | integration | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
-| TBD | TBD | 0 | PROG-05 | — | Invalid lookup indexes throw instead of wrapping | unit | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
-| TBD | TBD | 0 | PROG-06 | — | Unsupported kinds fail validation | table-driven unit | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
-| TBD | TBD | 0 | PROG-07 | — | Full catalogue validation remains an automated release gate | suite gate | `just ci` | ❌ W0 | ⬜ pending |
-| TBD | TBD | 0 | BOOT-01 | — | N/A | exhaustive integration | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
+| 03-01-02 | 03-01 | 1 | PROG-01 | T-03-01 | Exact-shape static data must pass the runtime boundary before export | integration | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
+| 03-01-01 | 03-01 | 1 | PROG-02 | T-03-01 | Invalid bank and pad-key references fail closed | unit | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
+| 03-01-01 | 03-01 | 1 | PROG-03 | T-03-01 | Malformed and duplicate records cannot enter the resolved catalogue | table-driven unit | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
+| 03-01-02 | 03-01 | 1 | PROG-04 | T-03-03 | Resolved views expose canonical text only and no playback authority | integration | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
+| 03-01-02 | 03-01 | 1 | PROG-05 | T-03-02 | Invalid lookup indexes throw instead of wrapping | unit | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
+| 03-01-01 | 03-01 | 1 | PROG-06 | T-03-01 | Unsupported kinds fail validation | table-driven unit | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
+| 03-01-02 | 03-01 | 1 | PROG-07 | T-03-01 | Full catalogue validation remains an automated release gate | suite gate | `just ci` | ❌ W0 | ⬜ pending |
+| 03-01-02 | 03-01 | 1 | BOOT-01 | T-03-03 | Exact representative records resolve inertly; every other bank is empty | exhaustive integration | `npm test -- test/suggestions.test.ts` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 

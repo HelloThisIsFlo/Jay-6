@@ -51,7 +51,11 @@ Completed Phase 02.1 detail is preserved in [its archived phase directory](miles
   4. The bundled catalogue contains only a tiny representative set sufficient to exercise the mechanism and supported kinds; every other bank resolves cleanly to no suggestion.
   5. Automated checks prove catalogue integrity, canonical resolution, deterministic lookup, supported-kind handling, and honest empty-bank results.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Write the fail-first validator, resolver, and exact bootstrap test contract.
+- [ ] 03-02-PLAN.md — Implement the validated catalogue and canonical bank-aware resolver.
 
 ### Phase 4: Read-Only Suggestion Rail
 
