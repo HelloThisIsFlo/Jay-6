@@ -1,50 +1,64 @@
 ---
 phase: 03-catalogue-mechanism-bootstrap
-verified: 2026-08-18T18:08:23.084Z
+verified: 2026-08-18T18:59:30Z
 status: gaps_found
 score: 6/8 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
+re_verification:
+  previous_status: gaps_found
+  previous_score: 6/8
+  gaps_closed:
+    - "Clean-prototype sparse catalogue and steps holes now fail at their physical indexes."
+    - "Non-enumerable string and symbol extra own fields now fail the exact-field contract."
+    - "Validator and resolver fresh-reference guarantees now have identity regressions."
+  gaps_remaining:
+    - "Sparse slots with inherited numeric properties are still accepted and projected as trusted entries or keys."
+    - "Malformed accessor records, format-only blank text, and ambiguous unexpected-field paths remain outside the validation and test contract."
+    - "Automated checks remain green while the reproduced trust-boundary failures are untested."
+  regressions: []
 gaps:
   - truth: "Invalid banks, pad keys, duplicate IDs, same-bank duplicate sequences, blank labels, and malformed entries fail validation with actionable errors."
     status: failed
-    reason: "The public unknown validator fails open for sparse arrays and for extra symbol or non-enumerable own fields. A sparse steps array returns ok: true with undefined projected into readonly Key[]."
+    reason: "The public unknown validator accepts inherited values from sparse array slots, executes accessors that can throw, accepts format-only visually blank IDs and labels, and emits ambiguous multiline paths for unusual unexpected keys."
     artifacts:
       - path: "src/suggestions.ts"
-        issue: "forEach(), every(), and Object.keys() skip array holes or non-enumerable/symbol own keys at lines 127, 212, 225, and 246."
+        issue: "Ordinary indexed/property reads and raw path interpolation leave the unknown trust boundary fail-open or non-deterministic for valid JavaScript inputs."
     missing:
-      - "Traverse top-level and steps arrays densely so holes are validated as undefined."
-      - "Inspect all own keys when enforcing the exact five-field record contract."
+      - "Read array slots and record fields from own data-property descriptors only; reject missing and accessor descriptors without invoking getters."
+      - "Require an authored ID or label to contain a visible non-whitespace, non-format, non-control code point."
+      - "Encode unsafe string keys and distinguish same-description symbols in stable diagnostic paths."
   - truth: "Automated checks prove catalogue integrity, canonical resolution, deterministic lookup, supported-kind handling, and honest empty-bank results."
     status: partial
-    reason: "The 41 focused tests and 94-test CI suite pass, but omit the reproduced sparse-array and exact-own-key failures. They also deep-compare fresh projections without asserting reference separation."
+    reason: "All 99 tests and the production build pass, but no test covers inherited sparse slots, accessor-bearing records, format-only blank text, or ambiguous unexpected-field paths; direct probes reproduce each problem."
     artifacts:
       - path: "test/suggestions.test.ts"
-        issue: "No regression cases cover sparse top-level arrays, sparse steps, symbol/non-enumerable fields, or fresh projection identities."
+        issue: "The 46 focused tests cover clean holes, hidden own keys, and fresh identities but not the independently confirmed review findings."
     missing:
-      - "Add failing regression tests for sparse top-level and steps arrays."
-      - "Add exact-own-key rejection tests and identity assertions for validator and resolver projections."
+      - "Add public-validator regressions for inherited array slots and accessor descriptors."
+      - "Add ID/label regressions for format/control-only text."
+      - "Add deterministic path regressions for unsafe string keys and duplicate symbol descriptions."
 unverified_prohibitions:
   - requirement_id: PROG-01
     statement: "The catalogue mechanism must not silently become an authoring workflow, catalogue generator, or claim of comprehensive musical authority."
     disposition: non_authoritative_pass
-    flag: "unverified-prohibition — human review recommended"
+    flag: "unverified-prohibition: human review recommended"
   - requirement_id: PROG-04
     statement: "Suggestion data must not duplicate or invent factory bank names or chord names, including labels for unnamed stack-bank pads."
     disposition: non_authoritative_pass
-    flag: "unverified-prohibition — human review recommended"
+    flag: "unverified-prohibition: human review recommended"
   - requirement_id: BOOT-01
     statement: "Suggestion lookup must not audition, sequence, schedule, score, advance, or otherwise alter MIDI, playback, transport, clock, latch, or UI state."
     disposition: non_authoritative_pass
-    flag: "unverified-prohibition — human review recommended"
+    flag: "unverified-prohibition: human review recommended"
 ---
 
 # 🔍 Phase 3: Catalogue Mechanism & Bootstrap Verification
 
 **Phase Goal:** Flo and agents can maintain trustworthy bank-aware suggestion data without changing application code.
-**Verified:** 2026-08-18T18:08:23.084Z
+**Verified:** 2026-08-18T18:59:30Z
 **Status:** gaps_found
-**Re-verification:** No — initial verification
+**Re-verification:** Yes, after Plan 03-03 gap closure
 
 ## 🎯 Goal Achievement
 
@@ -52,148 +66,164 @@ unverified_prohibitions:
 
 | # | Truth | Status | Evidence |
 |---|---|---|---|
-| 1 | One plain catalogue is the only suggestion-content maintenance surface, with factory bank, ordered keys, and an honest kind. | ✓ VERIFIED | `src/suggestions.data.json` is a flat five-field array; `src/suggestions.ts:317-326` imports it as `unknown`, validates it, then exports the projection. No generator, authoring UI, or second suggestion source exists. |
-| 2 | Repeated and consecutive steps remain distinct and authored order is preserved. | ✓ VERIFIED | `test/suggestions.test.ts:48-70,357-365`; implementation copies steps without deduplication or sorting at `src/suggestions.ts:248-250`. |
-| 3 | Invalid and malformed catalogue data fails closed with deterministic actionable issues. | ✗ FAILED | Direct probe: sparse top-level input returns `{ ok: true, value: [] }`; sparse steps return `ok: true` with `undefined` in the typed steps array. Symbol and non-enumerable extra fields are also accepted. |
-| 4 | Lookup returns zero, one, or several suggestions in source order and retains each suggestion's kind. | ✓ VERIFIED | Guarded `filter().map()` at `src/suggestions.ts:328-353`; exhaustive and ordered tests at `test/suggestions.test.ts:397-425,464-482`. |
-| 5 | Chord and bank names come only from canonical banks and `labelFor()`, retaining raw blank stack-bank names separately. | ✓ VERIFIED | `src/suggestions.ts:333-351`; exact Bank 1 altered/slash names and Bank 14 blank/fallback labels pass at `test/suggestions.test.ts:397-444`. |
-| 6 | The bundled catalogue is exactly the two ordered Bank 1 progressions plus one Bank 14 movement; the other 98 banks are empty. | ✓ VERIFIED | Exact JSON probe passed; locked deep equality and exhaustive bank loop pass at `test/suggestions.test.ts:381-394,464-475`. |
-| 7 | Authoring and resolved contracts contain only inert catalogue/canonical text data, without speculative metadata or runtime authority. | ✓ VERIFIED | Exact key-set tests pass at `test/suggestions.test.ts:386-393,446-460`; `src/suggestions.ts` imports only JSON and canonical bank helpers, with no MIDI, state, engine, timing, callbacks, notes, or sorting. |
-| 8 | Automated checks prove the complete catalogue integrity contract. | ✗ FAILED | `just ci` passes 94/94 tests, type checks, and build, but the passing suite does not exercise the reproduced fail-open inputs. |
+| 1 | One plain catalogue is the only suggestion-content maintenance surface, with factory bank, ordered keys, and an honest kind. | ✓ VERIFIED | `src/suggestions.data.json` is the sole three-record content source. `src/suggestions.ts:325-334` imports it as `unknown`, validates it, and exports the projection. |
+| 2 | Repeated and consecutive steps remain distinct and authored order is preserved. | ✓ VERIFIED | Indexed collection at `src/suggestions.ts:227-245` does not deduplicate or sort. Focused assertions pass in the 46-test suggestion suite. |
+| 3 | Invalid and malformed catalogue data fails closed with deterministic actionable issues. | ✗ FAILED | Direct probes show inherited sparse entries/keys return `ok: true`, an ID getter executes and throws, U+200B-only text returns `ok: true`, and a newline-bearing key enters the path verbatim. |
+| 4 | Lookup returns zero, one, or several suggestions in source order and retains each suggestion's kind. | ✓ VERIFIED | Guarded `filter().map()` at `src/suggestions.ts:336-361`; exact Bank 1, Bank 14, and exhaustive empty-bank tests pass. |
+| 5 | Chord and bank names come only from canonical banks and `labelFor()`, retaining raw blank stack-bank names separately. | ✓ VERIFIED | `src/suggestions.ts:341-359` resolves from `banks` and `labelFor()` only; Bank 1 and Bank 14 exact expectations pass. |
+| 6 | The bundled catalogue is exactly the two ordered Bank 1 progressions plus one Bank 14 movement; the other 98 banks are empty. | ✓ VERIFIED | Exact JSON and production-catalogue tests pass; the exhaustive 1..100 lookup test returns entries only for Banks 1 and 14. |
+| 7 | Authoring and resolved contracts contain only inert catalogue/canonical text data, without speculative metadata or runtime authority. | ✓ VERIFIED | Exact key-set tests pass. The module imports only JSON plus `banks`, `KEYS`, and `labelFor`; it has no MIDI, state, engine, timing, transport, or callback dependency. |
+| 8 | Automated checks prove the complete catalogue integrity contract. | ✗ FAILED | `just ci` passes 99/99 tests, strict checks, and build, but the suite does not exercise the reproduced inherited-slot, accessor, format-only text, or diagnostic-path failures. |
 
-**Score:** 6/8 truths verified (0 present-but-behavior-unverified)
+**Score:** 6/8 truths verified
 
-### Every PLAN Must-Have Accounted For
+### Roadmap Success Criteria
+
+| # | Roadmap contract | Status | Evidence |
+|---|---|---|---|
+| 1 | One plain catalogue stores factory bank, ordered keys, and honest kind. | ✓ | Sole JSON catalogue and exact five-field projection exist. |
+| 2 | Banks resolve zero/one/several suggestions in deterministic order with canonical names. | ✓ | Resolver implementation and exact/exhaustive tests pass. |
+| 3 | Invalid and malformed data fails with actionable errors. | ✗ BLOCKER | Confirmed malformed JavaScript inputs bypass or escape validation. |
+| 4 | Tiny representative bootstrap covers both kinds and leaves other banks empty. | ✓ | Three locked records, two kinds, 98 empty banks. |
+| 5 | Automated checks prove the integrity and lookup contract. | ✗ BLOCKER | Green suite omits confirmed trust-boundary failures. |
+
+## 📐 Every PLAN Must-Have Accounted For
 
 | Plan | Must-have | Status | Evidence |
 |---|---|---|---|
-| 03-01 | Repeated or consecutive keys remain distinct. | ✓ | Repetition test `48-70`; production repeated C/D steps `397-444`. |
-| 03-01 | Empty steps are rejected. | ✓ | Named test `72-87`. |
-| 03-01 | Accepted step positions remain authored. | ✓ | Exact arrays `48-70,357-365`. |
-| 03-01 | Empty catalogue succeeds; missing/blank fields fail. | ✓ | Tests `72-87,120-160`. |
-| 03-01 | Unicode/sharps are preserved; whitespace/case mismatches fail. | ✓ | Tests `48-70,142-160,265-297`. |
-| 03-01 | Blank canonical chord names stay blank; only `labelFor()` supplies display fallback. | ✓ | Test `428-444`; resolver `342-351`. |
-| 03-01 | Altered and slash chord labels are byte-for-byte canonical. | ✓ | Bank 1 exact expectations `397-425`. |
-| 03-01 | Neighbouring progression/movement records retain individual kinds. | ✓ | Exact catalogue and resolution tests `381-443`. |
-| 03-01 | Missing, blank, and unsupported kinds are rejected. | ✓ | Missing-field test `120-139`; kind cases `178-192`. |
-| 03-01 | Kind does not group or sort catalogue order. | ✓ | `filter().map()` only at `334-353`; ordered result test `397-425`. |
-| 03-01 | Bank 1 records stay adjacent and Bank 14 resolves independently. | ✓ | Exact catalogue/resolution `381-444`. |
-| 03-01 | Every bank other than 1 and 14 returns exact `[]`. | ✓ | Exhaustive loop `464-475`. |
-| 03-01 | Production catalogue is exactly the three locked records in order. | ✓ | Exact probe and test `381-394`. |
-| 03-02 | Content changes occur only in one JSON array with deterministic validation and no application-logic edit. | ✓ | Sole data source plus explicit import-time validation `317-326`. |
-| 03-02 | Imported unknown data passes exact staged validation before trust. | ✗ | Sparse arrays and hidden/symbol keys bypass the exact validation boundary. |
-| 03-02 | Lookup filters zero/one/many readonly results in source order. | ✓ | Implementation `328-353`; exhaustive tests pass. |
-| 03-02 | Resolution uses only `banks` and `labelFor()` with raw/fallback separation. | ✓ | Implementation `333-351`; exact tests pass. |
-| 03-02 | Only the locked three records are populated; 98 banks are empty. | ✓ | Exact JSON and exhaustive lookup pass. |
-| 03-02 | No feel, bars, formula, description, timing, MIDI note, callback, or mutable canonical state leaks into contracts. | ✓ | Exact object-key checks and import scan pass. |
+| 03-01 | Repeated/consecutive keys remain distinct. | ✓ | Repetition and authored-order test passes. |
+| 03-01 | Empty steps are rejected. | ✓ | Exact `invalid-steps` assertion passes. |
+| 03-01 | Accepted step positions remain authored. | ✓ | Indexed projection preserves order; exact arrays pass. |
+| 03-01 | Empty catalogue succeeds; missing/blank fields fail. | ⚠️ PARTIAL | Ordinary blank strings fail, but U+200B-only IDs and labels pass. |
+| 03-01 | Unicode/sharps survive; whitespace/case mismatch fails. | ✓ | Focused assertions pass without normalization. |
+| 03-01 | Blank canonical chord names stay raw; only `labelFor()` supplies display fallback. | ✓ | Bank 14 exact resolution passes. |
+| 03-01 | Altered/slash chord labels remain canonical. | ✓ | Bank 1 exact resolution passes. |
+| 03-01 | Adjacent progression/movement records retain individual kinds. | ✓ | Exact catalogue and resolved kind assertions pass. |
+| 03-01 | Missing, blank, unsupported kinds reject. | ✓ | Exact missing/invalid-kind tests pass. |
+| 03-01 | Kind never groups or sorts catalogue order. | ✓ | Resolver filters then maps with no sorting. |
+| 03-01 | Bank 1 records remain adjacent; Bank 14 resolves independently. | ✓ | Exact catalogue and resolution tests pass. |
+| 03-01 | Every bank other than 1 and 14 returns `[]`. | ✓ | Exhaustive 100-bank test passes. |
+| 03-01 | Production catalogue is exactly three locked records in order. | ✓ | Deep-equality production test passes. |
+| 03-02 | Content changes occur in one JSON array with deterministic validation and no application-logic edit. | ⚠️ PARTIAL | One data surface exists, but validation is not deterministic/fail-closed for all declared `unknown` inputs. |
+| 03-02 | Imported unknown data passes exact staged validation before trust. | ✗ | Inherited sparse slots can cross the boundary; accessors can escape the result contract. |
+| 03-02 | Lookup returns fresh zero/one/many results in source order. | ✓ | Resolver and fresh-identity tests pass. |
+| 03-02 | Resolution uses only canonical `banks` and `labelFor()`. | ✓ | Direct implementation trace and exact labels pass. |
+| 03-02 | Only three records are populated; 98 banks are empty. | ✓ | Locked data plus exhaustive lookup pass. |
+| 03-02 | No speculative or mutable runtime fields leak into contracts. | ✓ | Exact authoring/resolved key-set checks pass. |
+| 03-03 | Sparse catalogue and step slots never become trusted values. | ✗ | Clean holes reject, but inherited numeric properties in holes validate and project. |
+| 03-03 | Every own string/symbol extra is rejected by the five-field contract. | ✓ | `Reflect.ownKeys` plus non-enumerable and symbol regressions pass. |
+| 03-03 | Automated regressions prove fresh nested validator/resolver projections. | ✓ | Reference-identity assertions pass for arrays, records, steps, and resolved step objects. |
 
 ## 📦 Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |---|---|---|---|
-| `src/suggestions.data.json` | Single editable exact three-record bootstrap | ✓ VERIFIED | Exists, substantive, parses, exact deep-equality probe passes, and contains only five fields per record. |
-| `src/suggestions.ts` | Runtime validation boundary and bank-aware resolver | ✗ FAILED | Exists and is wired, but the public validator admits sparse invalid keys and non-exact own-key shapes. |
-| `test/suggestions.test.ts` | Complete validator, catalogue, canonical-resolution, and lookup contract | ⚠️ PARTIAL | 483 substantive lines, imported and run by Vitest; lacks regression coverage for the observed validator failures and fresh-reference guarantees. |
+| `src/suggestions.data.json` | Sole plain three-record bootstrap catalogue | ✓ VERIFIED | Exists, parses, is substantive, and contains exactly five authored fields per record. |
+| `src/suggestions.ts` | Fail-closed validator plus canonical bank-aware resolver | ✗ FAILED | Exists and is wired, but the public validator accepts inherited sparse-slot values and mishandles accessors, format-only blanks, and unsafe diagnostic keys. |
+| `test/suggestions.test.ts` | Complete validator, projection, catalogue, and resolver contract | ⚠️ PARTIAL | 575 substantive lines and 46 passing tests; independently confirmed review cases are absent. |
 
 ## 🔗 Key Link Verification
 
 | From | To | Via | Status | Details |
 |---|---|---|---|---|
-| `test/suggestions.test.ts` | `src/suggestions.ts` | Direct public imports | ✓ WIRED | Validator, constants, catalogue, and lookup are imported and executed. |
+| `test/suggestions.test.ts` | `src/suggestions.ts` | Public validator/catalogue/resolver imports | ✓ WIRED | GSD key-link query passes and all public exports are exercised. |
 | `test/suggestions.test.ts` | `src/banks.ts` | Canonical expected labels | ✓ WIRED | Tests pin canonical Bank 1 and fallback-aware Bank 14 values. |
-| `src/suggestions.ts` | `src/suggestions.data.json` | Unknown import → validation → export | ⚠️ PARTIAL | Link exists, but validation is not fail-closed for all accepted `unknown` array shapes. |
-| `src/suggestions.ts` | `src/banks.ts` | `KEYS`, `banks`, `labelFor()` | ✓ WIRED | Keys validate vocabulary; direct guarded bank access and `labelFor()` resolve names. |
-| `src/suggestions.ts` | `test/suggestions.test.ts` | Public behavior contract | ⚠️ PARTIAL | All declared exports are exercised, but adversarial trust-boundary cases are absent. |
+| `src/suggestions.ts` | `src/suggestions.data.json` | Unknown import, validation, export | ⚠️ PARTIAL | Production JSON is valid, but the declared public unknown boundary is not universally fail-closed. |
+| `src/suggestions.ts` | `src/banks.ts` | `KEYS`, `banks`, `labelFor()` | ✓ WIRED | Validation and resolution use canonical vocabulary and names. |
+| `src/suggestions.ts` | `ValidationResult` | Dense scans then typed projection | ⚠️ PARTIAL | Clean holes are covered, but inherited values and throwing accessors bypass the intended result boundary. |
 
 ## 🌊 Data-Flow Trace
 
 | Artifact | Data | Source | Produces Real Data | Status |
 |---|---|---|---|---|
-| `suggestionCatalogue` | Validated suggestion records | `suggestions.data.json` → `unknown` → validator | Yes | ⚠️ FLOWING WITH VALIDATION GAP |
-| `getSuggestionsForBank()` | Bank-aware resolved suggestions | Validated catalogue + canonical `banks` + `labelFor()` | Yes | ✓ FLOWING |
-| Future Phase 4 UI | Rendered suggestions | Not in Phase 3 scope | N/A | N/A — explicitly deferred to Phase 4 |
+| `suggestionCatalogue` | Validated authored records | `suggestions.data.json` to validator to export | Yes | ⚠️ FLOWING WITH VALIDATION GAP |
+| `getSuggestionsForBank()` | Bank-aware resolved suggestions | Validated catalogue plus canonical `banks` and `labelFor()` | Yes | ✓ FLOWING |
+| Phase 4 rail | Rendered suggestions | Not part of Phase 3 | N/A | N/A, explicitly deferred |
 
 ## 🧪 Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 |---|---|---|---|
-| Full quality gate | `just ci` | 0 type warnings/errors; 8 files and 94 tests pass; production build succeeds | ✓ PASS |
-| Locked bootstrap | Plan deep-equality `node -e` probe | `locked bootstrap matches` | ✓ PASS |
-| Unknown validator rejects sparse arrays | Vite SSR direct module probe | Sparse catalogue and sparse steps both returned `ok: true`; sparse step projected as `undefined` | ✗ FAIL |
-| Exact fields reject hidden own keys | Vite SSR direct module probe | Symbol and non-enumerable extras both returned `ok: true` | ✗ FAIL |
-| Fresh projections currently exist | Vite SSR identity probe | Validator and resolver arrays, records, and nested steps were distinct | ✓ PASS, unprotected by tests |
+| Full quality gate | `just ci` | 0 check warnings/errors; 8 files and 99 tests pass; production build succeeds | ✓ PASS |
+| Clean sparse arrays and hidden own keys | Included focused suggestion tests | 46/46 pass | ✓ PASS |
+| Sparse slots ignore inherited numeric properties | Vite SSR public-validator probe | Inherited record and inherited `C` key both return `ok: true` | ✗ FAIL |
+| Validator never invokes accessors | Vite SSR public-validator probe | ID getter runs once and throws `getter executed` | ✗ FAIL |
+| Blank authored text is rejected | Vite SSR U+200B ID/label probe | Both return `ok: true` | ✗ FAIL |
+| Unexpected-field diagnostics remain single-line and unambiguous | Vite SSR newline-key probe | Path contains a literal line break | ✗ FAIL |
 
 ## 🧰 Probe Execution
 
-No PLAN-declared or conventional `scripts/**/tests/probe-*.sh` probes exist. Step 7c was not applicable.
+No PLAN-declared or conventional `scripts/**/tests/probe-*.sh` probe exists. Step 7c is not applicable.
 
 ## 📋 Requirements Coverage
 
 | Requirement | Source Plans | Status | Evidence |
 |---|---|---|---|
-| PROG-01 | 03-01, 03-02 | ✓ SATISFIED | One plain JSON catalogue is the sole content source; no application edit is needed for valid content changes. |
-| PROG-02 | 03-01, 03-02 | ✗ BLOCKED | Normal records preserve bank/key order, but a sparse steps array is accepted and projects `undefined` as a valid `Key`. |
-| PROG-03 | 03-01, 03-02 | ✗ BLOCKED | Named malformed cases reject correctly, but sparse and hidden-own-key malformed inputs fail open. |
-| PROG-04 | 03-01, 03-02 | ✓ SATISFIED | Resolver obtains bank/chord names from `banks` and `labelFor()` only. |
-| PROG-05 | 03-01, 03-02 | ✓ SATISFIED | Source-order `filter().map()` returns deterministic zero/one/many results. |
-| PROG-06 | 03-01, 03-02 | ✓ SATISFIED | Both supported kinds validate and survive unchanged through lookup. |
-| PROG-07 | 03-01, 03-02 | ✗ BLOCKED | CI passes, but catalogue-integrity automation misses the reproduced trust-boundary failures. |
-| BOOT-01 | 03-01, 03-02 | ✓ SATISFIED | Exact three-record bootstrap and all 98 empty banks are proven. |
+| PROG-01 | 03-01, 03-02 | ✓ SATISFIED | One plain JSON catalogue is the sole content source; valid content edits require no application-code change. |
+| PROG-02 | 03-01, 03-02, 03-03 | ✗ BLOCKED | Normal order and repetition work, but a sparse steps slot can inherit and project a prototype key as authored data. |
+| PROG-03 | 03-01, 03-02, 03-03 | ✗ BLOCKED | Prototype-supplied slots, accessors, and format-only blank text demonstrate malformed/blank inputs that do not return actionable validation failures. |
+| PROG-04 | 03-01, 03-02 | ✓ SATISFIED | Bank and chord names resolve from `banks` and `labelFor()` only. |
+| PROG-05 | 03-01, 03-02 | ✓ SATISFIED | Source-order lookup returns deterministic zero, one, or several fresh results. |
+| PROG-06 | 03-01, 03-02 | ✓ SATISFIED | Both supported kinds validate and survive lookup without grouping/coalescing. |
+| PROG-07 | 03-01, 03-02, 03-03 | ✗ BLOCKED | CI is green but does not cover the confirmed validator failures. |
+| BOOT-01 | 03-01, 03-02 | ✓ SATISFIED | Exact three-record bootstrap covers progression/movement; the other 98 banks resolve empty. |
 
-All eight Phase 3 requirement IDs appear in both PLAN frontmatters and REQUIREMENTS.md. No Phase 3 requirement is orphaned.
+All eight Phase 3 requirement IDs appear in PLAN frontmatter and `REQUIREMENTS.md`. No Phase 3 requirement is orphaned. Requirement checkboxes in `REQUIREMENTS.md` were treated as metadata, not evidence.
 
-## 🚩 Anti-Patterns and Adversarial Findings
+## 🧾 Independent Review-Finding Disposition
+
+| Review finding | Verdict | Independent evidence |
+|---|---|---|
+| CR-01 inherited array elements bypass sparse validation | CONFIRMED, BLOCKER | Custom array prototypes at index 0 make sparse catalogue/steps inputs return `ok: true`. |
+| WR-01 accessors execute and inherited context can leak | CONFIRMED, WARNING | Own ID getter executes once and its exception escapes `validateSuggestionCatalogue()`. |
+| WR-02 format-only Unicode passes blank rule | CONFIRMED, WARNING | U+200B-only ID and label both validate successfully. |
+| WR-03 unexpected-field paths are ambiguous | CONFIRMED, WARNING | A key containing a newline creates a multiline raw path. Code also gives same-description symbols identical text paths. |
+
+## 🚩 Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 |---|---|---|---|---|
-| `src/suggestions.ts` | 127, 225, 246 | Hole-skipping `forEach()` / `every()` at an `unknown` trust boundary | 🛑 BLOCKER | Sparse invalid entries/steps validate successfully; trusted type can contain `undefined`. |
-| `src/suggestions.ts` | 212 | `Object.keys()` used for exact own-field enforcement | ⚠️ WARNING | Symbol and non-enumerable own fields bypass validation. |
-| `test/suggestions.test.ts` | 66-69, 364 | Deep equality used where fresh identity is promised | ⚠️ WARNING | A future aliasing regression could pass tests even though current code creates fresh projections. |
+| `src/suggestions.ts` | 128, 232 | Ordinary property access on sparse unknown arrays | 🛑 BLOCKER | Prototype-inherited values become trusted entries or keys. |
+| `src/suggestions.ts` | 141-145, 221 | Direct/reflective reads invoke accessors | ⚠️ WARNING | Validation can mutate, throw, or escape its `ValidationResult` contract. |
+| `src/suggestions.ts` | 77-79 | `trim()` alone defines nonblank text | ⚠️ WARNING | Invisible format/control-only labels are accepted. |
+| `src/suggestions.ts` | 217-219 | Raw unexpected-key path interpolation | ⚠️ WARNING | Diagnostics can be multiline or ambiguous. |
 
-No `TBD`, `FIXME`, `XXX`, `TODO`, `HACK`, placeholder, empty-handler, or console-only implementation markers were found in the three phase files. No dependency or canonical `banks.data.json` change occurred in the phase commits.
+No `TBD`, `FIXME`, `XXX`, `TODO`, `HACK`, placeholder, empty-handler, or console-only marker exists in the three phase artifacts.
 
 ### Disconfirmation Check
 
 - Partial requirement
-  - PROG-07 passes its normal suite but does not prove the full integrity boundary.
+  - PROG-03 rejects ordinary malformed JSON-like values but not the full valid-JavaScript `unknown` surface its public signature and Plan 03-03 threat model claim.
 - Misleading passing test
-  - `toEqual({ ok: true, value: input })` proves value equality, not fresh reference separation.
+  - `rejects a sparse top-level catalogue slot` proves a clean hole only; it does not prove own-slot semantics when the prototype supplies index 0.
 - Uncovered error path
-  - Sparse array holes and hidden own keys are not represented in the suite.
+  - A throwing getter escapes rather than returning ordered `CatalogueIssue[]`.
 
 ## 👤 Human Review Flags
 
-No visual, hardware, external-service, or runtime UAT belongs to this data-only phase. The PLANs do carry three judgment-tier prohibitions. Static inspection indicates compliance, but these remain non-authoritative LLM judgments and must not be silently green:
+The phase is data-only, so no visual, hardware, external-service, or runtime UAT is required. Three judgment-tier prohibitions remain non-authoritative and flagged:
 
 1. **Catalogue scope stays non-authoring and non-comprehensive**
-   - Expected: one small static catalogue, with no generator/editor or comprehensive-authority claim.
-   - Current evidence: only the three-record JSON, validator/resolver, and tests exist.
-   - Flag: `unverified-prohibition — human review recommended`.
-
+   - Static inspection agrees, but human review remains recommended.
 2. **Canonical musical names are not duplicated or invented**
-   - Expected: authored data contains no bank/chord names; resolution uses canonical bank exports and `labelFor()`.
-   - Current evidence: direct code/data inspection agrees.
-   - Flag: `unverified-prohibition — human review recommended`.
-
+   - Data contains no bank/chord-name fields; resolver uses canonical sources only.
 3. **Lookup remains inert**
-   - Expected: lookup does not touch MIDI, playback, transport, clock, latch, or UI state.
-   - Current evidence: the module imports only JSON and canonical bank helpers and returns data-only objects.
-   - Flag: `unverified-prohibition — human review recommended`.
+   - Module dependencies and outputs are data-only; no MIDI/playback/state surface is referenced.
 
 ## ⏭️ Deferred Item Filter
 
-None. Phase 4 covers rendering and read-only browsing; no later milestone phase promises to repair Phase 3's validator or its regression coverage.
+None. Phases 4-6 do not promise to repair the Phase 3 validator or add these regression cases.
 
 ## 🧱 Gaps Summary
 
-- 🛑 The phase goal is not yet achieved
-  - The claim is a **trustworthy** maintenance mechanism.
-  - The exported `unknown` boundary demonstrably certifies malformed data as valid.
-- 🧪 The green suite is incomplete
-  - Add regressions that fail first for sparse arrays and exact own-key enforcement.
-  - Add reference-identity assertions while repairing coverage.
+- 🛑 The phase goal remains unachieved.
+  - The clean-hole and hidden-own-key repair is real.
+  - The public trust boundary still certifies inherited sparse-slot values and can escape through accessors.
+  - Visually blank text and malformed diagnostic keys also violate the roadmap contract.
+- 🧪 The test suite is green but incomplete.
+  - Add fail-first public regressions for all four confirmed review findings, then repair the descriptor/path/text handling.
 
 ---
 
-_Verified: 2026-08-18T18:08:23.084Z_
+_Verified: 2026-08-18T18:59:30Z_
 _Verifier: the agent (gsd-verifier)_
