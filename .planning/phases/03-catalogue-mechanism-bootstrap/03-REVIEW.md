@@ -1,6 +1,6 @@
 ---
 phase: 03-catalogue-mechanism-bootstrap
-reviewed: 2026-08-18T18:55:49Z
+reviewed: 2026-08-18T19:50:31Z
 depth: standard
 files_reviewed: 3
 files_reviewed_list:
@@ -9,98 +9,82 @@ files_reviewed_list:
   - test/suggestions.test.ts
 findings:
   critical: 1
-  warning: 3
+  warning: 2
   info: 0
-  total: 4
+  total: 3
 status: issues_found
 ---
 
 # Phase 3: Code Review Report
 
-**Reviewed:** 2026-08-18T18:55:49Z
+**Reviewed:** 2026-08-18T19:50:31Z
 **Depth:** standard
 **Files Reviewed:** 3
 **Status:** issues_found
 
 ## Narrative Findings (AI reviewer)
 
-## Summary
+### Summary
 
-The locked three-record catalogue is correct, and both the focused 46-test suite and full `just ci` gate pass. The sparse-array repair is still fail-open when a missing slot has an inherited value: a polluted array prototype can supply a complete catalogue entry or pad key that is then certified as trusted data. The validator also executes accessors despite its pure-data contract, accepts visually blank format-only text, and emits ambiguous paths for unusual unexpected keys.
+The locked three-record JSON catalogue is correct, and both the focused 51-test suite and full `just ci` gate pass. The current module nevertheless exposes its post-validation trust anchors as mutable JavaScript objects, so a consumer can bypass validation after import and make the resolver return corrupted data or throw. The public validator can also throw on proxy-backed `unknown` input, and its 200-line validation routine is an ordering-sensitive maintenance hazard.
 
-## Critical Issues
+### Critical Issues
 
-### CR-01: [BLOCKER] Inherited array elements bypass sparse-slot validation
+#### CR-01: Exported readonly trust anchors remain mutable at runtime
 
-**File:** `/Users/flo/Work/Private/Dev/Music/Jay-6/src/suggestions.ts:128-232`
-**Issue:** Both indexed loops read slots with ordinary property access. JavaScript therefore resolves a hole through the prototype chain. A one-slot sparse catalogue with an inherited valid record returns `ok: true`; a sparse `steps` array with an inherited canonical key also returns `ok: true` and projects that inherited key into `readonly Key[]`. This reopens the trust-boundary failure under prototype pollution, even though clean-prototype holes are covered by tests.
+**Classification:** BLOCKER
+**File:** `/Users/flo/Work/Private/Dev/Music/Jay-6/src/suggestions.ts:5`
+**Affected lines:** `5`, `117-119`, `353-362`, `370-388`
+**Issue:** `as const` and `readonly` protect only TypeScript callers at compile time. The exported `SUGGESTION_KINDS` array, `suggestionCatalogue` array, each catalogue object, and every `steps` array remain mutable JavaScript values. A JS consumer or TS consumer using a cast can append a new kind; `isSuggestionKind()` then accepts that runtime value even though `SuggestionKind` still statically excludes it. A consumer can also replace a validated step with an invalid key; the next `getSuggestionsForBank()` call throws at the canonical chord lookup. This defeats the import-time validation boundary and lets any importer corrupt all subsequent catalogue lookups.
 
-**Fix:** Read only own data-property descriptors for array slots. Treat a missing or accessor slot as `undefined`, then let the existing entry/key checks reject it. Add regressions using sparse arrays with custom prototypes.
+**Fix:** Freeze both exported trust anchors, including the catalogue's nested objects and step arrays, before exposing them. Keep resolver return values as fresh mutable-at-runtime projections because mutations to those copies cannot poison shared state. Add regression tests that attempt to mutate every exported layer and then prove validation and lookup behavior remain unchanged.
 
 ```ts
-function ownArraySlot(array: readonly unknown[], index: number): unknown {
-  const descriptor = Object.getOwnPropertyDescriptor(array, String(index));
-  return descriptor && 'value' in descriptor ? descriptor.value : undefined;
+export const SUGGESTION_KINDS = Object.freeze([
+  'progression',
+  'movement',
+] as const);
+
+function freezeSuggestion(suggestion: Suggestion): Suggestion {
+  Object.freeze(suggestion.steps);
+  return Object.freeze(suggestion);
 }
 
-const candidate = ownArraySlot(input, sourceIndex);
-const step = ownArraySlot(steps, stepIndex);
+export const suggestionCatalogue: readonly Suggestion[] = Object.freeze(
+  validationResult.value.map(freezeSuggestion),
+);
 ```
 
-## Warnings
+### Warnings
 
-### WR-01: [WARNING] Validation executes accessors and reports inherited field context
+#### WR-01: Proxy-backed unknown input can escape the validation result contract
 
-**File:** `/Users/flo/Work/Private/Dev/Music/Jay-6/src/suggestions.ts:141-221`
-**Issue:** Direct reads of `candidate.id`, the other allowed fields, and unexpected fields execute getters supplied by an `unknown` input. A throwing getter escapes `validateSuggestionCatalogue()` instead of returning a `ValidationResult`; a side-effecting getter violates D-06 purity. Inherited `id` and `bankIndex` values are also read and attached to missing-field diagnostics even though the exact-field contract requires own properties.
+**Classification:** WARNING
+**File:** `/Users/flo/Work/Private/Dev/Music/Jay-6/src/suggestions.ts:135-168`
+**Issue:** The validator avoids inherited values and ordinary accessors, but `Array.isArray()`, `Object.getOwnPropertyDescriptor()`, and `Reflect.ownKeys()` can still throw for revoked proxies or proxy traps. Because the public API accepts `unknown` and returns a `ValidationResult`, malformed object input should not unexpectedly escape as an exception. The current accessor-focused tests do not cover proxies, so this failure remains invisible to the suite.
 
-**Fix:** Inspect own property descriptors once. Use only descriptor `value` fields, reject accessors through the existing field-specific issue codes, and avoid `Reflect.get()` when reporting unexpected accessors.
-
-```ts
-function ownDataValue(record: object, field: PropertyKey): unknown {
-  const descriptor = Object.getOwnPropertyDescriptor(record, field);
-  return descriptor && 'value' in descriptor ? descriptor.value : undefined;
-}
-
-const id = ownDataValue(candidate, 'id');
-const bankIndex = ownDataValue(candidate, 'bankIndex');
-```
-
-### WR-02: [WARNING] Format-only Unicode strings pass the blank-text rule
-
-**File:** `/Users/flo/Work/Private/Dev/Music/Jay-6/src/suggestions.ts:77-79`
-**Issue:** `trim()` does not remove Unicode format characters such as U+200B ZERO WIDTH SPACE. Consequently, an ID or label containing only `\u200B` validates successfully even though it renders blank, contradicting the requirement that blank labels fail validation. The current tests cover ordinary whitespace and valid Unicode text but not invisible format/control-only strings.
-
-**Fix:** Require at least one non-whitespace, non-format, non-control code point while continuing to preserve authored Unicode verbatim. Add ID and label regressions for zero-width/control-only values.
+**Fix:** Either explicitly narrow and document the accepted domain to parsed JSON values, or catch reflective-operation failures and return a stable issue such as `inaccessible-value` at the closest known path. Add revoked-proxy and throwing-trap regression cases that assert the validator does not throw.
 
 ```ts
-const VISIBLE_TEXT = /[^\p{White_Space}\p{Cf}\p{Cc}]/u;
-
-function isAuthoredText(value: unknown): value is string {
-  return typeof value === 'string'
-    && value.trim() === value
-    && VISIBLE_TEXT.test(value);
+function safeOwnDataValue(record: object, key: PropertyKey): unknown {
+  try {
+    return dataValue(Object.getOwnPropertyDescriptor(record, key));
+  } catch {
+    return undefined;
+  }
 }
 ```
 
-### WR-03: [WARNING] Unexpected-field paths are ambiguous and can contain raw line breaks
+#### WR-02: The validator combines too many ordering-sensitive responsibilities
 
-**File:** `/Users/flo/Work/Private/Dev/Music/Jay-6/src/suggestions.ts:213-223`
-**Issue:** Unexpected string keys are appended with raw dot notation, so a key such as `bad\n[duplicate-id]` injects a new diagnostic line and keys containing dots or brackets do not have an unambiguous JSONPath-like location. Multiple symbols with the same description also produce identical paths such as `$[0][Symbol(hidden)]`. This weakens the promised machine-stable, actionable diagnostics precisely for malformed fields.
+**Classification:** WARNING
+**File:** `/Users/flo/Work/Private/Dev/Music/Jay-6/src/suggestions.ts:135-334`
+**Issue:** `validateSuggestionCatalogue()` spans roughly 200 lines and handles top-level shape checks, record descriptor reads, five field rules, unexpected-key path creation, step validation, projection, and two duplicate indexes. Its diagnostic ordering is a public contract pinned by tests, so modifying one concern inside this high-branch function can silently reorder or suppress unrelated issues. This exceeds the standard review threshold for function complexity and makes future catalogue rules unnecessarily risky to change.
 
-**Fix:** Use dot notation only for safe identifier keys, JSON-quoted bracket notation for all other strings, and include the stable own-key ordinal for symbols. Add regressions for punctuation, newlines, and two same-description symbols.
-
-```ts
-function ownKeyPath(base: string, key: PropertyKey, ordinal: number): string {
-  if (typeof key === 'symbol') return `${base}[#${ordinal}:${String(key)}]`;
-  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)
-    ? `${base}.${key}`
-    : `${base}[${JSON.stringify(key)}]`;
-}
-```
+**Fix:** Extract an entry validator that returns one optional `ValidatedEntry` plus its entry-local issues, and a duplicate-check helper that appends cross-entry issues. Keep the outer function responsible only for source-order iteration and the explicit entry-before-duplicate ordering contract.
 
 ---
 
-_Reviewed: 2026-08-18T18:55:49Z_
+_Reviewed: 2026-08-18T19:50:31Z_
 _Reviewer: the agent (gsd-code-reviewer)_
 _Depth: standard_
