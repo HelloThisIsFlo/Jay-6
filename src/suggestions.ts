@@ -124,7 +124,8 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
   const issues: CatalogueIssue[] = [];
   const validEntries: ValidatedEntry[] = [];
 
-  input.forEach((candidate, sourceIndex) => {
+  for (let sourceIndex = 0; sourceIndex < input.length; sourceIndex++) {
+    const candidate = input[sourceIndex];
     const entryPath = `$[${sourceIndex}]`;
     if (!isRecord(candidate)) {
       issues.push({
@@ -133,7 +134,7 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
         value: candidate,
         expected: 'a non-null object',
       });
-      return;
+      continue;
     }
 
     const issueCountBeforeEntry = issues.length;
@@ -209,21 +210,30 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
       });
     }
 
-    for (const field of Object.keys(candidate)) {
-      if (!ENTRY_FIELD_SET.has(field)) {
+    for (const field of Reflect.ownKeys(candidate)) {
+      if (typeof field === 'symbol' || !ENTRY_FIELD_SET.has(field)) {
         issues.push({
           code: 'unexpected-field',
-          path: `${entryPath}.${field}`,
+          path: typeof field === 'symbol'
+            ? `${entryPath}[${String(field)}]`
+            : `${entryPath}.${field}`,
           ...context,
-          value: candidate[field],
+          value: Reflect.get(candidate, field),
           expected: ENTRY_FIELD_RULE,
         });
       }
     }
 
+    const validatedSteps: Key[] = [];
+    let stepsAreValid = false;
     if (Array.isArray(steps) && steps.length > 0) {
-      steps.forEach((step, stepIndex) => {
-        if (!isKey(step)) {
+      stepsAreValid = true;
+      for (let stepIndex = 0; stepIndex < steps.length; stepIndex++) {
+        const step = steps[stepIndex];
+        if (isKey(step)) {
+          validatedSteps.push(step);
+        } else {
+          stepsAreValid = false;
           issues.push({
             code: 'invalid-step',
             path: `${entryPath}.steps[${stepIndex}]`,
@@ -232,7 +242,7 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
             expected: PAD_KEY_RULE,
           });
         }
-      });
+      }
     }
 
     if (
@@ -241,16 +251,14 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
       && isBankIndex(bankIndex)
       && isAuthoredText(label)
       && isSuggestionKind(kind)
-      && Array.isArray(steps)
-      && steps.length > 0
-      && steps.every(isKey)
+      && stepsAreValid
     ) {
       validEntries.push({
         sourceIndex,
-        value: { id, bankIndex, label, kind, steps: [...steps] },
+        value: { id, bankIndex, label, kind, steps: validatedSteps },
       });
     }
-  });
+  }
 
   const firstIdPath = new Map<string, string>();
   const firstSequencePath = new Map<string, string>();
