@@ -10,12 +10,12 @@ Requirements for the Musical Companion milestone. Each maps to exactly one roadm
 ### Progression Catalogue
 
 - [ ] **PROG-01**: Flo can add or revise suggestions in one plain, agent-editable catalogue without changing application code.
-- [x] **PROG-02**: Every catalogue entry identifies a factory bank and an ordered sequence of valid pad keys.
-- [x] **PROG-03**: Catalogue validation rejects invalid banks, pad keys, duplicate IDs, duplicate sequences within the same bank, blank labels, and malformed entries.
+- [ ] **PROG-02**: Every catalogue entry identifies a factory bank and an ordered sequence of valid pad keys.
+- [ ] **PROG-03**: Catalogue validation rejects invalid banks, pad keys, duplicate IDs, duplicate sequences within the same bank, blank labels, and malformed entries.
 - [ ] **PROG-04**: Suggestions resolve chord names from canonical bank data rather than duplicating them.
 - [ ] **PROG-05**: A bank can contain zero, one, or several suggestions in deterministic catalogue order.
 - [ ] **PROG-06**: Suggestions distinguish genuine harmonic `progression` entries from interval or voicing `movement` entries.
-- [x] **PROG-07**: Automated checks validate catalogue integrity, canonical bank resolution, deterministic lookup, supported kinds, and clean empty-bank results.
+- [ ] **PROG-07**: Automated checks validate catalogue integrity, canonical bank resolution, deterministic lookup, supported kinds, and clean empty-bank results.
 
 ### Minimal Bootstrap
 
@@ -90,12 +90,12 @@ Every v2.0 requirement maps to exactly one roadmap phase.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | PROG-01 | Phase 3 | Gaps Found |
-| PROG-02 | Phase 3 | Complete |
-| PROG-03 | Phase 3 | Complete |
+| PROG-02 | Phase 3 | Gaps Found |
+| PROG-03 | Phase 3 | Gaps Found |
 | PROG-04 | Phase 3 | Gaps Found |
 | PROG-05 | Phase 3 | Gaps Found |
 | PROG-06 | Phase 3 | Gaps Found |
-| PROG-07 | Phase 3 | Complete |
+| PROG-07 | Phase 3 | Gaps Found |
 | BOOT-01 | Phase 3 | Gaps Found |
 | RAIL-01 | Phase 4 | Pending |
 | RAIL-02 | Phase 4 | Pending |
