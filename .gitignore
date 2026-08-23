@@ -18,3 +18,8 @@ coverage
 .playwright-mcp/
 smoke-*.png
 # README screenshot lives in docs/ — checked in.
+
+# Generated GSD runtime and research artifacts.
+.planning/research/.cache/
+.gsd/dispatch-isolation-sentinel.json
+.gsd/dispatch-isolation-sentinel.json.tmp-*
