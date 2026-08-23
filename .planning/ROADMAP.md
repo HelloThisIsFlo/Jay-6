@@ -27,7 +27,7 @@ Full v1 detail: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROADMAP.md) · re
 
 **Milestone Goal:** Ship a read-only bank-aware suggestion mechanism with minimal representative data and truthful performance feedback.
 
-- [ ] **Phase 3: Catalogue Mechanism & Bootstrap** - Flo and agents can maintain validated bank-aware suggestion data, with only enough bundled content to prove the mechanism.
+- [x] **Phase 3: Catalogue Mechanism & Bootstrap** - Flo and agents can maintain validated bank-aware suggestion data, with only enough bundled content to prove the mechanism. (completed 2026-08-23)
 - [ ] **Phase 4: Read-Only Suggestion Rail** - Users can browse bank-aware chord suggestions without affecting performance or the core MIDI loop.
 - [ ] **Phase 5: Variation Cycling & Queued Feedback** - Keyboard cycling and queued feedback make variation changes fast and truthful.
 - [ ] **Phase 6: Measured External BPM** - External clock shows a stable measured tempo without changing the internal tempo setting.
@@ -125,7 +125,7 @@ Plans:
 | 1. Prototype | v1.0 | Retrospective | Shipped | 2026-05-18 |
 | 2. Post-prototype polish + UAT | v1.0 | 9/9 | Complete | 2026-05-23 |
 | 02.1 Visual redesign adoption | pre-v2 | 4/4 | Complete | 2026-07-06 |
-| 3. Catalogue Mechanism & Bootstrap | v2.0 | 4/4 | In Progress | - |
+| 3. Catalogue Mechanism & Bootstrap | v2.0 | 4/4 | Complete    | 2026-08-23 |
 | 4. Read-Only Suggestion Rail | v2.0 | 0/TBD | Not started | - |
 | 5. Variation Cycling & Queued Feedback | v2.0 | 0/TBD | Not started | - |
 | 6. Measured External BPM | v2.0 | 0/TBD | Not started | - |

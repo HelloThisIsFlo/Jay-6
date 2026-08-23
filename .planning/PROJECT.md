@@ -70,13 +70,16 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 - ✓ **REQ-responsive-redesign-coverage** — desktop, iPad-sized, and iPhone-landscape layouts browser-verified
 - ✓ **REQ-existing-behavior-preservation** — existing routing, tempo, variation, pointer, keyboard, and latch paths preserved
 
+**Phase 3 — Catalogue Mechanism & Bootstrap (v2.0):**
+
+- ✓ **Bank-aware suggestion mechanism** — Phase 3
+- ✓ **Agent-editable progression catalogue** — Phase 3
+- ✓ **Minimal representative bootstrap** — Phase 3
+
 ### Active
 
 <!-- v2.0 scope. Refined into requirement IDs after milestone research. -->
 
-- [ ] **Bank-aware suggestion mechanism** — resolve catalogue entries for the selected factory bank without automating playback.
-- [ ] **Agent-editable progression catalogue** — keep suggestion data simple to inspect, validate, and extend directly with an agent.
-- [ ] **Minimal representative bootstrap** — ship only enough simple entries to exercise the mechanism, supported kinds, rail, and honest empty state.
 - [ ] **Previously designed chord-chip rail** — render suggestions beneath the pads while keeping the performance surface primary.
 - [ ] **Variation keyboard cycling** — Up/Down cycles the current style's variations with wraparound.
 - [ ] **Queued variation toast** — confirm slow pending changes using the existing toast design.
@@ -111,6 +114,7 @@ If everything else regresses, *that loop must still work*: pick a bank → press
   - `https://jay-6.kempenich.ai` — always-on K8s cluster behind a cluster-wide Cloudflare Tunnel.
 - **v1 bugs closed.** All Phase 2 open bugs resolved + verified: Ext-clock first-step downbeat alignment, OP-1 Start/Stop/Continue wired, 24 PPQ clock send, voicing audit (~30% inferred slots tightened).
 - **Pre-v2 visual refresh shipped** (2026-07-10) — Jay-6 v3 treatment verified across desktop, iPad-sized, and iPhone-landscape layouts without changing playback behavior.
+- **Phase 3 catalogue mechanism shipped** (2026-08-23) — one validated JSON catalogue, three representative records, canonical name resolution, inert lookup, and 104 project tests.
 - **v2.0 focus:** the bank-aware suggestion mechanism, a tiny representative bootstrap, and three focused performance improvements: the read-only rail, variation cycling/queued feedback, and measured external-clock BPM.
 - **Catalogue growth after v2.0:** Flo or agents can extend the validated data file directly as useful ideas emerge; no separate content-planning workflow or comprehensive coverage target is required.
 - **Progression rail design exists, implementation does not.** The approved chord-chip rail sits below the pads, resolves pad letters to the current bank's chord names, and remains visually subordinate to the performance surface.
@@ -149,6 +153,9 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 | **DEC-ui-small-token-layer** — Shared CSS tokens plus scoped component styles | Captures the approved instrument language without introducing a component framework | ✓ Good — Phase 02.1 |
 | **DEC-variation-models-derived** — Variation controls derive from phrase metadata and remain stateless | Prevents duplicated mappings and preserves the existing `ui.variation` path | ✓ Good — Phase 02.1 |
 | **DEC-orange-means-sounding** — Orange is reserved for sounding or latched pads | Keeps active playback distinct from setup, selection, and system state | ✓ Good — Phase 02.1 |
+| **DEC-suggestion-catalogue-boundary** — Treat catalogue input as unknown and expose fresh validated five-field projections | Direct data edits fail closed without leaking prototypes, accessors, or hidden fields | ✓ Good — Phase 3 |
+| **DEC-suggestion-canonical-resolution** — Resolve bank and chord names from canonical bank data into inert text-only views | Prevents duplicated musical truth and keeps lookup outside playback authority | ✓ Good — Phase 3 |
+| **DEC-suggestion-bootstrap-scope** — Ship three representative records; expand through later direct data edits | Proves both supported kinds and honest empty banks without implying comprehensive curation | ✓ Good — Phase 3 |
 
 ## Evolution
 
@@ -168,4 +175,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-29 after starting milestone v2.0 Musical Companion.*
+*Last updated: 2026-08-23 after completing Phase 3.*

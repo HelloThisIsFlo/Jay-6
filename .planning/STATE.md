@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Musical Companion
-current_phase: 03
-current_phase_name: catalogue-mechanism-bootstrap
-status: verifying
-stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-08-18T19:44:05.415Z"
-last_activity: 2026-08-18
-last_activity_desc: Phase 03 plan execution complete
+current_phase: 4
+current_phase_name: Read-Only Suggestion Rail
+status: planning
+stopped_at: Phase 03 complete, ready to plan Phase 4
+last_updated: "2026-08-23T19:03:33.815Z"
+last_activity: 2026-08-23
+last_activity_desc: Phase 03 complete, transitioned to Phase 4
 progress:
   total_phases: 4
   completed_phases: 1
@@ -21,17 +21,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-29)
+See: .planning/PROJECT.md (updated 2026-08-23)
 
 **Core value:** Drive the OP-1 (USB or BT) with the J-6's chord library + playback styles from a browser, without owning the J-6 hardware.
-**Current focus:** Phase 03 — catalogue-mechanism-bootstrap
+**Current focus:** Phase 4 — Read-Only Suggestion Rail
 
 ## Current Position
 
-Phase: 03 (catalogue-mechanism-bootstrap) — VERIFYING
-Plan: 4 of 4
-Status: Ready for verification
-Last activity: 2026-08-18 — Phase 03 plan execution complete
+Phase: 4 — Read-Only Suggestion Rail
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-23 — Phase 03 complete, transitioned to Phase 4
 
 Progress: [██████████] 100%
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 13 (9 in Phase 2; 4 in Phase 02.1)
+- Total plans completed: 17 (9 in Phase 2; 4 in Phase 02.1; 4 in Phase 3)
 - Average duration: N/A
 - Total execution time: N/A
 
@@ -50,7 +50,8 @@ Progress: [██████████] 100%
 | 1. Prototype | retrospective | — | — |
 | 2. Post-prototype polish + UAT | 9 | — | — |
 | 02.1 Visual redesign adoption | 4 | 29 min | 7 min |
-| 3–6. v2.0 Musical Companion | 0 / TBD | — | — |
+| 3. Catalogue Mechanism & Bootstrap | 4 | 15 min | 4 min |
+| 4–6. v2.0 remaining | 0 / TBD | — | — |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -72,19 +73,14 @@ Full decision log: PROJECT.md “Key Decisions” and `.planning/intel/decisions
 - [v2.0]: Future catalogue expansion is direct validated data editing by Flo or agents outside the GSD phase workflow.
 - [v2.0]: Phases 5 and 6 depend only on shipped Phase 02.1 and can be reordered or planned as independent workstreams.
 - [v2.0]: Every feature phase owns its automation, browser checks, and hardware proof; no final umbrella acceptance phase exists.
-- [Phase 03]: Catalogue diagnostics use twelve stable issue codes with exact JSONPath-like locations and deterministic expected-rule text.
-- [Phase 03]: Validation issues are staged by entry and field before valid-record-only duplicate checks.
-- [Phase 03]: Catalogue imports cross an explicit unknown boundary and expose only fresh validated projections.
-- [Phase 03]: Bank lookup validates integer bounds before direct canonical access and returns inert text-only views in source order.
-- [Phase 03]: Every declared catalogue and steps array position is validated, including holes read as undefined.
-- [Phase 03]: Exact catalogue records use Reflect.ownKeys while trusted projections copy only the five allowed fields.
-- [Phase 03]: Only own data-property descriptor values cross the unknown catalogue boundary; inherited, missing, and accessor-backed values validate as undefined.
-- [Phase 03]: Authored text must contain a code point outside Unicode White_Space, Cf, and Cc while preserving the original string exactly.
-- [Phase 03]: Unexpected safe ASCII keys use dot paths, unsafe strings use escaped JSON brackets, and symbols include their Reflect.ownKeys ordinal.
+- [Phase 03]: Catalogue imports cross an explicit unknown boundary and expose fresh validated five-field projections.
+- [Phase 03]: Deterministic staged diagnostics trust only own data-property descriptors and never invoke getters.
+- [Phase 03]: Bank lookup validates bounds, preserves source order, derives canonical names, and returns inert text-only views.
+- [Phase 03]: Authored text and diagnostic paths remain Unicode-safe, visible, single-line, and unambiguous.
 
 ### Pending Todos
 
-- In-scope catalogue mechanism, rail, variation feedback, and external-BPM captures are represented by Phases 3–6.
+- The remaining rail, variation feedback, and external-BPM work is represented by Phases 4–6.
 - Catalogue expansion and curation continue as direct data edits after the mechanism ships.
 - Touch-oriented Bank/Channel selectors remain deferred outside v2.0.
 
@@ -105,6 +101,6 @@ Full decision log: PROJECT.md “Key Decisions” and `.planning/intel/decisions
 
 ## Session Continuity
 
-Last session: 2026-08-18T19:44:05.409Z
-Stopped at: Completed 03-04-PLAN.md
+Last session: 2026-08-23T19:03:33.815Z
+Stopped at: Phase 03 complete, ready to plan Phase 4
 Resume file: None
