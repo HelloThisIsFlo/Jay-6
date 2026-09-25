@@ -40,11 +40,14 @@ created: "2026-09-25"
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| TBD (planner fills) | — | — | RAIL-03 | — | N/A | unit | `npm test -- rail.test.ts` | ❌ W0 | ⬜ pending |
-| TBD | — | — | RAIL-04 | — | N/A | unit | `npm test -- rail.test.ts` | ❌ W0 | ⬜ pending |
-| TBD | — | — | RAIL-06 | — | N/A | unit | `npm test -- rail.test.ts` | ❌ W0 | ⬜ pending |
-| TBD | — | — | D-17 | — | N/A | unit | `npm test -- suggestions.test.ts` | ❌ W0 | ⬜ pending |
-| TBD | — | — | RAIL-01/02 | — | N/A | unit (existing) | `npm test -- suggestions.test.ts` | ✅ | ⬜ pending |
+| 04-01-T1 | 04-01 | 1 | RAIL-02, RAIL-03, RAIL-04, RAIL-08 (hold gate, notes identity, chip precedence) | — | N/A | unit + build | `npm test -- test/rail.test.ts && just ci` | ❌ W0 (T1 creates `test/rail.test.ts`) | ⬜ pending |
+| 04-01-T2 | 04-01 | 1 | RAIL-08 (single hold per source, D-07 teardown) | — | N/A | unit + build + human-check (hardware) | `npm test -- test/rail.test.ts && just ci` | ✅ after T1 | ⬜ pending |
+| 04-02-T1 | 04-02 | 1 | RAIL-05 / D-17 (cap diagnostic + build gate) | — | N/A | unit + config-load proof | `npm test -- test/suggestions.test.ts` + temp-copy `loadConfigFromFile` gate proof | ✅ | ⬜ pending |
+| 04-02-T2 | 04-02 | 1 | RAIL-05 / D-16, D-17 (boundary pins) | — | N/A | unit + build | `npm test -- test/suggestions.test.ts && just ci` | ✅ | ⬜ pending |
+| 04-03-T1 | 04-03 | 2 | RAIL-02, RAIL-06 (row math, fit walk, label split, natural keys) | — | N/A | unit + build | `npm test -- test/rail.test.ts && just ci` | ✅ after 04-01 | ⬜ pending |
+| 04-03-T2 | 04-03 | 2 | RAIL-01, RAIL-05, RAIL-07 (rail chrome, empty state) | — | N/A | build + bundle check + human-check (desktop/iPad) | `just ci` + dist copy check | ✅ | ⬜ pending |
+| 04-04-T1 | 04-04 | 3 | RAIL-01, RAIL-04, RAIL-05 (strip, panel, TopBar grid) | — | N/A | build + bundle check | `just ci` + dist copy check | ✅ | ⬜ pending |
+| 04-04-T2 | 04-04 | 3 | RAIL-03, RAIL-07, RAIL-08 (pager memory, Escape, silent browsing) | — | N/A | unit + build + human-check (iPhone + MIDI monitor) | `npm test -- test/rail.test.ts && just ci` | ✅ after 04-01 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,9 +55,9 @@ created: "2026-09-25"
 
 ## Wave 0 Requirements
 
-- [ ] `test/rail.test.ts` — hold-count transitions (RAIL-03), `chipsPerRow` balanced rows (RAIL-06), echo derivation (RAIL-04, if extracted pure)
-- [ ] `test/suggestions.test.ts` extension — D-17 >6-per-bank rejection (6 valid, 7 invalid)
-- [ ] Manual UAT checklist entries for RAIL-01/02/05/07 (visual) and RAIL-03/08 (hardware/MIDI monitor)
+- [ ] `test/rail.test.ts` — hold-count transitions (RAIL-03), `chipsPerRow` balanced rows (RAIL-06), echo derivation (RAIL-04, if extracted pure) → created by 04-01-T1 (`chipVisualState` extracted pure); extended by 04-03-T1 and 04-04-T2
+- [ ] `test/suggestions.test.ts` extension — D-17 >6-per-bank rejection (6 valid, 7 invalid) → 04-02-T1 and 04-02-T2
+- [ ] Manual UAT checklist entries for RAIL-01/02/05/07 (visual) and RAIL-03/08 (hardware/MIDI monitor) → `<human-check>` blocks in 04-01-T2, 04-03-T2, 04-04-T2 (harvested into end-of-phase UAT)
 
 ---
 

@@ -407,14 +407,14 @@ Copy is locked verbatim (D-15, UI-SPEC Copywriting Contract) — do not paraphra
 
 **All four assumptions are low-to-medium risk and explicitly flagged for the planner to resolve as deliberate task-level decisions** — none touch a UI-SPEC-locked value (D-01 through D-17 are all directly sourced from `04-CONTEXT.md`, not assumed).
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Exact media-query condition for the iPhone `sugg` grid area**
+1. **Exact media-query condition for the iPhone `sugg` grid area** — RESOLVED: bare `max-height: 480px` (04-04 Task 1)
    - What we know: must be height-gated (or height + `pointer: coarse`) per the project's own established iPhone-landscape pattern (see Pattern 4/A2); UI-SPEC only says "at `max-height: 480px`".
    - What's unclear: whether to combine with `pointer: coarse` (matching `App.svelte`'s body-scroll-lock condition) or use bare `max-height: 480px` (matching `PianoLayout.svelte`'s piano-sizing condition) — the two existing precedents in this codebase use *different* conditions for what is functionally the same "are we on iPhone landscape" question.
    - Recommendation: planner picks one explicitly in the plan (bare `max-height: 480px` is simpler and matches `PianoLayout.svelte`, the closer analog since both are pure layout-shape changes rather than scroll-behavior changes); note the choice in a code comment referencing this tradeoff.
 
-2. **D-17 issue code name and where the >6-per-bank check groups entries**
+2. **D-17 issue code name and where the >6-per-bank check groups entries** — RESOLVED: `too-many-suggestions`, one issue per entry beyond the 6th (04-02 Task 1)
    - What we know: the check is a cross-entry, per-bank count, structurally identical to the existing `duplicate-id`/`duplicate-sequence` grouping loop (`src/suggestions.ts:291-329`).
    - What's unclear: exact `CatalogueIssueCode` string value and whether the issue is emitted once per bank or once per offending entry (existing `duplicate-*` codes emit once per offending entry, which is the more consistent precedent).
    - Recommendation: follow the `duplicate-sequence` precedent shape (one issue per entry beyond the 6th, in catalogue order, with a `relatedPath` back to the 6-suggestion boundary if that reads cleanly) — planner's call.
