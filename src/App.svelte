@@ -230,7 +230,7 @@
 </script>
 
 <main>
-  <TopBar />
+  <TopBar onPress={press} onRelease={release} heldKeys={displayKeys} />
   <PianoLayout onPress={press} onRelease={release} heldKeys={displayKeys} />
   <SuggestionRail onPress={press} onRelease={release} heldKeys={displayKeys} />
   <footer>

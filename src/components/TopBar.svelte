@@ -8,9 +8,10 @@
     type MidiPortInfo,
     type MidiStatus,
   } from '../midi';
-  import { banks } from '../banks';
+  import { banks, type Key } from '../banks';
   import { onMount } from 'svelte';
   import VariationPicker from './VariationPicker.svelte';
+  import SuggestionPanel from './SuggestionPanel.svelte';
   import { variationOptionsForStyle } from '../variationOptions';
   import {
     ui,
@@ -26,6 +27,14 @@
     STYLE_VARIATION_COUNT,
     type StyleKind,
   } from '../state.svelte';
+
+  // D-14: panel chips play through the same press/release path as every other pad alias.
+  interface Props {
+    onPress: (key: Key, notes: number[]) => void;
+    onRelease: (key: Key) => void;
+    heldKeys: Set<Key>;
+  }
+  let { onPress, onRelease, heldKeys }: Props = $props();
 
   let midiStatus = $state<MidiStatus>('idle');
   let midiOutputs = $state<MidiPortInfo[]>([]);
@@ -272,6 +281,12 @@
     {/if}
   </div>
 
+  <!-- iPhone landscape only (max-height: 480px, D-10): the strip takes the empty middle
+       of row 1. Hidden by default so it never appears in desktop/iPad layouts. -->
+  <div class="zone sugg-zone">
+    <SuggestionPanel {onPress} {onRelease} {heldKeys} />
+  </div>
+
   <!-- Bank: ‹ [01 Pop] › — arrows step; the readout opens a scrollable bank list. -->
   <div class="zone bank-zone">
     <button type="button" class="step" onclick={() => setBank(ui.bankIndex - 1)} aria-label="Prev bank">‹</button>
@@ -436,6 +451,15 @@
     display: flex;
     align-items: center;
     gap: var(--space-1);
+    min-width: 0;
+  }
+
+  /* Hidden above 480px height; static (not the .zone default relative) so the panel's
+     absolute positioning anchors to .topbar itself and can cover the whole bar (D-11). */
+  .zone.sugg-zone {
+    display: none;
+    position: static;
+    justify-content: center;
     min-width: 0;
   }
 
@@ -1119,5 +1143,30 @@
     .list-popover {
       max-height: 74vh;
     }
+  }
+
+  /* Height-gated (not width): iPhone-landscape widths (~650-930px) straddle the 900px
+     width rule above in both directions, so a width query alone can't isolate this case.
+     Bare max-height: 480px matches PianoLayout's own compact-pad rule and SuggestionRail's
+     hide rule, keeping all three verifiable together in a resized desktop window (D-10).
+     Last block so it wins at every width. */
+  @media (max-height: 480px) {
+    .topbar {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        'pill sugg transpose'
+        'bank style latch';
+      gap: var(--space-2);
+      padding: 12px;
+    }
+
+    .pill-zone { grid-area: pill; }
+    .zone.sugg-zone { display: flex; grid-area: sugg; }
+    .bank-zone { grid-area: bank; }
+    .style-zone { grid-area: style; }
+    .transpose-zone { grid-area: transpose; }
+    .latch { grid-area: latch; margin-left: 0; }
+    .close { width: 44px; height: 44px; }
   }
 </style>
