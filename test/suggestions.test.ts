@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   getSuggestionsForBank,
+  MAX_SUGGESTIONS_PER_BANK,
   SUGGESTION_KINDS,
   suggestionCatalogue,
   validateSuggestionCatalogue,
@@ -826,6 +827,42 @@ describe('canonical suggestion resolution', () => {
         expect(Object.values(step).every((value) => typeof value === 'string')).toBe(true);
       }
     }
+  });
+});
+
+describe('per-bank suggestion cap', () => {
+  it('exposes the cap constant (D-16)', () => {
+    expect(MAX_SUGGESTIONS_PER_BANK).toBe(6);
+  });
+
+  it('rejects a 7th suggestion in one bank with an exact, actionable diagnostic', () => {
+    const distinctSteps = [
+      ['C', 'D'],
+      ['C', 'E'],
+      ['C', 'F'],
+      ['C', 'G'],
+      ['C', 'A'],
+      ['C', 'B'],
+      ['C', 'C#'],
+    ];
+    const input = distinctSteps.map((steps, i) =>
+      validEntry({ id: `cap-${i}`, bankIndex: 2, steps }),
+    );
+
+    expect(validateSuggestionCatalogue(input)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'too-many-suggestions',
+          path: '$[6].bankIndex',
+          entryId: 'cap-6',
+          bankIndex: 2,
+          value: 7,
+          expected: 'at most 6 suggestions within bank 2',
+          relatedPath: '$[5].bankIndex',
+        },
+      ],
+    });
   });
 });
 
