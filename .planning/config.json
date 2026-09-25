@@ -3,10 +3,13 @@
     "_auto_chain_active": false,
     "nyquist_validation": true,
     "ai_integration_phase": true,
-    "security_enforcement": false
+    "security_enforcement": false,
+    "research_before_questions": true,
+    "tdd_mode": false
   },
   "model_profile": "balanced",
   "model_overrides": {
     "gsd-debugger": "opus"
-  }
+  },
+  "granularity": "standard"
 }
