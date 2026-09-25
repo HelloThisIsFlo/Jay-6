@@ -1,0 +1,446 @@
+<title>Desktop Suggestion Rail</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  /* Real app tokens (src/styles/tokens.css). Dark-only on purpose: the app is an instrument surface. */
+  :root {
+    color-scheme: dark;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --bg-0: #0e0e0e; --bg-1: #171717; --bg-2: #1f1f1f; --bg-3: #2a2a2a; --bg-4: #3a3a3a; --bg-5: #4a4a4a;
+    --fg-0: #eeeeee; --fg-1: #b8b8b8; --fg-2: #7a7a7a; --fg-3: #555555;
+    --accent: #ff7a1a;
+    --system: oklch(0.68 0.045 250);
+    --cream: #f4f1ea; --black-key: #2e2e2e; --frame: #000000;
+    --t-eyebrow: 11px; --t-body: 14px;
+    --radius-sm: 4px; --radius-md: 6px;
+    --sk-bg: #070707; --sk-fg: #d6d6d6; --sk-dim: #8a8a8a; --sk-line: #262626;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--sk-bg); color: var(--sk-fg); font: 13px/1.4 system-ui, sans-serif; }
+  button { font: inherit; color: inherit; }
+
+  /* ─── Sketch chrome ─────────────────────────────────────────────── */
+  .desk { padding: 16px; display: grid; gap: 12px; }
+  .sk-bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+  .sk-bar h1 { margin: 0; font-size: 13px; font-weight: 600; }
+  .sk-bar h1 span { color: var(--sk-dim); font-weight: 400; }
+  .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--sk-line); border-radius: 6px; overflow: hidden; }
+  .seg button { background: transparent; border: 0; padding: 6px 10px; cursor: pointer; color: var(--sk-dim); }
+  .seg button + button { border-left: 1px solid var(--sk-line); }
+  .seg button[aria-pressed="true"] { background: #1c1c1c; color: #fff; }
+  .seg button:focus-visible, .sk-handle:focus-visible { outline: 2px solid var(--system); outline-offset: -2px; }
+  .metrics { font-family: var(--mono); font-size: 11px; color: var(--sk-dim); font-variant-numeric: tabular-nums; }
+  .metrics b { color: var(--sk-fg); font-weight: 500; }
+  .metrics .over { color: #e0b25a; }
+  .metrics .bad { color: #ff8a8a; }
+  .frame-box { position: relative; }
+  .frame-box .device { position: absolute; top: 0; left: 0; transform-origin: 0 0; outline: 6px solid #1a1a1a; border-radius: 12px; }
+  .notes { max-width: 760px; }
+  .notes h2 { margin: 0 0 6px; font-size: 13px; }
+  .notes ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+  .notes li::marker { color: var(--sk-dim); }
+  .notes .verdict { margin: 8px 0 0; padding: 8px 10px; border-left: 2px solid var(--system); background: #111; }
+
+  /* On an iPad the sketch fills the screen, like the real app. */
+  body.on-device .desk { display: none; }
+  body.on-device #device-host .device { position: fixed; inset: 0; width: auto !important; height: auto !important; }
+  .sk-handle {
+    display: none; position: fixed; z-index: 50; right: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid #333; background: rgb(0 0 0 / .75); color: #ddd; font: 600 12px var(--mono); cursor: pointer;
+  }
+  body.on-device .sk-handle { display: block; }
+  .sk-sheet {
+    position: fixed; z-index: 60; right: 12px; bottom: 60px; width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 80px); overflow-y: auto;
+    padding: 12px 16px; background: rgb(8 8 8 / .96); border: 1px solid #2a2a2a; border-radius: 12px; display: grid; gap: 10px;
+  }
+
+  /* ─── Device + app ──────────────────────────────────────────────── */
+  .device { position: relative; overflow: hidden; background: var(--bg-0); container: dev / size; }
+  .scroller { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: none; }
+  /* Mirrors App.svelte: coarse pointer + ≤1366 wide + >480 tall → html/body position:fixed, overflow:hidden. */
+  .device.locked .scroller { overflow: hidden; }
+
+  .app {
+    --lane: min(calc(100% - 56px), 1180px);
+    box-sizing: border-box; display: flex; flex-direction: column; min-height: 100%;
+    padding: 0 0 24px; font: var(--t-body) system-ui, sans-serif; color: var(--fg-0); background: var(--bg-0);
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  @container dev (max-width: 760px) { .app { --lane: calc(100% - 24px); } }
+
+  /* TopBar — geometry mirrors src/components/TopBar.svelte */
+  .topbar { box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 18px; background: var(--bg-1); border-bottom: 1px solid var(--bg-3); }
+  .zone { display: flex; align-items: center; gap: 4px; min-width: 0; }
+  .pill-zone { flex: 0 1 280px; }
+  .tb-btn { border: 1px solid var(--bg-4); background: var(--bg-2); border-radius: var(--radius-md); cursor: pointer; }
+  .status-pill { display: flex; align-items: center; gap: 10px; width: min(100%, 280px); min-height: 58px; padding: 0 14px 0 12px; border-radius: 999px; text-align: left; white-space: nowrap; overflow: hidden; }
+  .status-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #5fd08a; flex: none; }
+  .status-pill i { font-style: normal; color: var(--fg-3); margin: 0 4px; }
+  .chev { color: var(--fg-2); font-size: 10px; }
+  .step { display: grid; place-items: center; min-width: 40px; min-height: 50px; }
+  .readout { display: flex; align-items: center; gap: 8px; min-height: 54px; padding: 0 8px; white-space: nowrap; }
+  .bank-readout { min-width: 88px; min-height: 58px; }
+  .mono { font-family: var(--mono); }
+  .num { color: var(--fg-1); }
+  .transpose-zone .step { min-height: 36px; }
+  .tr { min-width: 56px; text-align: center; font-size: 12px; color: var(--fg-1); }
+  .latch { display: flex; align-items: center; justify-content: center; margin-left: auto; min-width: 110px; min-height: 66px; padding: 0 22px; font-weight: 600; letter-spacing: .08em; }
+  @container dev (max-width: 900px) {
+    .topbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'pill pill transpose' 'bank style latch'; gap: 8px; padding: 12px; }
+    .pill-zone { grid-area: pill; } .bank-zone { grid-area: bank; } .style-zone { grid-area: style; }
+    .transpose-zone { grid-area: transpose; } .latch { grid-area: latch; margin-left: 0; }
+  }
+
+  /* Pads — geometry mirrors src/components/PianoLayout.svelte */
+  .piano {
+    display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); grid-template-rows: 101px 129px; gap: 8px;
+    padding: 18px; box-sizing: border-box; width: var(--lane); margin: 20px auto 0;
+    background: var(--frame); border: 1px solid #161616; border-radius: 14px; touch-action: none;
+  }
+  .pad {
+    display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 4px;
+    padding: 12px 12px 14px; border-radius: 10px; border: 1px solid transparent; min-width: 0; overflow: hidden;
+    font-family: var(--mono); text-align: left; cursor: pointer; transition: background-color 60ms, box-shadow 80ms;
+  }
+  .pad .key { font-size: 10px; font-weight: 600; letter-spacing: .06em; line-height: 1.2; }
+  .pad .name { display: flex; flex-wrap: wrap; align-items: baseline; font-size: 16px; font-weight: 600; line-height: 1.1; max-width: 100%; }
+  .pad .name span, .chip .n span { white-space: nowrap; }
+  .pad .bass, .chip .bass { opacity: .72; }
+  .pad.white { background: var(--cream); color: var(--bg-1); border-color: #d8d3c5; }
+  .pad.white .key { color: #6f675f; }
+  .pad.black { background: var(--black-key); color: var(--fg-0); border-color: var(--bg-3); box-shadow: inset 0 1px 0 rgb(255 255 255 / .1), inset 0 -1px 0 rgb(0 0 0 / .4); }
+  .pad.black .key { color: var(--fg-2); }
+  .pad.held { background: var(--accent); color: var(--bg-0); border-color: var(--accent); box-shadow: inset 0 1px 0 rgb(255 255 255 / .2), 0 0 24px 4px rgb(255 122 26 / .45); }
+  .pad.held .key { color: var(--bg-0); }
+  @container dev (max-width: 760px) {
+    .piano { grid-template-rows: 88px 112px; margin-top: 12px; padding: 12px; }
+    .pad { padding: 8px 8px 10px; } .pad .key { font-size: 9px; } .pad .name { font-size: clamp(10px, 2.7cqw, 14px); }
+  }
+
+  .footer { box-sizing: border-box; width: var(--lane); margin: 12px auto 0; padding: 12px 16px 0; border-top: 1px solid var(--bg-2); color: var(--fg-3); font-size: var(--t-eyebrow); line-height: 1.5; }
+  .footer code { display: inline-block; margin: 0 4px; padding: 0 4px; border: 1px solid var(--bg-3); border-radius: var(--radius-sm); background: var(--bg-1); color: var(--fg-1); font: var(--t-eyebrow) var(--mono); }
+
+  /* ─── Suggestion primitives (same as sketch 002) ────────────────── */
+  .s-label { font-size: var(--t-body); font-weight: 600; color: var(--fg-0); line-height: 1.25; text-wrap: balance; }
+  /* Kind is metadata, never a badge: no border, no fill. */
+  .kind { font-size: var(--t-eyebrow); color: var(--system); letter-spacing: .02em; }
+  .chips { display: grid; grid-template-columns: repeat(var(--per), minmax(min-content, max-content)); gap: 6px; justify-content: start; }
+  .chip { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 5px 9px 6px; border: 1px solid var(--bg-4); border-radius: var(--radius-md); background: var(--bg-2); }
+  .chip .k { font: 600 9px/1.2 var(--mono); color: var(--fg-2); letter-spacing: .06em; }
+  .chip .n { display: flex; flex-wrap: wrap; align-items: baseline; font: 600 14px/1.15 var(--mono); color: var(--fg-0); }
+  .empty { margin: 0; font-size: 13px; color: var(--fg-2); }
+
+  /* Key-colour hints: border only. Chip fill never changes, so a chip never reads as a pad. */
+  /* Outline: naturals get a cream edge, accidentals keep the default edge. */
+  .hint-outline .chip[data-color="white"] { border-color: rgb(244 241 234 / .6); }
+  /* Lip: a thick bottom edge like the front of a key, cream or black. */
+  .hint-lip .chip { border-bottom-width: 3px; }
+  .hint-lip .chip[data-color="white"] { border-bottom-color: var(--cream); }
+  .hint-lip .chip[data-color="black"] { border-bottom-color: #000; }
+  /* Ring: 2px edge, cream for naturals; black bezel with a faint inner line for accidentals. */
+  .hint-ring .chip { border-width: 2px; padding: 4px 8px 5px; }
+  .hint-ring .chip[data-color="white"] { border-color: rgb(244 241 234 / .85); }
+  .hint-ring .chip[data-color="black"] { border-color: #000; box-shadow: inset 0 0 0 1px var(--bg-5); }
+
+  /* Playable chips: same press path as the pad, so orange keeps meaning "sounding". */
+  .playable .chip { cursor: pointer; touch-action: none; transition: background-color 60ms, box-shadow 80ms; }
+  .playable .chip:hover { border-color: var(--fg-3); }
+  .chip.held, .chip.held[data-color] { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 14px 2px rgb(255 122 26 / .4); }
+  .chip.held .n, .chip.held .k { color: var(--bg-0); }
+  /* Echo: a held key (from pad or chip) lights every chip with that key. */
+  .echo-full .chip.echo:not(.held) { background: var(--accent); border-color: var(--accent); box-shadow: none; }
+  .echo-full .chip.echo:not(.held) .n, .echo-full .chip.echo:not(.held) .k { color: var(--bg-0); }
+  /* The pressed chip keeps the full press state; echo is only for the others. */
+  .echo-soft .chip.echo:not(.held) { background: rgb(255 122 26 / .18); border-color: var(--accent); box-shadow: none; }
+
+  .rail { box-sizing: border-box; width: var(--lane); margin: 16px auto 0; display: grid; gap: 4px; }
+  .rail-head { display: flex; align-items: baseline; gap: 8px; padding: 0 4px 4px; color: var(--system); font-size: var(--t-eyebrow); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+  .rail-head .count { font-family: var(--mono); letter-spacing: 0; }
+  .rail .empty { padding: 4px; }
+
+  /* Rows: label column + chips */
+  .rows { display: grid; }
+  .rail-row { display: grid; grid-template-columns: minmax(120px, 200px) minmax(0, 1fr); gap: 4px 16px; align-items: start; padding: 10px 4px; border-top: 1px solid var(--bg-2); }
+  .rail-id { display: grid; gap: 2px; padding-top: 3px; }
+  @container dev (max-width: 900px) { .rail-row { grid-template-columns: minmax(100px, 150px) minmax(0, 1fr); gap: 4px 12px; } }
+
+  /* Columns: suggestions side by side */
+  .cols { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0 16px; }
+  .col { display: grid; gap: 8px; align-content: start; padding: 10px 4px 12px; border-top: 1px solid var(--bg-2); }
+  .col .rail-id { padding-top: 0; }
+</style>
+
+<div class="desk" id="desk">
+  <div class="sk-bar">
+    <h1>Sketch 003 <span>· Phase 4 inline rail on desktop and iPad</span></h1>
+    <span class="seg" id="seg-variant" role="group" aria-label="Variant"></span>
+    <span class="seg" id="seg-bank" role="group" aria-label="Bank"></span>
+    <span class="seg" id="seg-frame" role="group" aria-label="Frame"></span>
+    <span class="seg" id="seg-hint" role="group" aria-label="Key colour hint"></span>
+    <span class="seg" id="seg-play" role="group" aria-label="Playable chips"></span>
+    <span class="seg" id="seg-echo" role="group" aria-label="Echo held keys on chips"></span>
+  </div>
+  <div class="metrics" id="metrics-desk"></div>
+  <div class="frame-box" id="frame-host"></div>
+  <aside class="notes" id="notes-desk"></aside>
+</div>
+<div id="device-host"></div>
+<button class="sk-handle" id="sk-handle" aria-label="Sketch controls">003</button>
+<div class="sk-sheet" id="sk-sheet" hidden></div>
+
+<script>
+(() => {
+  // Real bank data (src/banks.data.json); bank 07 has no curated suggestions.
+  const BANKS = {
+    1: { name: 'Pop', chords: { C: 'Cadd9', 'C#': 'C#M9/C', D: 'Dm7', 'D#': 'D#M7', E: 'Cadd9/E', F: 'FM9', 'F#': 'Dadd9/F#', G: 'Em7/G', 'G#': 'Fm6/G#', A: 'FM/A', 'A#': 'Gm/A#', B: 'G/B' } },
+    3: { name: 'Jazz', chords: { C: 'D7sus2/C', 'C#': 'C#7#9', D: 'Dm9', 'D#': 'D7#9', E: 'E7#9', F: 'FM9', 'F#': 'F#7#9', G: 'G7(13)', 'G#': 'G#7(13)', A: 'Am7(11)', 'A#': 'A#9', B: 'Bm7(11)' } },
+    7: { name: 'Trad Maj', chords: { C: 'C', 'C#': 'C#dim7', D: 'Dm', 'D#': 'D#dim7', E: 'Em', F: 'F', 'F#': 'F#m7b5', G: 'G', 'G#': 'G#dim7', A: 'Am', 'A#': 'A#', B: 'Bdim' } },
+  };
+  // Shape of ResolvedSuggestion (src/suggestions.ts). Jazz entries are illustrative, to stress a busy bank.
+  const SUGG = {
+    1: [
+      { label: 'Homeward', kind: 'progression', steps: ['C', 'A', 'B', 'C'] },
+      { label: 'Step up', kind: 'progression', steps: ['C', 'D', 'F', 'C'] },
+      { label: 'Slow climb back to the tonic through the relative minor', kind: 'movement', steps: ['C', 'E', 'F', 'F#', 'G', 'A', 'B', 'C'] },
+    ],
+    3: [
+      { label: 'Altered turnaround', kind: 'progression', steps: ['D', 'E', 'A', 'D#', 'D', 'G', 'C'] },
+      { label: 'Chromatic slide', kind: 'movement', steps: ['F#', 'G', 'G#', 'A'] },
+      { label: 'Two-five home', kind: 'progression', steps: ['D', 'G', 'C'] },
+      { label: 'Tritone drift', kind: 'movement', steps: ['A', 'D#', 'D', 'C#', 'C'] },
+      { label: 'Backdoor', kind: 'progression', steps: ['F', 'A#', 'C'] },
+      { label: 'Minor eleventh float', kind: 'movement', steps: ['A', 'B', 'A', 'D', 'E', 'A'] },
+    ],
+    7: [],
+  };
+  const BANK_ORDER = [1, 3, 7];
+  // Heights approximate the browser's usable viewport. iPad frames emulate the real body scroll lock.
+  const FRAMES = {
+    desktop: { w: 1440, h: 860, locked: false, label: 'Desktop 1440×860' },
+    laptop: { w: 1280, h: 680, locked: false, label: 'Laptop ≈1280×680' },
+    ipadL: { w: 1180, h: 770, locked: true, label: 'iPad land. ≈1180×770' },
+    ipadP: { w: 820, h: 1110, locked: true, label: 'iPad port. ≈820×1110' },
+  };
+  const VARIANTS = { rows: 'Rows', cols: '★ Columns' };
+  const NOTES = {
+    rows: {
+      title: 'Rows · label column + chips',
+      points: [
+        'Reads like a setlist: labels line up on the left and each suggestion takes one line.',
+        'An 8-step sequence splits 4+4 and the long label wraps within its column. Nothing is truncated.',
+        'Height grows with the number of suggestions (~50px per row). The busy Jazz bank has 6 rows.',
+      ],
+      verdict: 'Best for scanning and matches the phase checkpoint. But a 6-suggestion bank clips ~79px on iPad landscape, where scroll is locked and the clipped part cannot be reached.',
+    },
+    cols: {
+      title: 'Columns · suggestions side by side',
+      points: [
+        'Uses the width a desktop has spare: 3–4 suggestions sit side by side, so the busy bank takes half the height.',
+        'Chips cap at 4 per row inside a column, so short progressions look sparse and long ones wrap sooner.',
+        'Order across columns is weaker; the eye has to zig-zag.',
+      ],
+      verdict: 'Fallback if busy banks overflow the iPad screen.',
+    },
+  };
+
+  const S = { variant: 'cols', bank: 1, frame: 'ipadL', hint: 'outline', playable: true, echo: 'soft', skOpen: false };
+  const HINTS = { off: 'Hint: off', outline: '★ Cream outline', lip: 'Key lip', ring: 'Ring' };
+  const ECHO = { off: 'Echo: off', soft: '★ Echo: soft', full: 'Echo: full' };
+  const PLAY = { true: 'Chips playable', false: 'Chips read-only' };
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  // Real iPad (coarse pointer, tablet-sized): fill the screen instead of drawing frames.
+  const onDevice = () => matchMedia('(pointer: coarse) and (min-width: 700px) and (min-height: 500px)').matches;
+
+  let device, scroller;
+
+  function chordHTML(name) {
+    const [main, ...bass] = name.split('/');
+    return `<span>${esc(main)}</span>${bass.length ? `<span class="bass">/${esc(bass.join('/'))}</span>` : ''}`;
+  }
+  // Balanced rows: 7→4+3, 8→4+4.
+  function chipsHTML(steps, maxPer) {
+    const rows = Math.ceil(steps.length / maxPer);
+    const per = Math.ceil(steps.length / rows);
+    const bank = BANKS[S.bank];
+    return `<div class="chips" style="--per:${per}">${steps.map((k) =>
+      `<span class="chip" data-chip="${esc(k)}" data-color="${k.includes('#') ? 'black' : 'white'}"><span class="k">${esc(k)}</span><span class="n">${chordHTML(bank.chords[k])}</span></span>`).join('')}</div>`;
+  }
+  const idHTML = (s) => `<div class="rail-id"><span class="s-label">${esc(s.label)}</span><span class="kind">${s.kind}</span></div>`;
+
+  function topbarHTML() {
+    const bank = BANKS[S.bank];
+    return `<header class="topbar">
+      <div class="zone pill-zone"><button class="tb-btn status-pill" type="button"><span class="dot"></span><span>OP-1<i>·</i>Ch 1<i>·</i><b>120</b> BPM<i>·</i>Int</span><span class="chev">▾</span></button></div>
+      <div class="zone bank-zone"><button class="tb-btn step" type="button" data-bank="-1" aria-label="Prev bank">‹</button><button class="tb-btn readout bank-readout" type="button"><span class="mono num">${String(S.bank).padStart(2, '0')}</span><span>${esc(bank.name)}</span><span class="chev">▾</span></button><button class="tb-btn step" type="button" data-bank="1" aria-label="Next bank">›</button></div>
+      <div class="zone style-zone"><button class="tb-btn readout" type="button">ARP 1 <span class="chev">▾</span></button><button class="tb-btn readout mono" type="button">♪ 01 <span class="chev">▾</span></button></div>
+      <div class="zone transpose-zone"><button class="tb-btn step" type="button" aria-label="Transpose down">‹</button><span class="tr mono">TRN +0</span><button class="tb-btn step" type="button" aria-label="Transpose up">›</button></div>
+      <button class="tb-btn latch" type="button">LATCH</button>
+    </header>`;
+  }
+  function padsHTML() {
+    const bank = BANKS[S.bank];
+    const black = [['C#', 2], ['D#', 4], ['F#', 8], ['G#', 10], ['A#', 12]];
+    const white = [['C', 1], ['D', 3], ['E', 5], ['F', 7], ['G', 9], ['A', 11], ['B', 13]];
+    const pad = (k, col, row, cls) => `<button class="pad ${cls}" type="button" data-pad="${k}" style="grid-column:${col} / span 2;grid-row:${row}"><span class="key">${esc(k)}</span><span class="name">${chordHTML(bank.chords[k])}</span></button>`;
+    return `<div class="piano">${black.map(([k, c]) => pad(k, c, 1, 'black')).join('')}${white.map(([k, c]) => pad(k, c, 2, 'white')).join('')}</div>`;
+  }
+  function railHTML() {
+    const list = SUGG[S.bank];
+    if (!list.length) return `<section class="rail" aria-label="Suggestions"><p class="empty">No curated suggestions for this bank yet</p></section>`;
+    const head = `<div class="rail-head">Suggestions <span class="count">· ${list.length}</span></div>`;
+    if (S.variant === 'rows') {
+      const maxPer = device.clientWidth < 900 ? 4 : 6;
+      return `<section class="rail" aria-label="Suggestions">${head}<div class="rows">${list.map((s) =>
+        `<div class="rail-row">${idHTML(s)}${chipsHTML(s.steps, maxPer)}</div>`).join('')}</div></section>`;
+    }
+    return `<section class="rail" aria-label="Suggestions">${head}<div class="cols">${list.map((s) =>
+      `<div class="col">${idHTML(s)}${chipsHTML(s.steps, 4)}</div>`).join('')}</div></section>`;
+  }
+  const footerHTML = () => `<footer class="footer">Keys: <code>A S D F G H J</code> + <code>W E T Y U</code> = pads · <code>Z / X</code> = transpose · <code>← / →</code> = bank · <code>Space</code> = latch · <code>1–6</code> = style</footer>`;
+
+  function render() {
+    const onDev = onDevice();
+    document.body.classList.toggle('on-device', onDev);
+    const host = document.getElementById(onDev ? 'device-host' : 'frame-host');
+    const other = document.getElementById(onDev ? 'frame-host' : 'device-host');
+    if (!device) {
+      device = document.createElement('div');
+      device.className = 'device';
+      device.innerHTML = '<div class="scroller"></div>';
+      scroller = device.querySelector('.scroller');
+      wireDevice();
+    }
+    if (device.parentElement !== host) { other.replaceChildren(); other.style.height = ''; host.append(device); }
+    const f = FRAMES[S.frame];
+    device.classList.toggle('locked', onDev ? true : f.locked);
+    if (onDev) {
+      device.style.width = device.style.height = device.style.transform = '';
+    } else {
+      // Scale the frame to fit the window; container queries still see the unscaled size.
+      const avail = Math.max(320, document.getElementById('desk').clientWidth - 32 - 12);
+      const scale = Math.min(1, avail / f.w);
+      device.style.width = f.w + 'px';
+      device.style.height = f.h + 'px';
+      device.style.transform = `translate(6px, 6px) scale(${scale})`;
+      host.style.height = f.h * scale + 12 + 'px';
+    }
+    scroller.innerHTML = `<main class="app hint-${S.hint} echo-${S.echo}${S.playable ? ' playable' : ''}">${topbarHTML()}${padsHTML()}${railHTML()}${footerHTML()}</main>`;
+    requestAnimationFrame(measure);
+    renderControls();
+  }
+
+  function measure() {
+    const base = scroller.querySelector('.app').getBoundingClientRect().top;
+    const k = device.getBoundingClientRect().height / device.offsetHeight || 1;
+    const y = (el) => Math.round((el.getBoundingClientRect().bottom - base) / k);
+    const h = device.offsetHeight;
+    const padsEnd = y(scroller.querySelector('.piano'));
+    const railEnd = y(scroller.querySelector('.rail'));
+    const locked = device.classList.contains('locked');
+    const hidden = Math.max(0, railEnd - h);
+    const status = hidden === 0
+      ? '<b>rail fits</b>'
+      : locked
+        ? `<span class="bad">rail clipped ${hidden}px · scroll locked, unreachable</span>`
+        : `<span class="over">rail needs ${hidden}px scroll</span>`;
+    const html = `viewport <b>${device.offsetWidth}×${h}</b>${locked ? ' (scroll locked)' : ''} · pads end <b>${padsEnd}</b>px · rail ends <b>${railEnd}</b>px · ${status}`;
+    document.getElementById('metrics-desk').innerHTML = html;
+    const m = document.getElementById('metrics-sheet');
+    if (m) m.innerHTML = html;
+  }
+
+  function segHTML(entries, current, attr) {
+    return entries.map(([v, label]) => `<button type="button" data-${attr}="${v}" aria-pressed="${String(v) === String(current)}">${esc(label)}</button>`).join('');
+  }
+  function notesHTML() {
+    const n = NOTES[S.variant];
+    return `<h2>${esc(n.title)}</h2><ul>${n.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul><p class="verdict">${esc(n.verdict)}</p>`;
+  }
+  function renderControls() {
+    const vs = Object.entries(VARIANTS);
+    const banks = BANK_ORDER.map((b) => [b, `${String(b).padStart(2, '0')} ${BANKS[b].name} · ${SUGG[b].length}`]);
+    const frames = Object.entries(FRAMES).map(([key, f]) => [key, f.label]);
+    document.getElementById('seg-variant').innerHTML = segHTML(vs, S.variant, 'v');
+    document.getElementById('seg-bank').innerHTML = segHTML(banks, S.bank, 'b');
+    document.getElementById('seg-frame').innerHTML = segHTML(frames, S.frame, 'frame');
+    const hints = Object.entries(HINTS);
+    const plays = Object.entries(PLAY);
+    document.getElementById('seg-hint').innerHTML = segHTML(hints, S.hint, 'hint');
+    document.getElementById('seg-play').innerHTML = segHTML(plays, S.playable, 'play');
+    const echoes = Object.entries(ECHO);
+    document.getElementById('seg-echo').innerHTML = segHTML(echoes, S.echo, 'echo');
+    document.getElementById('notes-desk').innerHTML = notesHTML();
+    const sheet = document.getElementById('sk-sheet');
+    sheet.hidden = !S.skOpen;
+    if (S.skOpen) {
+      sheet.innerHTML = `<span class="seg">${segHTML(vs, S.variant, 'v')}</span>
+        <span class="seg">${segHTML(banks, S.bank, 'b')}</span>
+        <span class="seg">${segHTML(hints, S.hint, 'hint')}</span>
+        <span class="seg">${segHTML(plays, S.playable, 'play')}</span>
+        <span class="seg">${segHTML(echoes, S.echo, 'echo')}</span>
+        <div class="metrics" id="metrics-sheet"></div>
+        <div class="notes">${notesHTML()}</div>`;
+    }
+  }
+
+  function wireDevice() {
+    // Pad and chip share one press path. Per-key count: releasing one source must not
+    // silence a key another source still holds.
+    const captured = new Map();
+    const holds = new Map();
+    const syncPad = (key) => {
+      const on = (holds.get(key) ?? 0) > 0;
+      scroller.querySelector(`[data-pad="${CSS.escape(key)}"]`)?.classList.toggle('held', on);
+      scroller.querySelectorAll(`[data-chip="${CSS.escape(key)}"]`).forEach((c) => c.classList.toggle('echo', on));
+    };
+    scroller.addEventListener('pointerdown', (e) => {
+      const el = e.target.closest(S.playable ? '[data-pad], [data-chip]' : '[data-pad]');
+      if (!el) return;
+      const key = el.dataset.pad ?? el.dataset.chip;
+      e.preventDefault();
+      el.setPointerCapture(e.pointerId);
+      captured.set(e.pointerId, { el, key });
+      holds.set(key, (holds.get(key) ?? 0) + 1);
+      el.classList.add('held');
+      syncPad(key);
+    });
+    const end = (e) => {
+      const c = captured.get(e.pointerId);
+      if (!c) return;
+      captured.delete(e.pointerId);
+      holds.set(c.key, Math.max(0, (holds.get(c.key) ?? 1) - 1));
+      c.el.classList.remove('held');
+      syncPad(c.key);
+    };
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((t) => scroller.addEventListener(t, end));
+    scroller.addEventListener('contextmenu', (e) => { if (e.target.closest('[data-pad], [data-chip]')) e.preventDefault(); });
+    scroller.addEventListener('scroll', measure, { passive: true });
+    device.addEventListener('click', (e) => {
+      const t = e.target.closest('[data-bank]');
+      if (!t) return;
+      const i = BANK_ORDER.indexOf(S.bank);
+      S.bank = BANK_ORDER[(i + Number(t.dataset.bank) + BANK_ORDER.length) % BANK_ORDER.length];
+      render();
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('button');
+    if (!t || device?.contains(t)) return;
+    if (t.dataset.v) S.variant = t.dataset.v;
+    else if (t.dataset.b) S.bank = Number(t.dataset.b);
+    else if (t.dataset.frame) S.frame = t.dataset.frame;
+    else if (t.dataset.hint) S.hint = t.dataset.hint;
+    else if (t.dataset.play) S.playable = t.dataset.play === 'true';
+    else if (t.dataset.echo) S.echo = t.dataset.echo;
+    else if (t.id === 'sk-handle') S.skOpen = !S.skOpen;
+    else return;
+    render();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.skOpen) { S.skOpen = false; render(); } });
+  let rt;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 80); });
+
+  render();
+})();
+</script>

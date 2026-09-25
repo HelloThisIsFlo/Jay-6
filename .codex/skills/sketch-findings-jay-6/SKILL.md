@@ -10,7 +10,7 @@ Browser instrument UI: Roland J-6-style chord pads to MIDI/OP-1. The wrapped des
 
 Source design canvas: `sources/001-jay-6-visual-redesign/index.html`
 
-Sketch sessions wrapped: 2026-07-06
+Sketch sessions wrapped: 2026-07-06, 2026-09-25
 </context>
 
 <design_direction>
@@ -28,7 +28,7 @@ Jay-6 should read as a compact hardware instrument: dark restrained chrome, crea
 | TopBar | `references/topbar.md` | Use C2 performance-first bar with routing+BPM status pill and setup popover |
 | Pads & Feedback | `references/pads-and-feedback.md` | Use lifted bevel pads, separate J-6 rows, bottom-center queued toast |
 | Variations | `references/variations.md` | Use per-style pickers instead of one universal variation control |
-| Progressions | `references/progressions.md` | Use chord-chip rail display pattern; implementation scope remains phase-specific |
+| Suggestion Rail | `references/progressions.md` | Playable chips + soft echo + cream outline; columns ≤6 on desktop/iPad, top-bar strip + panel on iPhone landscape |
 
 ## Theme
 
@@ -36,11 +36,13 @@ The extracted theme file is at `sources/themes/default.css`.
 
 ## Source Files
 
-Original sketch HTML and screenshots are preserved in `sources/001-jay-6-visual-redesign/`.
+Original sketch HTML and screenshots are preserved in `sources/001-jay-6-visual-redesign/`, `sources/002-iphone-suggestion-rail/`, `sources/003-desktop-suggestion-rail/`.
 </findings_index>
 
 <metadata>
 ## Processed Sketches
 
 - 001-jay-6-visual-redesign
+- 002-iphone-suggestion-rail
+- 003-desktop-suggestion-rail
 </metadata>

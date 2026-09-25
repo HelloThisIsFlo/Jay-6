@@ -71,3 +71,36 @@ Jay-6 should adopt the v3 visual redesign as an in-between v1.1-style pass befor
 - `.research/design/screenshots/06-variations-rhythm-gate-tiles.png`
 - `.research/design/screenshots/07-toast-bottom-center-pill.png`
   - focused crop of Option A only
+
+
+---
+
+# Sketch Wrap-Up Summary (round 2)
+
+**Date:** 2026-09-25
+**Sketches processed:** 2
+**Design areas:** Suggestion Rail (replaces Progressions)
+**Skill output:** `./.codex/skills/sketch-findings-jay-6/`
+
+## Included Sketches
+
+| # | Name | Winner | Design Area |
+|---|------|--------|-------------|
+| 002 | iphone-suggestion-rail | B · strip in top bar + panel over top bar | Suggestion Rail |
+| 003 | desktop-suggestion-rail | Columns + playable chips + soft echo + cream outline | Suggestion Rail |
+
+## Excluded Sketches
+
+| # | Name | Reason |
+|---|------|--------|
+| none | none | none |
+
+## Key Decisions
+
+- 📱 iPhone landscape: `Suggestions · N` strip in TopBar row 1; nonmodal panel over the top bar only, one suggestion at a time
+- 🖥️ Desktop/iPad: inline columns, 3 × 2 → max 6 suggestions per bank (iPad body scroll lock)
+- 🎹 Chips playable through the pad's press path; per-key hold count
+- 🔁 Soft echo: held key lights every other chip with that key; the pressed chip keeps full orange
+- ⬜ Cream outline on natural-key chips only
+- 🫥 Empty bank: quiet muted line, no controls
+- ⚠️ Changes Phase 4's "no orange in the rail" rule; "read-only" now means no editing
