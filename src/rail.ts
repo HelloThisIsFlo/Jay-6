@@ -119,17 +119,25 @@ export interface PageMemory<T> {
   readonly index: number;
 }
 
-// RED stub (04-04 Task 2): intentionally wrong bodies so the newly-added tests fail on
-// real assertions rather than on missing imports. Replaced with the real implementation
-// in the GREEN commit.
-export function rememberedPage<T>(_memory: PageMemory<T> | null, _list: T): number {
+// D-13: the panel keeps its page across close/reopen while the bank is unchanged, and
+// resets to 1 of N on any bank change (even back to the same bank) — comparing list
+// identity with `===` (never structural equality) means a freshly-derived suggestions
+// array (recreated on every bank change) always resets, while the same array reference
+// (close/reopen with no bank change in between) keeps its index.
+export function rememberedPage<T>(memory: PageMemory<T> | null, list: T): number {
+  if (memory !== null && memory.list === list) return memory.index;
   return 0;
 }
 
-export function stepPage(_index: number, _delta: number, _count: number): number {
-  return 0;
+// Wraps with a positive modulo in both directions; count <= 0 (and thus count === 1,
+// the "1 of 1" case) always returns 0, so a single suggestion's pager steps are inert.
+export function stepPage(index: number, delta: number, count: number): number {
+  if (count <= 0) return 0;
+  return (((index + delta) % count) + count) % count;
 }
 
-export function panelMaxPerRow(_viewportWidth: number): number {
-  return 4;
+// Sketch 002's viewport-width chip cap for the wide iPhone panel: 4 below 720px, 6 at
+// and above (the panel is full-width, unlike the fixed-cap desktop/iPad columns).
+export function panelMaxPerRow(viewportWidth: number): number {
+  return viewportWidth < 720 ? 4 : 6;
 }

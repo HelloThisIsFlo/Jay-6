@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { Key } from '../banks';
-  import { getSuggestionsForBank } from '../suggestions';
+  import { getSuggestionsForBank, type ResolvedSuggestion } from '../suggestions';
   import { ui } from '../state.svelte';
+  import { rememberedPage, stepPage, panelMaxPerRow, type PageMemory } from '../rail';
   import SuggestionChips from './SuggestionChips.svelte';
 
   interface Props {
@@ -18,9 +19,16 @@
   // engine-bridged state, and browsing must stay silent (D-08).
   let open = $state(false);
 
-  // Task 2 swaps this for the remembered-page derivation (D-13); for now the panel
-  // always shows the first suggestion.
-  const current = $derived(suggestions[0]);
+  // D-13: memory is keyed on the derived `suggestions` list's own identity, which is
+  // recreated on every bank change, so close/reopen keeps the page while any bank change
+  // (even back to the same bank) resets to 1 of N — purely via derivation, no reactive
+  // side-effect rune needed. $state.raw keeps the stored list un-proxied so the `===`
+  // identity check holds.
+  let pageMemory = $state.raw<PageMemory<readonly ResolvedSuggestion[]> | null>(null);
+  const pageIndex = $derived(rememberedPage(pageMemory, suggestions));
+  const current = $derived(suggestions[pageIndex]);
+
+  let viewportWidth = $state(0);
 
   function toggle(): void {
     open = !open;
@@ -28,7 +36,17 @@
   function close(): void {
     open = false;
   }
+  function step(delta: number): void {
+    pageMemory = { list: suggestions, index: stepPage(pageIndex, delta, suggestions.length) };
+  }
+  // Mirrors TopBar's own component-local Escape binding — the two svelte:window
+  // listeners coexist without conflict (App's pad-shortcut listener ignores Escape).
+  function closeOnEscape(event: KeyboardEvent): void {
+    if (open && event.key === 'Escape') close();
+  }
 </script>
+
+<svelte:window bind:innerWidth={viewportWidth} onkeydown={closeOnEscape} />
 
 {#if suggestions.length === 0}
   <p class="empty">No curated suggestions for this bank yet</p>
@@ -51,10 +69,21 @@
           <span class="s-label">{current.label}</span>
           <span class="kind">{current.kind}</span>
         </div>
+        <div class="p-nav">
+          <button type="button" class="p-btn" aria-label="Previous suggestion" onclick={() => step(-1)}>‹</button>
+          <span class="p-count">{pageIndex + 1} of {suggestions.length}</span>
+          <button type="button" class="p-btn" aria-label="Next suggestion" onclick={() => step(1)}>›</button>
+        </div>
         <button type="button" class="p-btn" aria-label="Close suggestions" onclick={close}>×</button>
       </div>
       <div class="p-body">
-        <SuggestionChips suggestion={current} maxPerRow={6} {onPress} {onRelease} {heldKeys} />
+        <SuggestionChips
+          suggestion={current}
+          maxPerRow={panelMaxPerRow(viewportWidth)}
+          {onPress}
+          {onRelease}
+          {heldKeys}
+        />
       </div>
     </section>
   {/if}
@@ -177,6 +206,22 @@
     font-weight: 400;
     color: var(--system);
     letter-spacing: 0.02em;
+  }
+
+  .p-nav {
+    display: flex;
+    align-items: center;
+    flex: none;
+  }
+
+  .p-count {
+    min-width: 52px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: var(--t-eyebrow);
+    font-weight: 400;
+    color: var(--fg-2);
+    font-variant-numeric: tabular-nums;
   }
 
   .p-btn {
