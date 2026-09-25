@@ -55,6 +55,8 @@ Declared values (project's existing 8-point scale, `src/styles/tokens.css`, unch
 
 These come straight from the approved sketch (`sources/003-desktop-suggestion-rail/index.html`, `sources/002-iphone-suggestion-rail/index.html`) — the same precedent already exists in the shipped pad component (e.g. `PianoLayout.svelte` uses 129px/101px pad heights, 14px frame radius). Compact instrument UI is allowed pixel-tuned values; this is not scope creep.
 
+**Revision note (Dimension 5 flag, this pass):** re-checked each non-4-multiple value for a cheap move onto the grid. All four (`5px 9px 6px` chip padding, `2px` chip internal gap, `6px` chip grid gap, `6px` iPhone panel collapse gap) are verbatim values from the validated sketch CSS — three of the four (`.chip` padding/gap, `.chips` gap) are quoted directly in `references/progressions.md`'s own "CSS Patterns" block, the project's canonical distilled findings, not just the raw sketch HTML. None are cheap to round without diverging from the approved, validated design. Kept as-is; no change made.
+
 ---
 
 ## Typography
@@ -77,18 +79,26 @@ Generic template roles, mapped to this phase (the rail introduces no new Heading
 
 | Element | Size | Weight | Line Height | Family | Color |
 |---------|------|--------|-------------|--------|-------|
-| Suggestion label (`.s-label`, desktop/iPad column header) | 14px (`--t-body`) | 600 | 1.25 | system-ui | `--fg-0` |
-| Suggestion label, iPhone panel (`.p-id .s-label`) | 15px | 600 | 1.25 | system-ui | `--fg-0` |
+| Suggestion label (`.s-label`, desktop/iPad column header **and** iPhone panel `.p-id .s-label`) | 14px (`--t-body`) | 600 | 1.25 | system-ui | `--fg-0` |
 | Kind metadata (`progression` / `movement`, `.kind`) | 11px (`--t-eyebrow`) | 400 | normal | system-ui | `--system` |
 | Rail eyebrow (`SUGGESTIONS · N`, desktop/iPad) | 11px (`--t-eyebrow`) | 600 | normal | system-ui, count in `--mono` | `--system` |
 | iPhone strip (`Suggestions · N`) | 11px (`--t-eyebrow`) | 600 | normal | system-ui, count in `--mono` | `--system` |
 | iPhone panel collapse control | 11px (`--t-eyebrow`) | 600 | normal | system-ui | `--system` |
-| Chip key label (`.chip .k`) | **9px** | 600 | 1.2 | `--mono` | `--fg-2` (flips to `--bg-0` when held) |
+| Chip key label (`.chip .k`) | 11px (`--t-eyebrow`) | 600 | 1.2 | `--mono` | `--fg-2` (flips to `--bg-0` when held) |
 | Chip chord name (`.chip .n`) | 14px | 600 | 1.15 | `--mono` | `--fg-0` (flips to `--bg-0` when held); `.bass` segment at `opacity: .72` |
-| iPhone pager count (`‹ N of M ›`, `.p-count`) | 11px | 400 | normal | `--mono`, tabular-nums | `--fg-2` |
+| iPhone pager count (`‹ N of M ›`, `.p-count`) | 11px (`--t-eyebrow`) | 400 | normal | `--mono`, tabular-nums | `--fg-2` |
 | Empty-state line (`.empty`) | 13px desktop/iPad, 12px iPhone strip | 400 | normal | system-ui | `--fg-2` |
 
-Chip key label (9px) is intentionally smaller than the pad's own key label (10px, `PianoLayout.svelte` `.pad .key`) — the chip is a smaller surface than a pad. Letter-spacing `.06em` uppercase, unchanged from the pad pattern.
+**Revision note (Dimension 4 fix, this pass):** the prior draft declared 6 distinct sizes (9/11/12/13/14/15px) against the "at most 4 sizes" contract. Two were free variables, not locked decisions, and were folded in:
+- iPhone panel suggestion label (`.p-id .s-label`) was a raw-sketch-HTML artifact (`002-iphone-suggestion-rail/index.html` line 184, literal `15px`) never promoted into the validated `progressions.md` findings — folded into the same 14px (`--t-body`) used on desktop/iPad, so `.s-label` is one size everywhere.
+- Chip key label (`.chip .k`) was 9px in raw sketch CSS but, like the label above, was never pinned to an exact px value in `progressions.md` (which only says "small pad key label," no size) or in `04-CONTEXT.md`. Folded onto the existing `--t-eyebrow` (11px/600/1.2) token already used for every other small-mono/metadata role in this rail (pager count, kind, eyebrow) — same weight and line-height as before, so only the size and its relationship to the pad's own 10px key label changes; the key remains visually smaller than the 14px chord name it sits beside, preserving the in-chip hierarchy.
+
+The remaining 4 sizes are all locked and were kept as distinct values:
+- **11px** — `--t-eyebrow` token (app-wide scale, `tokens.md`): eyebrow, kind, strip, panel collapse, pager, chip key.
+- **12px** and **13px** — both explicitly required by **D-15** (`04-CONTEXT.md`, locked): "13px on desktop/iPad; 12px centred in the iPhone top bar." `progressions.md` repeats the same two-value split verbatim. Unifying these (the checker's suggested route) would contradict D-15, so the ≤4 target was reached instead by folding the two unlocked sizes (chip key, iPhone `.s-label`) above — no locked decision was touched.
+- **14px** — `--t-body` token (app-wide scale) and the chip chord-name size explicitly locked in `progressions.md` ("mono 14px/600"); now also the suggestion-label size everywhere.
+
+Total: 4 declared sizes (11/12/13/14px).
 
 Eyebrow/label text (`SUGGESTIONS`, `Suggestions` strip, panel collapse) is authored as normal-case text (`Suggestions`) and rendered uppercase via `text-transform: uppercase` in CSS — do not author the string in caps.
 
