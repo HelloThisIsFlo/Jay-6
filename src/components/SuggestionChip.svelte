@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import type { Key } from '../banks';
   import type { ResolvedSuggestionStep } from '../suggestions';
-  import { padNotesFor, chipVisualState } from '../rail';
+  import { padNotesFor, chipVisualState, splitChordLabel, isNaturalKey } from '../rail';
 
   interface Props {
     step: ResolvedSuggestionStep;
@@ -22,6 +22,7 @@
   let pressedKey: Key | null = null;
 
   const visual = $derived(chipVisualState(heldHere, heldKeys.has(step.key)));
+  const label = $derived(splitChordLabel(step.displayLabel));
 
   function onpointerdown(e: PointerEvent): void {
     // One hold per chip instance, mirroring the pad guard (D-04).
@@ -70,6 +71,7 @@
   class="chip"
   class:held={visual === 'held'}
   class:echo={visual === 'echo'}
+  data-color={isNaturalKey(step.key) ? 'white' : 'black'}
   onpointerdown={onpointerdown}
   onpointerup={endPress}
   onpointercancel={endPress}
@@ -77,7 +79,10 @@
   oncontextmenu={(e) => e.preventDefault()}
 >
   <span class="k">{step.key}</span>
-  <span class="n">{step.displayLabel}</span>
+  <span class="n">
+    <span class="main">{label.main}</span>
+    {#if label.bass}<span class="bass">{label.bass}</span>{/if}
+  </span>
 </button>
 
 <style>
@@ -99,11 +104,19 @@
     -webkit-user-select: none;
     -webkit-touch-callout: none;
   }
+  /* Cream outline hint on natural-key chips only (accidentals keep the default edge). */
+  .chip[data-color='white'] {
+    border-color: rgb(244 241 234 / 0.6);
+  }
   .chip.echo:not(.held) {
     background: var(--accent-soft);
     border-color: var(--accent);
   }
-  .chip.held {
+  /* held.[data-color] beats the natural-key outline on specificity alone — without it,
+     .chip.held and .chip[data-color='white'] tie at the same specificity and source
+     order would decide, silently letting the outline win on a held natural-key chip. */
+  .chip.held,
+  .chip.held[data-color] {
     background: var(--accent);
     border-color: var(--accent);
     box-shadow: 0 0 14px 2px rgb(255 122 26 / 0.4);
@@ -113,16 +126,28 @@
     color: var(--bg-0);
   }
   .k {
+    font-family: var(--mono);
     font-size: var(--t-eyebrow);
     font-weight: 600;
     line-height: 1.2;
     color: var(--fg-2);
     letter-spacing: 0.06em;
-    text-transform: uppercase;
   }
   .n {
-    font-size: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    font-family: var(--mono);
+    font-size: var(--t-body);
     font-weight: 600;
     line-height: 1.15;
+    color: var(--fg-0);
+  }
+  .main,
+  .bass {
+    white-space: nowrap;
+  }
+  .bass {
+    opacity: 0.72;
   }
 </style>

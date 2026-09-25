@@ -2,7 +2,8 @@
   import type { Key } from '../banks';
   import { getSuggestionsForBank } from '../suggestions';
   import { ui } from '../state.svelte';
-  import SuggestionChip from './SuggestionChip.svelte';
+  import { RAIL_COLUMN_MAX_PER_ROW } from '../rail';
+  import SuggestionChips from './SuggestionChips.svelte';
 
   interface Props {
     onPress: (key: Key, notes: number[]) => void;
@@ -24,17 +25,13 @@
             <span class="s-label">{suggestion.label}</span>
             <span class="kind">{suggestion.kind}</span>
           </div>
-          <div class="chips">
-            {#each suggestion.steps as step, index (suggestion.id + ':' + index)}
-              <SuggestionChip
-                {step}
-                bankIndex={suggestion.bankIndex}
-                {onPress}
-                {onRelease}
-                {heldKeys}
-              />
-            {/each}
-          </div>
+          <SuggestionChips
+            {suggestion}
+            maxPerRow={RAIL_COLUMN_MAX_PER_ROW}
+            {onPress}
+            {onRelease}
+            {heldKeys}
+          />
         </div>
       {/each}
     </div>
@@ -79,12 +76,6 @@
     font-weight: 400;
     color: var(--system);
     letter-spacing: 0.02em;
-  }
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-width: 0;
   }
   .empty {
     width: min(calc(100% - 56px), 1180px);
