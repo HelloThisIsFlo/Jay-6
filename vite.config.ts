@@ -1,5 +1,10 @@
 import { defineConfig, type Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+// D-17: evaluating the catalogue module at config load runs its import-time
+// validation, so an invalid catalogue fails `vite build`, `vite` dev start, and
+// every vitest run with the formatted diagnostics — instead of only throwing
+// once the app bundle actually loads in a browser.
+import './src/suggestions';
 
 // Dev build-id: a value that changes on every source edit (handleHotUpdate) and is baked
 // into the served bundle. A stale/cached client therefore shows the OLD id while a fresh

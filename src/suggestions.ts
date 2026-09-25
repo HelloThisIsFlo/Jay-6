@@ -25,7 +25,8 @@ export type CatalogueIssueCode =
   | 'invalid-steps'
   | 'invalid-step'
   | 'duplicate-id'
-  | 'duplicate-sequence';
+  | 'duplicate-sequence'
+  | 'too-many-suggestions';
 
 export interface CatalogueIssue {
   readonly code: CatalogueIssueCode;
@@ -64,6 +65,9 @@ const BANK_INDEX_RULE = `an integer from 1 to ${banks.length}`;
 const KIND_RULE = `one of: ${SUGGESTION_KINDS.join(', ')}`;
 const STEPS_RULE = 'a nonempty array of canonical pad keys';
 const PAD_KEY_RULE = `one of: ${KEYS.join(', ')}`;
+// D-16: iPad locks body scroll and a 3x2 grid fills the viewport — a 7th chip per
+// bank would be unreachable, so the validator (D-17) rejects it before it can ship.
+export const MAX_SUGGESTIONS_PER_BANK = 6;
 const VISIBLE_TEXT = /[^\p{White_Space}\p{Cf}\p{Cc}]/u;
 const SAFE_PATH_KEY = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
@@ -290,11 +294,14 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
 
   const firstIdPath = new Map<string, string>();
   const firstSequencePath = new Map<string, string>();
+  const bankCounts = new Map<number, number>();
+  const sixthEntryPath = new Map<number, string>();
 
   for (const entry of validEntries) {
     const { sourceIndex, value } = entry;
     const idPath = `$[${sourceIndex}].id`;
     const stepsPath = `$[${sourceIndex}].steps`;
+    const bankIndexPath = `$[${sourceIndex}].bankIndex`;
     const relatedIdPath = firstIdPath.get(value.id);
     const sequenceSignature = JSON.stringify([value.bankIndex, value.steps]);
     const relatedSequencePath = firstSequencePath.get(sequenceSignature);
@@ -325,6 +332,22 @@ export function validateSuggestionCatalogue(input: unknown): ValidationResult {
       });
     } else {
       firstSequencePath.set(sequenceSignature, stepsPath);
+    }
+
+    const bankCount = (bankCounts.get(value.bankIndex) ?? 0) + 1;
+    bankCounts.set(value.bankIndex, bankCount);
+    if (bankCount === MAX_SUGGESTIONS_PER_BANK) {
+      sixthEntryPath.set(value.bankIndex, bankIndexPath);
+    } else if (bankCount > MAX_SUGGESTIONS_PER_BANK) {
+      issues.push({
+        code: 'too-many-suggestions',
+        path: bankIndexPath,
+        entryId: value.id,
+        bankIndex: value.bankIndex,
+        value: bankCount,
+        expected: `at most ${MAX_SUGGESTIONS_PER_BANK} suggestions within bank ${value.bankIndex}`,
+        relatedPath: sixthEntryPath.get(value.bankIndex)!,
+      });
     }
   }
 
