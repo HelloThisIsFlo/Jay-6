@@ -4,5 +4,9 @@
     "nyquist_validation": true,
     "ai_integration_phase": true,
     "security_enforcement": false
+  },
+  "model_profile": "balanced",
+  "model_overrides": {
+    "gsd-debugger": "opus"
   }
 }
