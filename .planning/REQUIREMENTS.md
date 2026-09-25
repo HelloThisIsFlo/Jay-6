@@ -28,7 +28,7 @@ Requirements for the Musical Companion milestone. Each maps to exactly one roadm
 - [x] **RAIL-03**: Users can browse multiple suggestions (open, page, close) without triggering MIDI or affecting latch, engines, transport, or clock state; pressing a chip plays its pad through the same press/release path as the pad itself.
 - [x] **RAIL-04**: The rail remains read-only — no editing or authoring — and never tracks, scores, advances with, or corrects the player's performance; chips may softly echo held keys.
 - [ ] **RAIL-05**: The rail remains subordinate to the pad surface on desktop and uses the previously designed contained mobile treatment.
-- [ ] **RAIL-06**: Suggestion display remains usable with long, altered, slash, repeated, and unnamed chord labels.
+- [x] **RAIL-06**: Suggestion display remains usable with long, altered, slash, repeated, and unnamed chord labels.
 - [ ] **RAIL-07**: Browser verification covers the rail, honest empty state, and target desktop, iPad-sized, and iPhone-landscape layouts.
 - [x] **RAIL-08**: OP-1 and MIDI-monitor verification confirms that browsing suggestions emits no MIDI and changes no playback state, a chip press emits exactly what its pad would, holding a chip and its pad together releases correctly, and the core pad-to-MIDI loop is preserved.
 
@@ -102,7 +102,7 @@ Every v2.0 requirement maps to exactly one roadmap phase.
 | RAIL-03 | Phase 4 | Complete |
 | RAIL-04 | Phase 4 | Complete |
 | RAIL-05 | Phase 4 | Pending |
-| RAIL-06 | Phase 4 | Pending |
+| RAIL-06 | Phase 4 | Complete |
 | RAIL-07 | Phase 4 | Pending |
 | RAIL-08 | Phase 4 | Complete |
 | VAR-01 | Phase 5 | Pending |
