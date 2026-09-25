@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getBank, type Key } from '../src/banks';
+import { banks, getBank, KEYS, labelFor, type Key } from '../src/banks';
 import { getSuggestionsForBank } from '../src/suggestions';
 import {
   NO_HOLDS,
@@ -8,6 +8,10 @@ import {
   heldKeySet,
   padNotesFor,
   chipVisualState,
+  chipsPerRow,
+  fitChipsPerRow,
+  splitChordLabel,
+  isNaturalKey,
   type HoldCounts,
 } from '../src/rail';
 
@@ -186,5 +190,121 @@ describe('chipVisualState', () => {
 
   it('is idle when neither heldHere nor keyLit', () => {
     expect(chipVisualState(false, false)).toBe('idle');
+  });
+});
+
+describe('chipsPerRow', () => {
+  it('returns 0 for zero steps', () => {
+    expect(chipsPerRow(0, 4)).toBe(0);
+  });
+
+  it('keeps everything on one row at or under the cap', () => {
+    expect(chipsPerRow(1, 4)).toBe(1);
+    expect(chipsPerRow(4, 4)).toBe(4);
+  });
+
+  it('balances rows evenly past the cap (cap 4: 7 -> 4+3, 8 -> 4+4)', () => {
+    expect(chipsPerRow(5, 4)).toBe(3);
+    expect(chipsPerRow(6, 4)).toBe(3);
+    expect(chipsPerRow(7, 4)).toBe(4);
+    expect(chipsPerRow(8, 4)).toBe(4);
+  });
+
+  it('balances rows evenly past the cap (cap 6)', () => {
+    expect(chipsPerRow(6, 6)).toBe(6);
+    expect(chipsPerRow(7, 6)).toBe(4);
+    expect(chipsPerRow(8, 6)).toBe(4);
+  });
+
+  it('clamps a cap below 1 to behave as 1', () => {
+    expect(chipsPerRow(4, 1)).toBe(1);
+    expect(chipsPerRow(4, 0)).toBe(1);
+    expect(chipsPerRow(4, -3)).toBe(1);
+  });
+});
+
+describe('fitChipsPerRow', () => {
+  it('asks the predicate exactly once when it accepts the initial candidate', () => {
+    const calls: number[] = [];
+    const alwaysTrue = (per: number): boolean => {
+      calls.push(per);
+      return true;
+    };
+    expect(fitChipsPerRow(4, 4, alwaysTrue)).toBe(chipsPerRow(4, 4));
+    expect(calls).toEqual([4]);
+  });
+
+  it('steps the cap down until the predicate accepts (4 steps, cap 4)', () => {
+    const calls: number[] = [];
+    const fitsAtMostTwo = (per: number): boolean => {
+      calls.push(per);
+      return per <= 2;
+    };
+    expect(fitChipsPerRow(4, 4, fitsAtMostTwo)).toBe(2);
+    expect(calls).toEqual([4, 2]);
+  });
+
+  it('steps the cap down until the predicate accepts (7 steps, cap 4)', () => {
+    const calls: number[] = [];
+    const fitsAtMostTwo = (per: number): boolean => {
+      calls.push(per);
+      return per <= 2;
+    };
+    expect(fitChipsPerRow(7, 4, fitsAtMostTwo)).toBe(2);
+    expect(calls).toEqual([4, 3, 2]);
+  });
+
+  it('falls back to 1 per row without asking the predicate at cap 1, skipping a repeated candidate', () => {
+    const calls: number[] = [];
+    const never = (per: number): boolean => {
+      calls.push(per);
+      return false;
+    };
+    expect(fitChipsPerRow(4, 4, never)).toBe(1);
+    expect(calls).toEqual([4, 2]);
+  });
+
+  it('returns 0 for zero steps without calling the predicate', () => {
+    const calls: number[] = [];
+    const spy = (per: number): boolean => {
+      calls.push(per);
+      return true;
+    };
+    expect(fitChipsPerRow(0, 4, spy)).toBe(0);
+    expect(calls).toEqual([]);
+  });
+});
+
+describe('splitChordLabel', () => {
+  it.each([
+    ['Cadd9/E', { main: 'Cadd9', bass: '/E' }],
+    ['FM/A', { main: 'FM', bass: '/A' }],
+    ['E7#9', { main: 'E7#9', bass: '' }],
+    ['C Oct Stack', { main: 'C Oct Stack', bass: '' }],
+    ['Bb5add9/b13', { main: 'Bb5add9', bass: '/b13' }],
+    ['CM9 (no3)/G', { main: 'CM9 (no3)', bass: '/G' }],
+    ['A/B/C', { main: 'A', bass: '/B/C' }],
+  ] as const)('splits %j into %j', (label, expected) => {
+    expect(splitChordLabel(label)).toEqual(expected);
+  });
+
+  it('reconstructs the canonical label for every chord in every bank; bass is empty exactly when there is no slash', () => {
+    for (const bank of banks) {
+      for (const chord of bank.chords) {
+        const label = labelFor(bank, chord);
+        const { main, bass } = splitChordLabel(label);
+        expect(main + bass).toBe(label);
+        expect(bass === '').toBe(!label.includes('/'));
+      }
+    }
+  });
+});
+
+describe('isNaturalKey', () => {
+  it('is true exactly for the natural keys (C, D, E, F, G, A, B)', () => {
+    const naturals = new Set(['C', 'D', 'E', 'F', 'G', 'A', 'B']);
+    for (const key of KEYS) {
+      expect(isNaturalKey(key)).toBe(naturals.has(key));
+    }
   });
 });

@@ -57,3 +57,33 @@ export function chipVisualState(heldHere: boolean, keyLit: boolean): ChipVisualS
   if (keyLit) return 'echo';
   return 'idle';
 }
+
+// RED stub (04-03 Task 1): intentionally wrong bodies so the newly-added tests fail on
+// real assertions rather than on missing imports. Replaced with the real implementation
+// in the GREEN commit.
+export const RAIL_COLUMN_MAX_PER_ROW = 4;
+
+export function chipsPerRow(_stepCount: number, _maxPerRow: number): number {
+  return 0;
+}
+
+export function fitChipsPerRow(
+  _stepCount: number,
+  _maxPerRow: number,
+  _fits: (perRow: number) => boolean,
+): number {
+  return 0;
+}
+
+export interface ChordLabelParts {
+  readonly main: string;
+  readonly bass: string;
+}
+
+export function splitChordLabel(label: string): ChordLabelParts {
+  return { main: label, bass: '' };
+}
+
+export function isNaturalKey(_key: Key): boolean {
+  return false;
+}
