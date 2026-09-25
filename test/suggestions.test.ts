@@ -831,6 +831,21 @@ describe('canonical suggestion resolution', () => {
 });
 
 describe('per-bank suggestion cap', () => {
+  // Ten distinct 2-key sequences so cap-boundary fixtures never trip the
+  // unrelated duplicate-sequence check.
+  const DISTINCT_STEPS = [
+    ['C', 'D'],
+    ['C', 'E'],
+    ['C', 'F'],
+    ['C', 'G'],
+    ['C', 'A'],
+    ['C', 'B'],
+    ['C', 'C#'],
+    ['D', 'E'],
+    ['D', 'F'],
+    ['D', 'G'],
+  ];
+
   it('exposes the cap constant (D-16)', () => {
     expect(MAX_SUGGESTIONS_PER_BANK).toBe(6);
   });
@@ -856,6 +871,173 @@ describe('per-bank suggestion cap', () => {
           code: 'too-many-suggestions',
           path: '$[6].bankIndex',
           entryId: 'cap-6',
+          bankIndex: 2,
+          value: 7,
+          expected: 'at most 6 suggestions within bank 2',
+          relatedPath: '$[5].bankIndex',
+        },
+      ],
+    });
+  });
+
+  it('accepts exactly 6 suggestions in one bank', () => {
+    const input = DISTINCT_STEPS.slice(0, 6).map((steps, i) =>
+      validEntry({ id: `six-${i}`, bankIndex: 2, steps }),
+    );
+
+    expect(validateSuggestionCatalogue(input)).toEqual({ ok: true, value: input });
+  });
+
+  it('emits one issue per entry past the cap', () => {
+    const input = DISTINCT_STEPS.slice(0, 8).map((steps, i) =>
+      validEntry({ id: `eight-${i}`, bankIndex: 2, steps }),
+    );
+
+    expect(validateSuggestionCatalogue(input)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'too-many-suggestions',
+          path: '$[6].bankIndex',
+          entryId: 'eight-6',
+          bankIndex: 2,
+          value: 7,
+          expected: 'at most 6 suggestions within bank 2',
+          relatedPath: '$[5].bankIndex',
+        },
+        {
+          code: 'too-many-suggestions',
+          path: '$[7].bankIndex',
+          entryId: 'eight-7',
+          bankIndex: 2,
+          value: 8,
+          expected: 'at most 6 suggestions within bank 2',
+          relatedPath: '$[5].bankIndex',
+        },
+      ],
+    });
+  });
+
+  it('caps each bank independently across interleaved source order', () => {
+    const input: Record<string, unknown>[] = [];
+    for (let i = 0; i < 6; i++) {
+      input.push(validEntry({ id: `alt-1-${i}`, bankIndex: 1, steps: DISTINCT_STEPS[i] }));
+      input.push(validEntry({ id: `alt-2-${i}`, bankIndex: 2, steps: DISTINCT_STEPS[i] }));
+    }
+
+    expect(validateSuggestionCatalogue(input)).toEqual({ ok: true, value: input });
+  });
+
+  it('caps a bank interleaved with another bank at its own source-order position', () => {
+    const bank3Steps = DISTINCT_STEPS.slice(0, 7);
+    const bank4Steps = DISTINCT_STEPS.slice(7, 10);
+    const input = [
+      validEntry({ id: 'b3-0', bankIndex: 3, steps: bank3Steps[0] }),
+      validEntry({ id: 'b4-0', bankIndex: 4, steps: bank4Steps[0] }),
+      validEntry({ id: 'b3-1', bankIndex: 3, steps: bank3Steps[1] }),
+      validEntry({ id: 'b4-1', bankIndex: 4, steps: bank4Steps[1] }),
+      validEntry({ id: 'b3-2', bankIndex: 3, steps: bank3Steps[2] }),
+      validEntry({ id: 'b4-2', bankIndex: 4, steps: bank4Steps[2] }),
+      validEntry({ id: 'b3-3', bankIndex: 3, steps: bank3Steps[3] }),
+      validEntry({ id: 'b3-4', bankIndex: 3, steps: bank3Steps[4] }),
+      validEntry({ id: 'b3-5', bankIndex: 3, steps: bank3Steps[5] }),
+      validEntry({ id: 'b3-6', bankIndex: 3, steps: bank3Steps[6] }),
+    ];
+
+    expect(validateSuggestionCatalogue(input)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'too-many-suggestions',
+          path: '$[9].bankIndex',
+          entryId: 'b3-6',
+          bankIndex: 3,
+          value: 7,
+          expected: 'at most 6 suggestions within bank 3',
+          relatedPath: '$[8].bankIndex',
+        },
+      ],
+    });
+  });
+
+  it('does not count a malformed entry toward the cap', () => {
+    const input = [
+      ...DISTINCT_STEPS.slice(0, 6).map((steps, i) =>
+        validEntry({ id: `ok-${i}`, bankIndex: 2, steps }),
+      ),
+      validEntry({ id: 'blank-label', bankIndex: 2, label: ' ', steps: DISTINCT_STEPS[6] }),
+    ];
+
+    expect(validateSuggestionCatalogue(input)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'invalid-label',
+          path: '$[6].label',
+          entryId: 'blank-label',
+          bankIndex: 2,
+          value: ' ',
+          expected: 'a nonblank string without surrounding whitespace',
+        },
+      ],
+    });
+  });
+
+  it('orders too-many-suggestions after duplicate-id for the same offending entry', () => {
+    const sixValid = DISTINCT_STEPS.slice(0, 6).map((steps, i) =>
+      validEntry({ id: `dup-id-${i}`, bankIndex: 2, steps }),
+    );
+    const seventh = validEntry({ id: 'dup-id-0', bankIndex: 2, steps: DISTINCT_STEPS[6] });
+    const input = [...sixValid, seventh];
+
+    expect(validateSuggestionCatalogue(input)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'duplicate-id',
+          path: '$[6].id',
+          entryId: 'dup-id-0',
+          bankIndex: 2,
+          value: 'dup-id-0',
+          expected: 'a globally unique suggestion id',
+          relatedPath: '$[0].id',
+        },
+        {
+          code: 'too-many-suggestions',
+          path: '$[6].bankIndex',
+          entryId: 'dup-id-0',
+          bankIndex: 2,
+          value: 7,
+          expected: 'at most 6 suggestions within bank 2',
+          relatedPath: '$[5].bankIndex',
+        },
+      ],
+    });
+  });
+
+  it('orders too-many-suggestions after duplicate-sequence for the same offending entry', () => {
+    const sixValid = DISTINCT_STEPS.slice(0, 6).map((steps, i) =>
+      validEntry({ id: `dup-seq-${i}`, bankIndex: 2, steps }),
+    );
+    const seventh = validEntry({ id: 'dup-seq-6', bankIndex: 2, steps: DISTINCT_STEPS[0] });
+    const input = [...sixValid, seventh];
+
+    expect(validateSuggestionCatalogue(input)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: 'duplicate-sequence',
+          path: '$[6].steps',
+          entryId: 'dup-seq-6',
+          bankIndex: 2,
+          value: DISTINCT_STEPS[0],
+          expected: 'a unique ordered step sequence within bank 2',
+          relatedPath: '$[0].steps',
+        },
+        {
+          code: 'too-many-suggestions',
+          path: '$[6].bankIndex',
+          entryId: 'dup-seq-6',
           bankIndex: 2,
           value: 7,
           expected: 'at most 6 suggestions within bank 2',
