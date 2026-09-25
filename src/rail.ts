@@ -113,3 +113,23 @@ export function splitChordLabel(label: string): ChordLabelParts {
 export function isNaturalKey(key: Key): boolean {
   return !key.includes('#');
 }
+
+export interface PageMemory<T> {
+  readonly list: T;
+  readonly index: number;
+}
+
+// RED stub (04-04 Task 2): intentionally wrong bodies so the newly-added tests fail on
+// real assertions rather than on missing imports. Replaced with the real implementation
+// in the GREEN commit.
+export function rememberedPage<T>(_memory: PageMemory<T> | null, _list: T): number {
+  return 0;
+}
+
+export function stepPage(_index: number, _delta: number, _count: number): number {
+  return 0;
+}
+
+export function panelMaxPerRow(_viewportWidth: number): number {
+  return 4;
+}

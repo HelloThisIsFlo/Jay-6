@@ -12,7 +12,11 @@ import {
   fitChipsPerRow,
   splitChordLabel,
   isNaturalKey,
+  rememberedPage,
+  stepPage,
+  panelMaxPerRow,
   type HoldCounts,
+  type PageMemory,
 } from '../src/rail';
 
 // Folds press/release events from NO_HOLDS through the reducers and returns the
@@ -306,5 +310,48 @@ describe('isNaturalKey', () => {
     for (const key of KEYS) {
       expect(isNaturalKey(key)).toBe(naturals.has(key));
     }
+  });
+});
+
+describe('rememberedPage', () => {
+  it('returns memory.index when memory.list is the same reference as list', () => {
+    const list = [1, 2, 3];
+    const memory: PageMemory<number[]> = { list, index: 2 };
+    expect(rememberedPage(memory, list)).toBe(2);
+  });
+
+  it('returns 0 for a structurally equal but different list reference', () => {
+    const memory: PageMemory<number[]> = { list: [1, 2, 3], index: 2 };
+    const list = [1, 2, 3];
+    expect(rememberedPage(memory, list)).toBe(0);
+  });
+
+  it('returns 0 for null memory', () => {
+    expect(rememberedPage(null, [1, 2, 3])).toBe(0);
+  });
+});
+
+describe('stepPage', () => {
+  it.each([
+    [0, 1, 3, 1],
+    [2, 1, 3, 0],
+    [0, -1, 3, 2],
+    [0, 1, 1, 0],
+    [0, -1, 1, 0],
+    [0, 1, 0, 0],
+  ] as const)('stepPage(%d, %d, %d) -> %d', (index, delta, count, expected) => {
+    expect(stepPage(index, delta, count)).toBe(expected);
+  });
+});
+
+describe('panelMaxPerRow', () => {
+  it.each([
+    [667, 4],
+    [719, 4],
+    [720, 6],
+    [852, 6],
+    [932, 6],
+  ] as const)('panelMaxPerRow(%d) -> %d', (width, expected) => {
+    expect(panelMaxPerRow(width)).toBe(expected);
   });
 });
