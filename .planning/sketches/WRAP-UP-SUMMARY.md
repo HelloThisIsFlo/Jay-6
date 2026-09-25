@@ -3,7 +3,7 @@
 **Date:** 2026-07-06
 **Sketches processed:** 1
 **Design areas:** Tokens, TopBar, Pads & Feedback, Variations, Progressions
-**Skill output:** `./.codex/skills/sketch-findings-jay-6/`
+**Skill output:** `./.agents/skills/sketch-findings-jay-6/`
 
 ## Included Sketches
 
@@ -80,7 +80,7 @@ Jay-6 should adopt the v3 visual redesign as an in-between v1.1-style pass befor
 **Date:** 2026-09-25
 **Sketches processed:** 2
 **Design areas:** Suggestion Rail (replaces Progressions)
-**Skill output:** `./.codex/skills/sketch-findings-jay-6/`
+**Skill output:** `./.agents/skills/sketch-findings-jay-6/`
 
 ## Included Sketches
 

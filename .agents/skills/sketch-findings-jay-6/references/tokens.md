@@ -12,8 +12,12 @@
   - cream pad `#f4f1ea`
 
 - Accent rules are semantic:
-  - orange `#ff7a1a` means currently sounding / held pad only
-  - steel `oklch(0.68 0.045 250)` means queued, pending, armed, or next
+  - orange `#ff7a1a` means currently sounding only
+    - held/latched pads
+    - pressed suggestion chips (full) and soft echo on chips sharing a held key (`rgb(255 122 26 / .18)` + orange border)
+  - steel `oklch(0.68 0.045 250)` means system status and metadata
+    - today: TopBar focus/open borders, setup emphasis, suggestion kind, `Suggestions · N` strip and eyebrow
+    - reserved for future queued / pending / armed / next state
 
 - Typography:
   - system UI for labels and prose

@@ -16,7 +16,7 @@
   - orange fill/glow
   - reserved exclusively for currently sounding pads
 
-- Queued feedback:
+- Queued feedback (⏸️ validated design, **not implemented**: deliberately deferred in Phase 2.1; build only when a phase scopes it):
   - Option A bottom-center pill
   - text reads like `Queued · V08 · arms in 2 beats`
   - use steel system accent
