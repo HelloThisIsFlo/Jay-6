@@ -2,7 +2,7 @@
 // suggestion rail (Phase 4). No runes here — this module is plain TypeScript so
 // it gets real Vitest coverage; Svelte component mounting is out of this
 // project's test scope (see .planning/codebase/TESTING.md).
-import type { Key } from './banks';
+import { getBank, type Key } from './banks';
 
 export type HoldCounts = ReadonlyMap<Key, number>;
 
@@ -13,26 +13,47 @@ export interface HoldStep {
 
 export const NO_HOLDS: HoldCounts = new Map();
 
-// RED stub: intentionally wrong so the test suite fails on real assertions
-// (not an import crash) before the GREEN implementation lands.
-export function pressHold(counts: HoldCounts, _key: Key): HoldStep {
-  return { counts, forward: false };
+// The host and App's highlight Set are not ref-counted, so a second source
+// pressing (or releasing) an already-held key must never reach them directly —
+// only the 0-to-1 press and 1-to-0 release transitions may forward, or a second
+// source's later release would silence/un-highlight a key the first source
+// still holds (D-04).
+export function pressHold(counts: HoldCounts, key: Key): HoldStep {
+  const previous = counts.get(key) ?? 0;
+  const next = new Map(counts);
+  next.set(key, previous + 1);
+  return { counts: next, forward: previous === 0 };
 }
 
-export function releaseHold(counts: HoldCounts, _key: Key): HoldStep {
-  return { counts, forward: false };
+export function releaseHold(counts: HoldCounts, key: Key): HoldStep {
+  const previous = counts.get(key) ?? 0;
+  if (previous === 0) {
+    // Stray release (no matching hold) — never forward, never allocate.
+    return { counts, forward: false };
+  }
+  const next = new Map(counts);
+  if (previous === 1) {
+    next.delete(key);
+    return { counts: next, forward: true };
+  }
+  next.set(key, previous - 1);
+  return { counts: next, forward: false };
 }
 
-export function heldKeySet(_counts: HoldCounts): Set<Key> {
-  return new Set();
+export function heldKeySet(counts: HoldCounts): Set<Key> {
+  return new Set(counts.keys());
 }
 
-export function padNotesFor(_bankIndex: number, _key: Key): number[] | undefined {
-  return undefined;
+export function padNotesFor(bankIndex: number, key: Key): number[] | undefined {
+  return getBank(bankIndex).chords.find((c) => c.key === key)?.notes;
 }
 
 export type ChipVisualState = 'held' | 'echo' | 'idle';
 
-export function chipVisualState(_heldHere: boolean, _keyLit: boolean): ChipVisualState {
+// Precedence: held > echo > idle (D-03, D-05) — the physically-pressed chip
+// instance always wins even when its key is also lit elsewhere.
+export function chipVisualState(heldHere: boolean, keyLit: boolean): ChipVisualState {
+  if (heldHere) return 'held';
+  if (keyLit) return 'echo';
   return 'idle';
 }

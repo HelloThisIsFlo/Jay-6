@@ -2,10 +2,12 @@
   import { onMount } from 'svelte';
   import TopBar from './components/TopBar.svelte';
   import PianoLayout from './components/PianoLayout.svelte';
+  import SuggestionRail from './components/SuggestionRail.svelte';
   import { EngineHost } from './engines/host';
   import { getBank, type Key } from './banks';
   import { subscribeMidi, getMidiState } from './midi';
   import { tickSource } from './tickSource';
+  import { NO_HOLDS, pressHold, releaseHold, heldKeySet, type HoldCounts } from './rail';
   import { BUILD_ID } from 'virtual:build-id';
   import {
     ui,
@@ -71,14 +73,20 @@
   // with D-05 double-trigger guard inside onTransport().
   onMount(() => tickSource.subscribeTransport((kind) => host.onTransport(kind)));
 
-  let heldKeys = $state<Set<Key>>(new Set());
+  // Ref-counted so a second source (pad, keyboard, chip) holding an already-held
+  // key never desyncs from a first source's later release (D-04). Reassigned
+  // wholesale on every press/release, so $state.raw (no deep proxy) is correct.
+  let holdCounts = $state.raw<HoldCounts>(NO_HOLDS);
   let latchedKey = $state<Key | null>(null);
+  const heldKeys = $derived(heldKeySet(holdCounts));
 
   // Highlight state is component-owned; host signals cleanup via setOnPanic so EVERY
   // panic path (mode switch, transport stop, device disconnect, browser unload) clears
-  // the UI — never a stuck-lit pad after the audio stops (UAT tests 16, 20).
+  // the UI — never a stuck-lit pad after the audio stops (UAT tests 16, 20). host.panic
+  // clears host.heldPads, so holdCounts must reset with it or a post-panic press would
+  // be swallowed as an extra hold instead of reaching the host as a fresh 0-to-1 press.
   function clearAllHighlights(): void {
-    heldKeys = new Set();
+    holdCounts = NO_HOLDS;
     latchedKey = null;
   }
   onMount(() => host.setOnPanic(clearAllHighlights));
@@ -92,15 +100,22 @@
   });
 
   function press(key: Key, notes: number[]): void {
+    const step = pressHold(holdCounts, key);
+    holdCounts = step.counts;
+    // A second source pressing an already-held key is a no-op toward the host —
+    // only the 0-to-1 transition reaches host.padPressed (D-04).
+    if (!step.forward) return;
     host.padPressed(key, notes);
-    heldKeys = new Set(heldKeys).add(key);
     if (ui.latch) latchedKey = key;
   }
   function release(key: Key): void {
+    const step = releaseHold(holdCounts, key);
+    holdCounts = step.counts;
+    // Only the last source releasing a key (1-to-0) may reach host.padReleased —
+    // a stray or non-final release must never silence a key another source still
+    // holds (D-04).
+    if (!step.forward) return;
     host.padReleased(key);
-    const next = new Set(heldKeys);
-    next.delete(key);
-    heldKeys = next;
     // Mirror host.padReleased: it keeps sounding when latch is LIVE-on at release time
     // (host.ts), regardless of latch state at press time. The visual must use the same
     // live rule, else enabling latch mid-hold leaves latchedKey null → highlight clears
@@ -108,10 +123,11 @@
     if (ui.latch) latchedKey = key;
   }
 
-  // Clear the latched pad when latch is turned off. Do NOT touch heldKeys: it already
-  // tracks only physically-held pads (press adds, release removes), so a pad still held
-  // (mouse OR keyboard) stays lit AND sounding, while a latched-then-released pad has an
-  // empty heldKeys and goes dark via latchedKey=null. The old `downKeys.size === 0` guard
+  // Clear the latched pad when latch is turned off. Do NOT touch heldKeys: it is derived
+  // from holdCounts, which tracks only physically-held pads (press/release adjust the
+  // count), so a pad still held (mouse OR keyboard) stays lit AND sounding, while a
+  // latched-then-released pad has an empty heldKeys and goes dark via latchedKey=null.
+  // The old `downKeys.size === 0` guard
   // was keyboard-only — it wiped the highlight of a MOUSE-held pad while the note kept
   // sounding (visual/audio desync, UAT re-verify test 6 bonus).
   $effect(() => {
@@ -213,6 +229,7 @@
 <main>
   <TopBar />
   <PianoLayout onPress={press} onRelease={release} heldKeys={displayKeys} />
+  <SuggestionRail onPress={press} onRelease={release} heldKeys={displayKeys} />
   <footer>
     <p>
       Keys: <code>A S D F G H J</code> + <code>W E T Y U</code> = pads ·
