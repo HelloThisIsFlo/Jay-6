@@ -28,7 +28,7 @@ Full v1 detail: [`milestones/v1.0-ROADMAP.md`](milestones/v1.0-ROADMAP.md) · re
 **Milestone Goal:** Ship a read-only bank-aware suggestion mechanism with minimal representative data and truthful performance feedback.
 
 - [x] **Phase 3: Catalogue Mechanism & Bootstrap** - Flo and agents can maintain validated bank-aware suggestion data, with only enough bundled content to prove the mechanism. (completed 2026-08-23)
-- [ ] **Phase 4: Read-Only Suggestion Rail** - Users can browse bank-aware chord suggestions without affecting performance or the core MIDI loop.
+- [ ] **Phase 4: Read-Only Suggestion Rail** - Users can browse bank-aware chord suggestions and play chips as pad shortcuts without affecting playback state or the core MIDI loop.
 - [ ] **Phase 5: Variation Cycling & Queued Feedback** - Keyboard cycling and queued feedback make variation changes fast and truthful.
 - [ ] **Phase 6: Measured External BPM** - External clock shows a stable measured tempo without changing the internal tempo setting.
 
@@ -72,16 +72,16 @@ Plans:
 
 ### Phase 4: Read-Only Suggestion Rail
 
-**Goal**: Users can browse bank-aware chord suggestions beneath the pads without affecting performance.
+**Goal**: Users can browse bank-aware chord suggestions beneath the pads and play them as shortcuts to their pads, without affecting playback state.
 **Depends on**: Phase 3
 **Requirements**: RAIL-01, RAIL-02, RAIL-03, RAIL-04, RAIL-05, RAIL-06, RAIL-07, RAIL-08
 **Success Criteria** (what must be TRUE):
 
   1. Selecting a factory bank shows its bundled suggestions or an honest “no curated suggestions yet” state.
   2. Every chip shows its pad key and canonically resolved chord name, including a useful fallback for unnamed stack-bank pads.
-  3. Users can browse suggestions without triggering MIDI or changing pads, latch, engines, transport, clock, scoring, or progression position.
+  3. Browsing suggestions (open, page, close) is silent: no MIDI and no change to pads, latch, engines, transport, clock, scoring, or progression position. Pressing a chip is a pad alias: same press/release path, with soft echo of held keys.
   4. Browser verification proves the rail, honest empty state, and long or unusual labels remain subordinate and usable on desktop, iPad-sized, and iPhone-landscape layouts.
-  5. OP-1 and MIDI-monitor verification proves browsing is inert and the existing bank → pad → style → MIDI performance loop remains intact.
+  5. OP-1 and MIDI-monitor verification proves browsing emits no MIDI, a chip press emits exactly what its pad would (including chip + pad held together), and the existing bank → pad → style → MIDI performance loop remains intact.
 
 **Plans**: TBD
 **UI hint**: yes

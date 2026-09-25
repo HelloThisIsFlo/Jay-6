@@ -25,12 +25,12 @@ Requirements for the Musical Companion milestone. Each maps to exactly one roadm
 
 - [ ] **RAIL-01**: Selecting a bank shows its curated suggestions beneath the pads or an honest "no curated suggestions yet" state.
 - [ ] **RAIL-02**: Every chip shows its pad key and canonically resolved chord name, with a useful fallback for unnamed stack-bank pads.
-- [ ] **RAIL-03**: Users can browse multiple suggestions without triggering MIDI, changing playback, or affecting latch, engines, transport, or clock state.
-- [ ] **RAIL-04**: The rail remains completely read-only and does not track, score, advance with, or correct the player's performance.
+- [ ] **RAIL-03**: Users can browse multiple suggestions (open, page, close) without triggering MIDI or affecting latch, engines, transport, or clock state; pressing a chip plays its pad through the same press/release path as the pad itself.
+- [ ] **RAIL-04**: The rail remains read-only — no editing or authoring — and never tracks, scores, advances with, or corrects the player's performance; chips may softly echo held keys.
 - [ ] **RAIL-05**: The rail remains subordinate to the pad surface on desktop and uses the previously designed contained mobile treatment.
 - [ ] **RAIL-06**: Suggestion display remains usable with long, altered, slash, repeated, and unnamed chord labels.
 - [ ] **RAIL-07**: Browser verification covers the rail, honest empty state, and target desktop, iPad-sized, and iPhone-landscape layouts.
-- [ ] **RAIL-08**: OP-1 and MIDI-monitor verification confirms that browsing suggestions emits no MIDI, changes no playback state, and preserves the core pad-to-MIDI loop.
+- [ ] **RAIL-08**: OP-1 and MIDI-monitor verification confirms that browsing suggestions emits no MIDI and changes no playback state, a chip press emits exactly what its pad would, holding a chip and its pad together releases correctly, and the core pad-to-MIDI loop is preserved.
 
 ### Variation Controls
 

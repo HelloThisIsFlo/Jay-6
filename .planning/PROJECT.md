@@ -156,6 +156,7 @@ If everything else regresses, *that loop must still work*: pick a bank → press
 | **DEC-suggestion-catalogue-boundary** — Treat catalogue input as unknown and expose fresh validated five-field projections | Direct data edits fail closed without leaking prototypes, accessors, or hidden fields | ✓ Good — Phase 3 |
 | **DEC-suggestion-canonical-resolution** — Resolve bank and chord names from canonical bank data into inert text-only views | Prevents duplicated musical truth and keeps lookup outside playback authority | ✓ Good — Phase 3 |
 | **DEC-suggestion-bootstrap-scope** — Ship three representative records; expand through later direct data edits | Proves both supported kinds and honest empty banks without implying comprehensive curation | ✓ Good — Phase 3 |
+| **DEC-rail-chips-playable** — Rail chips are pad aliases (same press/release path, soft echo of held keys); "read-only" means no editing/authoring, not "not playable"; browsing stays silent | Chips become a direct way to play a suggestion without hunting for the pad; sketches 002/003 | — Pending — Phase 4 |
 
 ## Evolution
 
