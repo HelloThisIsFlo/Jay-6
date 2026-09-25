@@ -1,7 +1,7 @@
 ---
 phase: "4"
 slug: "read-only-suggestion-rail"
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: "2026-09-25"
@@ -163,18 +163,42 @@ Steel never signals "sounding" — that is orange's exclusive job. Keeping the t
 
 ## UI Considerations
 
-Applicable state considerations resolved: 8 covered, 0 backstop, 0 unresolved.
+Probe run post-approval over 5 elements — 26 applicable considerations: **14 resolved (explicit)**, **12 dismissed (reason given)**, 0 backstop, 0 unresolved. Empty-state copy lives in the Copywriting Contract; rows below reference it.
 
-| Category | Element(s) | Status | Resolution / Reason |
-|----------|------------|--------|---------------------|
-| empty | chip grid (desktop/iPad columns + iPhone strip/panel) | ✅ covered | D-15 empty-state copy and styling — see Copywriting Contract row |
-| loading | chip grid, iPhone strip, iPhone panel | ✅ covered | N/A: suggestions resolve synchronously from the bundled, already-validated catalogue (`getSuggestionsForBank`, in-memory, no network/async boundary) — no loading state exists to design |
-| error | chip grid | ✅ covered | N/A: `validateSuggestionCatalogue()` throws at import/build time (Phase 3); the rail never receives invalid data at render time, so no runtime error UI is needed |
-| populated | chip grid (desktop/iPad columns, iPhone panel) | ✅ covered | D-02/D-09: balanced no-scroll rows (≤6/row, narrower containers cap at 4), `repeat(auto-fill, minmax(280px,1fr))` → 3 columns on iPad landscape; typical volume is 1–6 chips per bank |
-| partial | chip grid | ✅ covered | N/A: catalogue validation (Phase 3) is all-or-nothing per entry — a malformed suggestion never resolves into a `ResolvedSuggestion`, so the rail never renders a chip with a missing key or chord name |
-| overflow | chip grid, chip labels, iPhone strip/panel | ✅ covered | D-02 (no horizontal scroll, never truncate, slash chords break only before the bass), D-16/D-17 (max 6 suggestions/bank keeps the iPad 3×2 grid inside the scroll-locked viewport), RAIL-06 |
-| zero-one-many | chip grid, iPhone panel | ✅ covered | Zero = D-15 empty line; one = single chip / iPhone `1 of 1`; many (2–6) = balanced desktop/iPad grid or paged `‹ i of N ›` on iPhone (D-12/D-13) |
-| long-text | chip chord name, suggestion label, iPhone strip label | ✅ covered | D-02 slash-break-before-bass rule (never truncate); RAIL-06 (long/altered/slash/repeated/unnamed labels); `labelFor()` (existing Phase 3 utility, reused) already supplies the unnamed-stack-bank fallback |
+**Elements (kinds confirmed by developer):**
+- E1 desktop/iPad rail columns — list-collection
+- E2 chord chip — interactive-control + static text
+- E3 iPhone strip — interactive-control + static text
+- E4 iPhone panel — list-collection + nav
+- E5 empty-state line — static-content
+
+**✅ Resolved — explicit truths:**
+
+| Element | Category | Truth |
+|---------|----------|-------|
+| E1 | empty | A factory bank with zero curated suggestions renders the Copywriting Contract empty line (13px, `--fg-2`) in place of the rail columns — no count, button, icon, or orange |
+| E4 | empty | A bank with zero suggestions replaces the iPhone strip with the 12px centred empty line; the panel cannot be opened |
+| E1 | populated | 1–6 suggestions render as `repeat(auto-fill, minmax(280px, 1fr))` columns (3 at iPad landscape), each label + kind above a balanced chip row |
+| E4 | populated | The panel shows exactly one suggestion at a time with label, kind, pager `‹ i of N ›`, and its chip row |
+| E1 | zero-one-many | Zero → empty line; one → single column; 2–6 → balanced grid that fits the scroll-locked iPad viewport (≤ 3×2) |
+| E4 | zero-one-many | Zero → empty line (no strip); one → `1 of 1` with pager steps inert; many → paged `‹ i of N ›`, index kept across close/reopen, reset to `1 of N` on bank change |
+| E1 | overflow | The rail never scrolls horizontally; columns wrap to new grid rows; the ≤ 6-per-bank cap keeps it above the fold on iPad |
+| E2 | overflow | A chip grows to fit its full chord name (`minmax(min-content, max-content)`); chip rows wrap, never clip |
+| E3 | overflow | Strip content (`Suggestions · N` + chevron) fits its `sugg` grid zone at iPhone-landscape width without pushing `pill` or `transpose` |
+| E4 | overflow | Panel `max-height` = space above the pads; excess content scrolls inside the panel (`overflow-y: auto`) and never covers a pad |
+| E5 | overflow | The empty line wraps inside its zone rather than overflowing |
+| E1 | long-text | Long suggestion labels wrap within their column; never truncated |
+| E2 | long-text | Long, altered, or slash chord names are never truncated; slash chords break only before the bass; unnamed stack-bank pads show the `labelFor()` fallback |
+| E4 | long-text | A long suggestion label wraps in the panel header without hiding the pager or × button |
+
+**🚫 Dismissed — with reason:**
+
+| Element(s) | Category | Reason |
+|------------|----------|--------|
+| E1, E2, E3, E4, E5 | loading | Suggestions resolve synchronously from the bundled catalogue (`getSuggestionsForBank`, in-memory) — no async boundary, so no loading state exists |
+| E1, E3, E4, E5 | error | `validateSuggestionCatalogue()` throws at import/build time (Phase 3); the rail only renders already-validated `ResolvedSuggestion[]` — no runtime error path |
+| E2 | error | Chip press is a pad alias on the same press/release path; MIDI output failures surface through the existing app-wide MIDI status, unchanged by this phase |
+| E1, E4 | partial | Catalogue validation is all-or-nothing per entry — a chip with missing key or chord name can never reach the rail |
 
 <!-- Status vocabulary (locked by probe-core projectTruths):
      ✅ covered   → a plain truth string lifted into must_haves.truths
@@ -198,7 +222,7 @@ Applicable state considerations resolved: 8 covered, 0 backstop, 0 unresolved.
 - TopBar row 1 gains a `sugg` grid area between `pill` and `transpose`: `grid-template-areas: 'pill sugg transpose' 'bank style latch'` (extends the existing per-breakpoint pattern in `TopBar.svelte`)
 - Strip (`.strip`): `min-height: 44px`, zero added height, centered in its zone, `Suggestions · N` + chevron (`▾` closed / `▴` open); empty bank replaces the strip with the 12px centered muted line, not a disabled button
 - Panel (`.panel`): `position: absolute; top/left/right: 0`, nonmodal, anchored over the top bar only — `max-height` = the space above the pads, so it can never cover a pad; `border-bottom: 1px solid var(--system)`, `box-shadow: 0 8px 18px rgb(0 0 0 / .45)`, scrolls internally (`overflow-y: auto`) if content exceeds that space
-- Panel shows exactly one suggestion at a time: header (`.p-head`, 44px min-height) = collapse control + `.p-id .s-label` (15px) + kind + pager (`‹ {i} of {n} ›`, step buttons 44×40 touch target, `.p-count` 11px mono tabular-nums) + × close (`aria-label="Close suggestions"`)
+- Panel shows exactly one suggestion at a time: header (`.p-head`, 44px min-height) = collapse control + `.p-id .s-label` (14px, `--t-body`) + kind + pager (`‹ {i} of {n} ›`, step buttons 44×40 touch target, `.p-count` 11px mono tabular-nums) + × close (`aria-label="Close suggestions"`)
 - Close via × / the collapse control in the panel header / Escape — never backdrop click (D-12)
 - Page-index memory: stays on the current suggestion across close/reopen while the bank is unchanged; a bank change resets to `1 of N` (D-13)
 - Accepted trade-off: bank / style / latch controls are hidden while the panel is open (D-12, deferred item)
@@ -235,12 +259,12 @@ No registries declared. The rail ships as hand-authored Svelte + the project's e
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-09-25
