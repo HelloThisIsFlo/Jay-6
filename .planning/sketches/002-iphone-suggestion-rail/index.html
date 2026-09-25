@@ -1,0 +1,520 @@
+<title>iPhone Suggestion Rail</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  /* Real app tokens (src/styles/tokens.css). Dark-only on purpose: the app is an instrument surface. */
+  :root {
+    color-scheme: dark;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --bg-0: #0e0e0e; --bg-1: #171717; --bg-2: #1f1f1f; --bg-3: #2a2a2a; --bg-4: #3a3a3a; --bg-5: #4a4a4a;
+    --fg-0: #eeeeee; --fg-1: #b8b8b8; --fg-2: #7a7a7a; --fg-3: #555555;
+    --accent: #ff7a1a;
+    --system: oklch(0.68 0.045 250);
+    --system-soft: oklch(0.42 0.04 250 / 0.35);
+    --cream: #f4f1ea; --black-key: #2e2e2e; --frame: #000000;
+    --t-eyebrow: 11px; --t-body: 14px; --t-readout: 18px;
+    --radius-sm: 4px; --radius-md: 6px; --radius-lg: 10px;
+    --sk-bg: #070707; --sk-fg: #d6d6d6; --sk-dim: #8a8a8a; --sk-line: #262626;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--sk-bg); color: var(--sk-fg); font: 13px/1.4 system-ui, sans-serif; }
+  button { font: inherit; color: inherit; }
+
+  /* ─── Sketch chrome (desk mode) ─────────────────────────────────── */
+  .desk { padding: 16px; display: grid; gap: 16px; }
+  .sk-bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+  .sk-bar h1 { margin: 0; font-size: 13px; font-weight: 600; color: var(--sk-fg); }
+  .sk-bar h1 span { color: var(--sk-dim); font-weight: 400; }
+  .seg { display: inline-flex; border: 1px solid var(--sk-line); border-radius: 6px; overflow: hidden; }
+  .seg button { background: transparent; border: 0; padding: 6px 10px; cursor: pointer; color: var(--sk-dim); }
+  .seg button + button { border-left: 1px solid var(--sk-line); }
+  .seg button[aria-pressed="true"] { background: #1c1c1c; color: #fff; }
+  .seg button:focus-visible, .sk-handle:focus-visible { outline: 2px solid var(--system); outline-offset: -2px; }
+  .sk-label { color: var(--sk-dim); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+  .metrics { font-family: var(--mono); font-size: 11px; color: var(--sk-dim); font-variant-numeric: tabular-nums; }
+  .metrics b { color: var(--sk-fg); font-weight: 500; }
+  .metrics .over { color: #e0b25a; }
+  .desk-main { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+  .frame-wrap { max-width: 100%; overflow-x: auto; }
+  .frame-wrap .device { border-radius: 22px; outline: 6px solid #1a1a1a; margin: 6px; }
+  .notes { flex: 1 1 260px; max-width: 420px; }
+  .notes h2 { margin: 0 0 6px; font-size: 13px; }
+  .notes ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--sk-fg); }
+  .notes li::marker { color: var(--sk-dim); }
+  .notes .verdict { margin: 8px 0 0; padding: 8px 10px; border-left: 2px solid var(--system); background: #111; }
+
+  /* ─── Device mode (real phone) ──────────────────────────────────── */
+  body.on-device .desk { display: none; }
+  body.on-device #device-host .device { position: fixed; inset: 0; width: auto !important; height: auto !important; border-radius: 0; }
+  body.on-device .device { --sl: env(safe-area-inset-left, 0px); --sr: env(safe-area-inset-right, 0px); }
+  .sk-handle {
+    display: none; position: fixed; z-index: 50; top: 50%; left: max(4px, calc(env(safe-area-inset-left, 0px) / 2 - 16px));
+    width: 32px; height: 32px; margin-top: 70px; border-radius: 50%;
+    border: 1px solid #333; background: rgb(0 0 0 / .7); color: #ddd; font: 600 12px var(--mono); cursor: pointer;
+  }
+  body.on-device .sk-handle { display: block; }
+  .sk-sheet {
+    position: fixed; z-index: 60; inset: 8px; overflow-y: auto; padding: 12px 16px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    background: rgb(8 8 8 / .96); border: 1px solid #2a2a2a; border-radius: 12px; display: grid; gap: 10px; align-content: start;
+  }
+  .sk-sheet .row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+  .sk-sheet .x { margin-left: auto; min-width: 44px; min-height: 36px; background: #1a1a1a; border: 1px solid #333; border-radius: 6px; }
+  .rotate { position: fixed; inset: auto 12px 12px; z-index: 40; padding: 10px 12px; border-radius: 8px; background: #111; border: 1px solid #333; color: var(--sk-fg); }
+  @media (orientation: landscape) { .rotate { display: none; } }
+
+  /* ─── Device + app ──────────────────────────────────────────────── */
+  .device { --sl: 0px; --sr: 0px; position: relative; overflow: hidden; background: var(--bg-0); container: dev / size; }
+  .scroller { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: none; padding-left: var(--sl); padding-right: var(--sr); }
+  .overlay { position: absolute; top: 0; bottom: 0; left: var(--sl); right: var(--sr); pointer-events: none; }
+  .overlay > * { pointer-events: auto; }
+
+  .app {
+    --lane: min(calc(100% - 56px), 1180px);
+    box-sizing: border-box; display: flex; flex-direction: column; min-height: 100%;
+    padding: 0 0 24px; font: var(--t-body) system-ui, sans-serif; color: var(--fg-0); background: var(--bg-0);
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  @container dev (max-width: 760px) { .app { --lane: calc(100% - 24px); } }
+  @container dev (max-height: 480px) { .app { --lane: calc(100% - 16px); } }
+
+  /* TopBar — geometry mirrors src/components/TopBar.svelte */
+  .topbar { box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 18px; background: var(--bg-1); border-bottom: 1px solid var(--bg-3); }
+  .zone { display: flex; align-items: center; gap: 4px; min-width: 0; }
+  .tb-btn { border: 1px solid var(--bg-4); background: var(--bg-2); border-radius: var(--radius-md); cursor: pointer; }
+  .status-pill { display: flex; align-items: center; gap: 10px; width: min(100%, 280px); min-height: 58px; padding: 0 14px 0 12px; border-radius: 999px; text-align: left; white-space: nowrap; overflow: hidden; }
+  .status-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #5fd08a; flex: none; }
+  .status-pill i { font-style: normal; color: var(--fg-3); margin: 0 4px; }
+  .chev { color: var(--fg-2); font-size: 10px; }
+  .step { display: grid; place-items: center; min-width: 40px; min-height: 50px; }
+  .readout { display: flex; align-items: center; gap: 8px; min-height: 54px; padding: 0 8px; white-space: nowrap; }
+  .bank-readout { min-width: 88px; min-height: 58px; }
+  .mono { font-family: var(--mono); }
+  .num { color: var(--fg-1); }
+  .transpose-zone .step { min-height: 36px; }
+  .tr { min-width: 56px; text-align: center; font-size: 12px; color: var(--fg-1); }
+  .latch { display: flex; align-items: center; justify-content: center; margin-left: auto; min-width: 110px; min-height: 66px; padding: 0 22px; font-weight: 600; letter-spacing: .08em; }
+  @container dev (max-width: 900px) {
+    .topbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'pill pill transpose' 'bank style latch'; gap: 8px; padding: 12px; }
+    .topbar.has-sugg { grid-template-areas: 'pill sugg transpose' 'bank style latch'; }
+    .pill-zone { grid-area: pill; } .sugg-zone { grid-area: sugg; } .bank-zone { grid-area: bank; }
+    .style-zone { grid-area: style; } .transpose-zone { grid-area: transpose; } .latch { grid-area: latch; margin-left: 0; }
+  }
+
+  /* Pads — geometry mirrors src/components/PianoLayout.svelte */
+  .piano {
+    display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); grid-template-rows: 101px 129px; gap: 8px;
+    padding: 18px; box-sizing: border-box; width: var(--lane); margin: 20px auto 0;
+    background: var(--frame); border: 1px solid #161616; border-radius: 14px; touch-action: none;
+  }
+  .pad {
+    display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 4px;
+    padding: 12px 12px 14px; border-radius: 10px; border: 1px solid transparent; min-width: 0; overflow: hidden;
+    font-family: var(--mono); text-align: left; cursor: pointer; transition: background-color 60ms, box-shadow 80ms;
+  }
+  .pad .key { font-size: 10px; font-weight: 600; letter-spacing: .06em; line-height: 1.2; }
+  .pad .name { display: flex; flex-wrap: wrap; align-items: baseline; font-size: 16px; font-weight: 600; line-height: 1.1; max-width: 100%; }
+  .pad .name span, .chip .n span { white-space: nowrap; }
+  .pad .bass, .chip .bass { opacity: .72; }
+  .pad.white { background: var(--cream); color: var(--bg-1); border-color: #d8d3c5; }
+  .pad.white .key { color: #6f675f; }
+  .pad.black { background: var(--black-key); color: var(--fg-0); border-color: var(--bg-3); box-shadow: inset 0 1px 0 rgb(255 255 255 / .1), inset 0 -1px 0 rgb(0 0 0 / .4); }
+  .pad.black .key { color: var(--fg-2); }
+  .pad.held { background: var(--accent); color: var(--bg-0); border-color: var(--accent); box-shadow: inset 0 1px 0 rgb(255 255 255 / .2), 0 0 24px 4px rgb(255 122 26 / .45); }
+  .pad.held .key { color: var(--bg-0); }
+  @container dev (max-width: 760px) {
+    .piano { grid-template-rows: 88px 112px; margin-top: 12px; padding: 12px; }
+    .pad { padding: 8px 8px 10px; } .pad .key { font-size: 9px; } .pad .name { font-size: clamp(10px, 2.7cqw, 14px); }
+  }
+  @container dev (max-height: 480px) {
+    .piano { grid-template-rows: 64px 80px; margin-top: 8px; padding: 8px; }
+    .pad { padding: 8px; }
+  }
+
+  .footer { box-sizing: border-box; width: var(--lane); margin: 12px auto 0; padding: 12px 16px 0; border-top: 1px solid var(--bg-2); color: var(--fg-3); font-size: var(--t-eyebrow); line-height: 1.5; }
+  .footer code { display: inline-block; margin: 0 4px; padding: 0 4px; border: 1px solid var(--bg-3); border-radius: var(--radius-sm); background: var(--bg-1); color: var(--fg-1); font: var(--t-eyebrow) var(--mono); }
+  @container dev (max-width: 760px) { .footer { text-align: center; } }
+
+  /* ─── Suggestion primitives (shared by all variants) ────────────── */
+  .s-label { font-size: var(--t-body); font-weight: 600; color: var(--fg-0); line-height: 1.25; text-wrap: balance; }
+  /* Kind is metadata, never a badge: no border, no fill. */
+  .kind { font-size: var(--t-eyebrow); color: var(--system); letter-spacing: .02em; }
+  .chips { display: grid; grid-template-columns: repeat(var(--per), minmax(min-content, max-content)); gap: 6px; justify-content: start; }
+  .chip { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 5px 9px 6px; border: 1px solid var(--bg-4); border-radius: var(--radius-md); background: var(--bg-2); }
+  .chip .k { font: 600 9px/1.2 var(--mono); color: var(--fg-2); letter-spacing: .06em; }
+  .chip .n { display: flex; flex-wrap: wrap; align-items: baseline; font: 600 14px/1.15 var(--mono); color: var(--fg-0); }
+  .empty { margin: 0; font-size: 13px; color: var(--fg-2); }
+  /* Sketch 003 winners: cream outline on naturals, playable chips, soft echo; the press always wins. */
+  .chip[data-color="white"] { border-color: rgb(244 241 234 / .6); }
+  .chip { cursor: pointer; touch-action: none; transition: background-color 60ms, box-shadow 80ms; }
+  .chip.echo:not(.held) { background: rgb(255 122 26 / .18); border-color: var(--accent); }
+  .chip.held, .chip.held[data-color] { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 14px 2px rgb(255 122 26 / .4); }
+  .chip.held .n, .chip.held .k { color: var(--bg-0); }
+
+  /* A — inline rail */
+  .rail { width: var(--lane); margin: 8px auto 0; display: grid; }
+  .rail-row { display: grid; grid-template-columns: minmax(96px, 168px) minmax(0, 1fr); gap: 4px 12px; align-items: start; padding: 8px 4px; border-top: 1px solid var(--bg-2); }
+  .rail-row:first-child { border-top: 0; }
+  .rail-id { display: grid; gap: 2px; padding-top: 3px; }
+  .rail .empty { padding: 8px 4px; }
+
+  /* B/C — disclosure strip */
+  .strip {
+    box-sizing: border-box; display: flex; align-items: center; gap: 8px; width: var(--lane); margin: 8px auto 0; min-height: 40px; padding: 0 12px;
+    border: 1px solid var(--bg-3); border-radius: var(--radius-md); background: var(--bg-1);
+    color: var(--system); font-size: var(--t-eyebrow); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+  }
+  .strip .count { font-family: var(--mono); letter-spacing: 0; }
+  .strip .chev { margin-left: auto; color: var(--system); }
+  .strip[aria-expanded="true"] { border-color: var(--system); }
+  .strip:focus-visible, .p-btn:focus-visible { outline: 2px solid var(--system); outline-offset: 1px; }
+  .sugg-zone { justify-content: center; }
+  .sugg-zone .strip { width: auto; margin: 0; min-height: 44px; padding: 0 14px; }
+  .strip-empty { width: var(--lane); margin: 8px auto 0; padding: 0 4px; }
+  .sugg-zone .empty { font-size: 12px; text-align: center; }
+
+  /* B — anchored nonmodal panel over the top bar; C — bottom sheet */
+  .panel, .sheet { box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg-1); }
+  .panel { position: absolute; top: 0; left: 0; right: 0; max-height: var(--panel-max, 160px); overflow-y: auto; border-bottom: 1px solid var(--system); box-shadow: 0 8px 18px rgb(0 0 0 / .45); }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; height: 58%; border-top: 1px solid var(--bg-4); border-radius: 12px 12px 0 0; box-shadow: 0 -10px 24px rgb(0 0 0 / .5); transform: translateY(105%); transition: transform 180ms ease-out; overflow-y: auto; }
+  .sheet.open { transform: none; }
+  .grab { width: 36px; height: 4px; margin: 6px auto 0; border-radius: 2px; background: var(--bg-5); flex: none; }
+  .p-head { display: flex; align-items: center; gap: 8px; padding: 4px 8px 0 12px; min-height: 44px; }
+  .p-id { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+  .p-id .s-label { font-size: 15px; }
+  .p-nav { display: flex; align-items: center; flex: none; }
+  .p-btn { display: grid; place-items: center; min-width: 44px; min-height: 40px; border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--fg-1); cursor: pointer; font-size: 18px; }
+  .p-btn:active { background: var(--bg-3); }
+  .p-count { min-width: 52px; text-align: center; font: 11px var(--mono); color: var(--fg-2); font-variant-numeric: tabular-nums; }
+  .p-collapse { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 8px 0 0; border: 0; background: none; color: var(--system); font-size: var(--t-eyebrow); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; flex: none; }
+  .p-body { padding: 6px 12px 12px; }
+  .p-body .empty { padding: 4px 0; }
+  @media (prefers-reduced-motion: reduce) { .sheet { transition: none; } }
+</style>
+
+<div class="desk" id="desk">
+  <div class="sk-bar">
+    <h1>Sketch 002 <span>· Phase 4 suggestions on iPhone landscape</span></h1>
+    <span class="seg" id="seg-variant" role="group" aria-label="Variant"></span>
+    <span class="seg" id="seg-strip" role="group" aria-label="B strip placement"></span>
+    <span class="seg" id="seg-bank" role="group" aria-label="Bank"></span>
+    <span class="seg" id="seg-frame" role="group" aria-label="Frame"></span>
+  </div>
+  <div class="metrics" id="metrics-desk"></div>
+  <div class="desk-main">
+    <div class="frame-wrap" id="frame-host"></div>
+    <aside class="notes" id="notes-desk"></aside>
+  </div>
+</div>
+<div id="device-host"></div>
+<button class="sk-handle" id="sk-handle" aria-label="Sketch controls">002</button>
+<div class="sk-sheet" id="sk-sheet" hidden></div>
+<div class="rotate" id="rotate" hidden>Rotate to landscape. This sketch targets iPhone landscape.</div>
+
+<script>
+(() => {
+  // Real bank data (src/banks.data.json); bank 07 has no curated suggestions.
+  const BANKS = {
+    1: { name: 'Pop', chords: { C: 'Cadd9', 'C#': 'C#M9/C', D: 'Dm7', 'D#': 'D#M7', E: 'Cadd9/E', F: 'FM9', 'F#': 'Dadd9/F#', G: 'Em7/G', 'G#': 'Fm6/G#', A: 'FM/A', 'A#': 'Gm/A#', B: 'G/B' } },
+    3: { name: 'Jazz', chords: { C: 'D7sus2/C', 'C#': 'C#7#9', D: 'Dm9', 'D#': 'D7#9', E: 'E7#9', F: 'FM9', 'F#': 'F#7#9', G: 'G7(13)', 'G#': 'G#7(13)', A: 'Am7(11)', 'A#': 'A#9', B: 'Bm7(11)' } },
+    7: { name: 'Trad Maj', chords: { C: 'C', 'C#': 'C#dim7', D: 'Dm', 'D#': 'D#dim7', E: 'Em', F: 'F', 'F#': 'F#m7b5', G: 'G', 'G#': 'G#dim7', A: 'Am', 'A#': 'A#', B: 'Bdim' } },
+  };
+  // Shape of ResolvedSuggestion (src/suggestions.ts): label, kind, ordered pad keys. No timing.
+  const SUGG = {
+    1: [
+      { label: 'Homeward', kind: 'progression', steps: ['C', 'A', 'B', 'C'] },
+      { label: 'Step up', kind: 'progression', steps: ['C', 'D', 'F', 'C'] },
+      { label: 'Slow climb back to the tonic through the relative minor', kind: 'movement', steps: ['C', 'E', 'F', 'F#', 'G', 'A', 'B', 'C'] },
+    ],
+    3: [
+      { label: 'Altered turnaround', kind: 'progression', steps: ['D', 'E', 'A', 'D#', 'D', 'G', 'C'] },
+      { label: 'Chromatic slide', kind: 'movement', steps: ['F#', 'G', 'G#', 'A'] },
+    ],
+    7: [],
+  };
+  const BANK_ORDER = [1, 3, 7];
+  const FRAMES = {
+    safari: { w: 852, h: 342, label: 'iPhone 16 · Safari ≈852×342' },
+    full: { w: 852, h: 393, label: 'Full 852×393' },
+    se: { w: 667, h: 331, label: 'SE ≈667×331' },
+  };
+  const VARIANTS = {
+    A: 'A · Inline rail',
+    B: '★ B · Strip + panel',
+    C: 'C · Bottom sheet',
+  };
+  const NOTES = {
+    A: {
+      title: 'A · Inline rail under the pads',
+      points: [
+        'Pads end around y≈333 on a short viewport. The rail starts below the fold on every iPhone landscape size.',
+        'Reading a suggestion means scrolling the white keys partly off-screen, so you can read or play, not both.',
+        'Empty bank: the quiet line is fine but nobody sees it; it sits below the fold too.',
+      ],
+      verdict: 'Keep for desktop and iPad. Wrong primary pattern for iPhone landscape.',
+    },
+    B: {
+      title: 'B · Disclosure strip + anchored panel',
+      points: [
+        'The panel opens over the top bar, which you rarely touch while playing. All 12 pads stay visible and playable.',
+        '"Under pads": the strip falls below the fold, so you have to scroll to find it. "In top bar": the strip fills the empty middle of row 1 and costs no height.',
+        'Cost: bank, style and latch are covered while the panel is open. Close with ×, the strip label, or Escape.',
+        'Empty bank: the strip becomes muted text in the top bar. No button, no count.',
+      ],
+      verdict: 'Recommended, with the strip in the top bar on short viewports.',
+    },
+    C: {
+      title: 'C · Bottom sheet (sketch 001 idea)',
+      points: [
+        'On landscape the pads fill the bottom of the screen, so any bottom sheet covers the white keys.',
+        'It has no backdrop, but it still hides the keys you are playing.',
+        'Its only advantage: bank and style stay reachable while it is open.',
+      ],
+      verdict: 'Reject for iPhone. It breaks the "pads stay primary" rule.',
+    },
+  };
+
+  const S = { variant: 'B', strip: 'top', bank: 1, frame: 'safari', open: false, idx: 0, skOpen: false };
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const onDevice = () => matchMedia('(pointer: coarse) and (max-height: 500px), (pointer: coarse) and (max-width: 500px)').matches;
+
+  let device, scroller, overlay;
+
+  function chordHTML(name) {
+    const [main, ...bass] = name.split('/');
+    return `<span>${esc(main)}</span>${bass.length ? `<span class="bass">/${esc(bass.join('/'))}</span>` : ''}`;
+  }
+  // Balanced rows: 7→4+3, 8→4+4. Narrow containers cap at 4 per row.
+  function chipsHTML(steps) {
+    const maxPer = device.clientWidth < 720 ? 4 : 6;
+    const rows = Math.ceil(steps.length / maxPer);
+    const per = Math.ceil(steps.length / rows);
+    const bank = BANKS[S.bank];
+    return `<div class="chips" style="--per:${per}">${steps.map((k) =>
+      `<span class="chip" data-chip="${esc(k)}" data-color="${k.includes('#') ? 'black' : 'white'}"><span class="k">${esc(k)}</span><span class="n">${chordHTML(bank.chords[k])}</span></span>`).join('')}</div>`;
+  }
+  const EMPTY = '<p class="empty">No curated suggestions for this bank yet</p>';
+
+  function topbarHTML() {
+    const bank = BANKS[S.bank];
+    const list = SUGG[S.bank];
+    const suggInTop = S.variant === 'B' && S.strip === 'top';
+    let sugg = '';
+    if (suggInTop) {
+      sugg = `<div class="zone sugg-zone">${list.length ? stripButton(list.length) : EMPTY}</div>`;
+    }
+    return `<header class="topbar${suggInTop ? ' has-sugg' : ''}">
+      <div class="zone pill-zone"><button class="tb-btn status-pill" type="button"><span class="dot"></span><span>OP-1<i>·</i>Ch 1<i>·</i><b>120</b> BPM<i>·</i>Int</span><span class="chev">▾</span></button></div>
+      ${sugg}
+      <div class="zone bank-zone"><button class="tb-btn step" type="button" data-bank="-1" aria-label="Prev bank">‹</button><button class="tb-btn readout bank-readout" type="button"><span class="mono num">${String(S.bank).padStart(2, '0')}</span><span>${esc(bank.name)}</span><span class="chev">▾</span></button><button class="tb-btn step" type="button" data-bank="1" aria-label="Next bank">›</button></div>
+      <div class="zone style-zone"><button class="tb-btn readout" type="button">ARP 1 <span class="chev">▾</span></button><button class="tb-btn readout mono" type="button">♪ 01 <span class="chev">▾</span></button></div>
+      <div class="zone transpose-zone"><button class="tb-btn step" type="button" aria-label="Transpose down">‹</button><span class="tr mono">TRN +0</span><button class="tb-btn step" type="button" aria-label="Transpose up">›</button></div>
+      <button class="tb-btn latch" type="button">LATCH</button>
+    </header>`;
+  }
+  function stripButton(n) {
+    return `<button class="strip" type="button" data-toggle aria-expanded="${S.open}">Suggestions <span class="count">· ${n}</span><span class="chev">${S.open ? '▴' : '▾'}</span></button>`;
+  }
+  function padsHTML() {
+    const bank = BANKS[S.bank];
+    const black = [['C#', 2], ['D#', 4], ['F#', 8], ['G#', 10], ['A#', 12]];
+    const white = [['C', 1], ['D', 3], ['E', 5], ['F', 7], ['G', 9], ['A', 11], ['B', 13]];
+    const pad = (k, col, row, cls) => `<button class="pad ${cls}" type="button" data-pad="${k}" style="grid-column:${col} / span 2;grid-row:${row}"><span class="key">${esc(k)}</span><span class="name">${chordHTML(bank.chords[k])}</span></button>`;
+    return `<div class="piano">${black.map(([k, c]) => pad(k, c, 1, 'black')).join('')}${white.map(([k, c]) => pad(k, c, 2, 'white')).join('')}</div>`;
+  }
+  function railHTML() {
+    const list = SUGG[S.bank];
+    if (!list.length) return `<div class="rail">${EMPTY}</div>`;
+    return `<div class="rail">${list.map((s) => `<div class="rail-row"><div class="rail-id"><span class="s-label">${esc(s.label)}</span><span class="kind">${s.kind}</span></div>${chipsHTML(s.steps)}</div>`).join('')}</div>`;
+  }
+  function belowPadsHTML() {
+    const list = SUGG[S.bank];
+    if (S.variant === 'A') return railHTML();
+    if (S.variant === 'B' && S.strip === 'top') return '';
+    return list.length ? stripButton(list.length) : `<div class="strip-empty">${EMPTY}</div>`;
+  }
+  const footerHTML = () => `<footer class="footer">Keys: <code>A S D F G H J</code> + <code>W E T Y U</code> = pads · <code>Z / X</code> = transpose · <code>← / →</code> = bank · <code>Space</code> = latch · <code>1–6</code> = style</footer>`;
+
+  function suggestionBody(withCollapse) {
+    const list = SUGG[S.bank];
+    const s = list[S.idx];
+    const collapse = withCollapse ? `<button class="p-collapse" type="button" data-toggle>Suggestions <span class="mono">· ${list.length}</span> ▴</button>` : '';
+    if (!s) {
+      return `<div class="p-head">${collapse}<div class="p-id"></div><button class="p-btn" type="button" data-close aria-label="Close suggestions">×</button></div><div class="p-body">${EMPTY}</div>`;
+    }
+    return `<div class="p-head">${collapse}
+      <div class="p-id"><span class="s-label">${esc(s.label)}</span><span class="kind">${s.kind}</span></div>
+      <div class="p-nav"><button class="p-btn" type="button" data-step="-1" aria-label="Previous suggestion">‹</button><span class="p-count">${S.idx + 1} of ${list.length}</span><button class="p-btn" type="button" data-step="1" aria-label="Next suggestion">›</button></div>
+      <button class="p-btn" type="button" data-close aria-label="Close suggestions">×</button>
+    </div><div class="p-body">${chipsHTML(s.steps)}</div>`;
+  }
+  function overlayHTML() {
+    if (S.variant === 'B' && S.open) return `<section class="panel" aria-label="Suggestions">${suggestionBody(true)}</section>`;
+    if (S.variant === 'C') return `<section class="sheet${S.open ? ' open' : ''}" aria-label="Suggestions" ${S.open ? '' : 'inert'}><div class="grab"></div>${suggestionBody(false)}</section>`;
+    return '';
+  }
+
+  function render() {
+    const onDev = onDevice();
+    document.body.classList.toggle('on-device', onDev);
+    const host = onDev ? document.getElementById('device-host') : document.getElementById('frame-host');
+    const other = onDev ? document.getElementById('frame-host') : document.getElementById('device-host');
+    if (!device) {
+      device = document.createElement('div');
+      device.className = 'device';
+      device.innerHTML = '<div class="scroller"></div><div class="overlay"></div>';
+      scroller = device.querySelector('.scroller');
+      overlay = device.querySelector('.overlay');
+      wireDevice();
+    }
+    if (device.parentElement !== host) { other.replaceChildren(); host.append(device); }
+    const f = FRAMES[S.frame];
+    device.style.width = onDev ? '' : f.w + 'px';
+    device.style.height = onDev ? '' : f.h + 'px';
+
+    scroller.innerHTML = `<main class="app">${topbarHTML()}${padsHTML()}${belowPadsHTML()}${footerHTML()}</main>`;
+    // Chip rows depend on device width, so render once more after layout settles.
+    overlay.innerHTML = overlayHTML();
+    requestAnimationFrame(() => { overlay.innerHTML = overlayHTML(); layoutPanel(); reapplyEcho(); measure(); });
+    renderControls();
+  }
+
+  // Panel may only occupy the space above the pads, so it can never cover a pad.
+  function layoutPanel() {
+    const panel = overlay.querySelector('.panel');
+    if (!panel) return;
+    const piano = scroller.querySelector('.piano');
+    const avail = piano.getBoundingClientRect().top - device.getBoundingClientRect().top - 4;
+    panel.style.setProperty('--panel-max', Math.max(0, avail) + 'px');
+  }
+
+  function measure() {
+    const piano = scroller.querySelector('.piano');
+    const top = device.getBoundingClientRect().top - scroller.scrollTop;
+    const pr = piano.getBoundingClientRect();
+    const h = device.clientHeight;
+    const below = Math.max(0, scroller.scrollHeight - h);
+    const padsEnd = Math.round(pr.bottom - top);
+    const overflowPads = padsEnd > h;
+    const html = `viewport <b>${device.clientWidth}×${h}</b> · top bar <b>${Math.round(pr.top - top - 8)}</b>px · pads <b>${Math.round(pr.top - top)}–${padsEnd}</b>px${overflowPads ? ' <span class="over">(pads clipped!)</span>' : ''} · below fold <b class="${below ? 'over' : ''}">${below}px</b>`;
+    document.getElementById('metrics-desk').innerHTML = html;
+    const m = document.getElementById('metrics-sheet');
+    if (m) m.innerHTML = html;
+  }
+
+  function segHTML(entries, current, attr) {
+    return entries.map(([v, label]) => `<button type="button" data-${attr}="${v}" aria-pressed="${String(v) === String(current)}">${esc(label)}</button>`).join('');
+  }
+  function notesHTML() {
+    const n = NOTES[S.variant];
+    return `<h2>${esc(n.title)}</h2><ul>${n.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul><p class="verdict">${esc(n.verdict)}</p>`;
+  }
+  function renderControls() {
+    const vs = Object.entries(VARIANTS);
+    const strips = [['pads', 'B strip: under pads'], ['top', 'B strip: in top bar']];
+    const banks = BANK_ORDER.map((b) => [b, `${String(b).padStart(2, '0')} ${BANKS[b].name} · ${SUGG[b].length}`]);
+    const frames = Object.entries(FRAMES).map(([k, f]) => [k, f.label]);
+    document.getElementById('seg-variant').innerHTML = segHTML(vs, S.variant, 'v');
+    document.getElementById('seg-strip').innerHTML = segHTML(strips, S.strip, 'strip');
+    document.getElementById('seg-strip').hidden = S.variant !== 'B';
+    document.getElementById('seg-bank').innerHTML = segHTML(banks, S.bank, 'b');
+    document.getElementById('seg-frame').innerHTML = segHTML(frames, S.frame, 'frame');
+    document.getElementById('notes-desk').innerHTML = notesHTML();
+    const sheet = document.getElementById('sk-sheet');
+    sheet.hidden = !S.skOpen;
+    if (S.skOpen) {
+      sheet.innerHTML = `<div class="row"><span class="sk-label">Sketch 002</span><button class="x" type="button" data-skclose aria-label="Close sketch controls">×</button></div>
+        <div class="row"><span class="seg">${segHTML(vs, S.variant, 'v')}</span></div>
+        ${S.variant === 'B' ? `<div class="row"><span class="seg">${segHTML(strips, S.strip, 'strip')}</span></div>` : ''}
+        <div class="row"><span class="seg">${segHTML(banks, S.bank, 'b')}</span></div>
+        <div class="metrics" id="metrics-sheet"></div>
+        <div class="notes">${notesHTML()}</div>`;
+    }
+    document.getElementById('rotate').hidden = !onDevice();
+  }
+
+  function setBankBy(delta) {
+    const i = BANK_ORDER.indexOf(S.bank);
+    S.bank = BANK_ORDER[(i + delta + BANK_ORDER.length) % BANK_ORDER.length];
+    S.idx = 0;
+    render();
+  }
+
+  // Per-key hold count: releasing one source never silences a key another source still holds.
+  const holds = new Map();
+  function syncKey(key) {
+    const on = (holds.get(key) ?? 0) > 0;
+    device.querySelector(`[data-pad="${CSS.escape(key)}"]`)?.classList.toggle('held', on);
+    device.querySelectorAll(`[data-chip="${CSS.escape(key)}"]`).forEach((c) => c.classList.toggle('echo', on));
+  }
+  // Freshly rendered panel chips pick up echo for keys still held.
+  const reapplyEcho = () => holds.forEach((n, key) => { if (n > 0) syncKey(key); });
+
+  function wireDevice() {
+    // Pads and chips share one press path (decided in sketch 003). Listeners sit on the
+    // device so chips inside the overlay panel play too.
+    const captured = new Map();
+    device.addEventListener('pointerdown', (e) => {
+      const el = e.target.closest('[data-pad], [data-chip]');
+      if (!el) return;
+      const key = el.dataset.pad ?? el.dataset.chip;
+      e.preventDefault();
+      el.setPointerCapture(e.pointerId);
+      captured.set(e.pointerId, { el, key });
+      holds.set(key, (holds.get(key) ?? 0) + 1);
+      el.classList.add('held');
+      syncKey(key);
+    });
+    const end = (e) => {
+      const c = captured.get(e.pointerId);
+      if (!c) return;
+      captured.delete(e.pointerId);
+      holds.set(c.key, Math.max(0, (holds.get(c.key) ?? 1) - 1));
+      c.el.classList.remove('held');
+      syncKey(c.key);
+    };
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((t) => device.addEventListener(t, end));
+    device.addEventListener('contextmenu', (e) => { if (e.target.closest('[data-pad], [data-chip]')) e.preventDefault(); });
+    scroller.addEventListener('scroll', () => { layoutPanel(); measure(); }, { passive: true });
+
+    device.addEventListener('click', (e) => {
+      const t = e.target.closest('button');
+      if (!t) return;
+      if (t.hasAttribute('data-toggle')) {
+        S.open = !S.open;
+        if (S.open && S.variant === 'B') scroller.scrollTo({ top: 0 });
+        render();
+      } else if (t.hasAttribute('data-close')) {
+        S.open = false; render();
+      } else if (t.dataset.step) {
+        const n = SUGG[S.bank].length;
+        S.idx = (S.idx + Number(t.dataset.step) + n) % n;
+        overlay.innerHTML = overlayHTML(); layoutPanel(); reapplyEcho();
+      } else if (t.dataset.bank) {
+        setBankBy(Number(t.dataset.bank));
+      }
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('button');
+    if (!t || device?.contains(t)) return;
+    if (t.dataset.v) { S.variant = t.dataset.v; S.open = false; S.idx = 0; }
+    else if (t.dataset.strip) { S.strip = t.dataset.strip; S.open = false; }
+    else if (t.dataset.b) { S.bank = Number(t.dataset.b); S.idx = 0; }
+    else if (t.dataset.frame) { S.frame = t.dataset.frame; }
+    else if (t.id === 'sk-handle') { S.skOpen = true; }
+    else if (t.hasAttribute('data-skclose')) { S.skOpen = false; }
+    else return;
+    render();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && S.open) { S.open = false; render(); }
+    else if (e.key === 'Escape' && S.skOpen) { S.skOpen = false; render(); }
+  });
+  let rt;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 80); });
+
+  render();
+})();
+</script>
