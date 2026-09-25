@@ -45,6 +45,8 @@
   const captured = new Map<Key, number>();
 
   function handlePointerDown(e: PointerEvent, k: Key) {
+    // A second finger on an already-held pad would overwrite the captured pointer (D-04).
+    if (captured.has(k)) { e.preventDefault(); return; }
     const c = chordFor(k);
     if (!c) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);

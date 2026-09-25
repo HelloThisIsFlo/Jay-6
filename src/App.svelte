@@ -173,6 +173,9 @@
       const padKey = KEY_TO_PAD[k]!;
       const c = getBank(ui.bankIndex).chords.find((c) => c.key === padKey);
       if (!c) return;
+      // A duplicate keydown without the repeat flag (e.g. after the window regains
+      // focus) must not add a hold the single keyup can't balance (D-04).
+      if (downKeys.has(k)) return;
       downKeys.add(k);
       press(padKey, c.notes);
       return;

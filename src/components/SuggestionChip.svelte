@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { Key } from '../banks';
   import type { ResolvedSuggestionStep } from '../suggestions';
   import { padNotesFor, chipVisualState } from '../rail';
@@ -23,6 +24,8 @@
   const visual = $derived(chipVisualState(heldHere, heldKeys.has(step.key)));
 
   function onpointerdown(e: PointerEvent): void {
+    // One hold per chip instance, mirroring the pad guard (D-04).
+    if (pointerId !== null) { e.preventDefault(); return; }
     const notes = padNotesFor(bankIndex, step.key);
     if (!notes) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -54,6 +57,12 @@
     }
     releaseHeld();
   }
+
+  // D-07: a chip that unmounts while held (bank change now; iPhone panel close and
+  // paging in Plan 04-04) releases its key immediately and idempotently. Uses only
+  // the stored pressedKey, never the step prop, because a keyed each block may
+  // already be tearing this item down.
+  onMount(() => () => releaseHeld());
 </script>
 
 <button
