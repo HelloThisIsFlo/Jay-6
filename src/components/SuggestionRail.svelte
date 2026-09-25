@@ -16,8 +16,12 @@
   const suggestions = $derived(getSuggestionsForBank(ui.bankIndex));
 </script>
 
-{#if suggestions.length > 0}
-  <section class="rail" aria-label="Suggestions">
+<section class="rail" aria-label="Suggestions">
+  {#if suggestions.length > 0}
+    <div class="rail-head">
+      <span>Suggestions</span>
+      <span class="count">· {suggestions.length}</span>
+    </div>
     <div class="cols">
       {#each suggestions as suggestion (suggestion.id)}
         <div class="col">
@@ -35,16 +39,33 @@
         </div>
       {/each}
     </div>
-  </section>
-{:else}
-  <p class="empty">No curated suggestions for this bank yet</p>
-{/if}
+  {:else}
+    <p class="empty">No curated suggestions for this bank yet</p>
+  {/if}
+</section>
 
 <style>
   .rail {
     box-sizing: border-box;
+    display: grid;
+    gap: 4px;
     width: min(calc(100% - 56px), 1180px);
     margin: 16px auto 0;
+  }
+  .rail-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 0 4px 4px;
+    color: var(--system);
+    font-size: var(--t-eyebrow);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .rail-head .count {
+    font-family: var(--mono);
+    letter-spacing: 0;
   }
   .cols {
     display: grid;
@@ -78,16 +99,25 @@
     letter-spacing: 0.02em;
   }
   .empty {
-    width: min(calc(100% - 56px), 1180px);
-    margin: 16px auto 0;
-    color: var(--fg-2);
+    margin: 0;
+    padding: 4px;
     font-size: 13px;
+    font-weight: 400;
+    color: var(--fg-2);
   }
 
   @media (max-width: 760px) {
-    .rail,
-    .empty {
+    .rail {
       width: calc(100% - 24px);
+    }
+  }
+
+  /* iPhone landscape starts below the fold for the inline rail (sketch 002), so the
+     TopBar strip in 04-04 takes over instead. Same height gate as PianoLayout's own
+     compact-pad rule and 04-04's TopBar rule — all three key off the same fold. */
+  @media (max-height: 480px) {
+    .rail {
+      display: none;
     }
   }
 </style>
