@@ -48,6 +48,41 @@ export function padNotesFor(bankIndex: number, key: Key): number[] | undefined {
   return getBank(bankIndex).chords.find((c) => c.key === key)?.notes;
 }
 
+export interface ChipHold {
+  readonly pointerId: number;
+  readonly key: Key;
+}
+
+export type ChipHoldEnd =
+  | { readonly kind: 'pointer-end'; readonly pointerId: number }
+  | { readonly kind: 'unmount' }
+  | { readonly kind: 'panic' };
+
+export interface ChipHoldStep {
+  readonly hold: ChipHold | null;
+  readonly release: Key | null;
+}
+
+// Every chip end path (pointer end, unmount, panic) settles through here (D-03,
+// D-04, D-07). Never mutates the input hold.
+export function endChipHold(hold: ChipHold | null, end: ChipHoldEnd): ChipHoldStep {
+  if (hold === null) return { hold: null, release: null };
+  switch (end.kind) {
+    case 'pointer-end':
+      // A mismatched pointerId (a stray event for a pointer this chip never
+      // captured) must not end the current hold.
+      if (hold.pointerId !== end.pointerId) return { hold, release: null };
+      return { hold: null, release: hold.key };
+    case 'unmount':
+      return { hold: null, release: hold.key };
+    case 'panic':
+      // host.panic and App's clearAllHighlights already silenced the key and
+      // emptied the hold counts, so a release here could only cancel a hold
+      // another source took after the panic (D-04).
+      return { hold: null, release: null };
+  }
+}
+
 export type ChipVisualState = 'held' | 'echo' | 'idle';
 
 // Precedence: held > echo > idle (D-03, D-05) — the physically-pressed chip

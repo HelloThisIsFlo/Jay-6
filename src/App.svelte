@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import TopBar from './components/TopBar.svelte';
   import PianoLayout from './components/PianoLayout.svelte';
   import SuggestionRail from './components/SuggestionRail.svelte';
@@ -78,6 +78,9 @@
   // wholesale on every press/release, so $state.raw (no deep proxy) is correct.
   let holdCounts = $state.raw<HoldCounts>(NO_HOLDS);
   let latchedKey = $state<Key | null>(null);
+  // Chips keep their own per-instance held look (D-03), which host.panic cannot
+  // reach directly, so this counter is the signal every mounted chip watches.
+  let panicToken = $state(0);
   const heldKeys = $derived(heldKeySet(holdCounts));
 
   // Highlight state is component-owned; host signals cleanup via setOnPanic so EVERY
@@ -88,6 +91,11 @@
   function clearAllHighlights(): void {
     holdCounts = NO_HOLDS;
     latchedKey = null;
+    // clearAllHighlights also runs synchronously inside the clock-mode $effect
+    // (host.panicForModeSwitch, then panic, then this onPanic hook), so a tracked
+    // read here would make that effect depend on the counter it bumps and re-panic
+    // in an update-depth loop.
+    panicToken = untrack(() => panicToken) + 1;
   }
   onMount(() => host.setOnPanic(clearAllHighlights));
 
@@ -230,9 +238,9 @@
 </script>
 
 <main>
-  <TopBar onPress={press} onRelease={release} heldKeys={displayKeys} />
+  <TopBar onPress={press} onRelease={release} heldKeys={displayKeys} {panicToken} />
   <PianoLayout onPress={press} onRelease={release} heldKeys={displayKeys} />
-  <SuggestionRail onPress={press} onRelease={release} heldKeys={displayKeys} />
+  <SuggestionRail onPress={press} onRelease={release} heldKeys={displayKeys} {panicToken} />
   <footer>
     <p>
       Keys: <code>A S D F G H J</code> + <code>W E T Y U</code> = pads ·

@@ -9,15 +9,22 @@
     onPress: (key: Key, notes: number[]) => void;
     onRelease: (key: Key) => void;
     heldKeys: Set<Key>;
+    panicToken: number;
   }
 
-  let { onPress, onRelease, heldKeys }: Props = $props();
+  let { onPress, onRelease, heldKeys, panicToken }: Props = $props();
 
   const suggestions = $derived(getSuggestionsForBank(ui.bankIndex));
 
   // Component-local, never in the global ui state object — that's reserved for
   // engine-bridged state, and browsing must stay silent (D-08).
   let open = $state(false);
+
+  // An empty bank unmounts the strip and panel (D-15), so the open flag must end
+  // with them; otherwise the next populated bank would reopen the panel unasked.
+  $effect(() => {
+    if (suggestions.length === 0) open = false;
+  });
 
   // D-13: memory is keyed on the derived `suggestions` list's own identity, which is
   // recreated on every bank change, so close/reopen keeps the page while any bank change
@@ -70,9 +77,9 @@
           <span class="kind">{current.kind}</span>
         </div>
         <div class="p-nav">
-          <button type="button" class="p-btn" aria-label="Previous suggestion" onclick={() => step(-1)}>‹</button>
+          <button type="button" class="p-btn" aria-label="Previous suggestion" disabled={suggestions.length <= 1} onclick={() => step(-1)}>‹</button>
           <span class="p-count">{pageIndex + 1} of {suggestions.length}</span>
-          <button type="button" class="p-btn" aria-label="Next suggestion" onclick={() => step(1)}>›</button>
+          <button type="button" class="p-btn" aria-label="Next suggestion" disabled={suggestions.length <= 1} onclick={() => step(1)}>›</button>
         </div>
         <button type="button" class="p-btn" aria-label="Close suggestions" onclick={close}>×</button>
       </div>
@@ -83,6 +90,7 @@
           {onPress}
           {onRelease}
           {heldKeys}
+          {panicToken}
         />
       </div>
     </section>

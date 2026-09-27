@@ -1,8 +1,16 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import type { Key } from '../banks';
   import type { ResolvedSuggestionStep } from '../suggestions';
-  import { padNotesFor, chipVisualState, splitChordLabel, isNaturalKey } from '../rail';
+  import {
+    padNotesFor,
+    chipVisualState,
+    splitChordLabel,
+    isNaturalKey,
+    endChipHold,
+    type ChipHold,
+    type ChipHoldEnd,
+  } from '../rail';
 
   interface Props {
     step: ResolvedSuggestionStep;
@@ -10,60 +18,67 @@
     onPress: (key: Key, notes: number[]) => void;
     onRelease: (key: Key) => void;
     heldKeys: Set<Key>;
+    panicToken: number;
   }
 
-  let { step, bankIndex, onPress, onRelease, heldKeys }: Props = $props();
+  let { step, bankIndex, onPress, onRelease, heldKeys, panicToken }: Props = $props();
 
-  // D-03: a chip is a pad alias — heldHere is per-instance (this exact chip's
+  // D-03: a chip is a pad alias — hold is per-instance (this exact chip's
   // pointer), never derived from the shared heldKeys set, or every chip sharing
   // a key would go full orange instead of only the one physically pressed.
-  let heldHere = $state(false);
-  let pointerId: number | null = null;
-  let pressedKey: Key | null = null;
+  let hold = $state.raw<ChipHold | null>(null);
+  const heldHere = $derived(hold !== null);
+
+  // Settle is the only place the chip releases: every end path (pointer end,
+  // unmount, panic) folds through the tested endChipHold reducer, which forwards
+  // a release only when it actually returns one.
+  function settle(end: ChipHoldEnd): void {
+    const step = endChipHold(hold, end);
+    hold = step.hold;
+    if (step.release !== null) onRelease(step.release);
+  }
+
+  // host.panic already silenced this key and App already emptied the hold counts,
+  // so the chip only drops its local held look and never releases; a release now
+  // could only cancel a hold another source took after the panic (D-04). untrack
+  // keeps this effect keyed on panicToken alone, because tracking hold would make
+  // every fresh press void itself.
+  $effect(() => {
+    void panicToken;
+    untrack(() => settle({ kind: 'panic' }));
+  });
 
   const visual = $derived(chipVisualState(heldHere, heldKeys.has(step.key)));
   const label = $derived(splitChordLabel(step.displayLabel));
 
   function onpointerdown(e: PointerEvent): void {
     // One hold per chip instance, mirroring the pad guard (D-04).
-    if (pointerId !== null) { e.preventDefault(); return; }
+    if (hold !== null) { e.preventDefault(); return; }
     const notes = padNotesFor(bankIndex, step.key);
     if (!notes) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    pointerId = e.pointerId;
-    pressedKey = step.key;
-    heldHere = true;
+    hold = { pointerId: e.pointerId, key: step.key };
     // Pads do the same: focus must never steal the computer-keyboard pad shortcuts.
     e.preventDefault();
     onPress(step.key, notes);
   }
 
-  // D-07: idempotent — a second end-path for the same press (or an unmount, see
-  // Task 2) must never call onRelease twice for one press.
-  function releaseHeld(): void {
-    if (pressedKey === null) return;
-    const key = pressedKey;
-    pressedKey = null;
-    heldHere = false;
-    onRelease(key);
-  }
-
   function endPress(e: PointerEvent): void {
-    if (pointerId !== e.pointerId) return;
-    pointerId = null;
+    if (hold?.pointerId !== e.pointerId) return;
     e.preventDefault();
     const target = e.currentTarget as HTMLElement;
-    if (heldHere && target.hasPointerCapture?.(e.pointerId)) {
+    // Settle before releasing pointer capture, so a re-entrant lostpointercapture
+    // (fired by releasePointerCapture below) finds no hold and settles to a no-op.
+    settle({ kind: 'pointer-end', pointerId: e.pointerId });
+    if (target.hasPointerCapture?.(e.pointerId)) {
       target.releasePointerCapture(e.pointerId);
     }
-    releaseHeld();
   }
 
-  // D-07: a chip that unmounts while held (bank change now; iPhone panel close and
-  // paging in Plan 04-04) releases its key immediately and idempotently. Uses only
-  // the stored pressedKey, never the step prop, because a keyed each block may
-  // already be tearing this item down.
-  onMount(() => () => releaseHeld());
+  // D-07: a chip that unmounts while held (bank change, iPhone panel close,
+  // paging) releases its key immediately. Reads only local state, never the
+  // step prop, because a keyed each block may already be tearing this item down.
+  onMount(() => () => settle({ kind: 'unmount' }));
 </script>
 
 <button
@@ -112,9 +127,9 @@
     background: var(--accent-soft);
     border-color: var(--accent);
   }
-  /* held.[data-color] beats the natural-key outline on specificity alone — without it,
-     .chip.held and .chip[data-color='white'] tie at the same specificity and source
-     order would decide, silently letting the outline win on a held natural-key chip. */
+  /* .chip.held and .chip[data-color='white'] tie at specificity (0,2,0), so today's
+     source order already lets held win; the compound .chip.held[data-color] selector
+     sits at (0,3,0), keeping held winning even if the rules are ever reordered. */
   .chip.held,
   .chip.held[data-color] {
     background: var(--accent);

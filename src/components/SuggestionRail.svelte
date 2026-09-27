@@ -9,9 +9,10 @@
     onPress: (key: Key, notes: number[]) => void;
     onRelease: (key: Key) => void;
     heldKeys: Set<Key>;
+    panicToken: number;
   }
 
-  let { onPress, onRelease, heldKeys }: Props = $props();
+  let { onPress, onRelease, heldKeys, panicToken }: Props = $props();
 
   const suggestions = $derived(getSuggestionsForBank(ui.bankIndex));
 </script>
@@ -35,6 +36,7 @@
             {onPress}
             {onRelease}
             {heldKeys}
+            {panicToken}
           />
         </div>
       {/each}
