@@ -33,8 +33,9 @@
     onPress: (key: Key, notes: number[]) => void;
     onRelease: (key: Key) => void;
     heldKeys: Set<Key>;
+    panicToken: number;
   }
-  let { onPress, onRelease, heldKeys }: Props = $props();
+  let { onPress, onRelease, heldKeys, panicToken }: Props = $props();
 
   let midiStatus = $state<MidiStatus>('idle');
   let midiOutputs = $state<MidiPortInfo[]>([]);
@@ -284,7 +285,7 @@
   <!-- iPhone landscape only (max-height: 480px, D-10): the strip takes the empty middle
        of row 1. Hidden by default so it never appears in desktop/iPad layouts. -->
   <div class="zone sugg-zone">
-    <SuggestionPanel {onPress} {onRelease} {heldKeys} />
+    <SuggestionPanel {onPress} {onRelease} {heldKeys} {panicToken} />
   </div>
 
   <!-- Bank: ‹ [01 Pop] › — arrows step; the readout opens a scrollable bank list. -->

@@ -10,10 +10,10 @@
     onPress: (key: Key, notes: number[]) => void;
     onRelease: (key: Key) => void;
     heldKeys: Set<Key>;
-    panicToken?: number;
+    panicToken: number;
   }
 
-  let { suggestion, maxPerRow, onPress, onRelease, heldKeys, panicToken = 0 }: Props = $props();
+  let { suggestion, maxPerRow, onPress, onRelease, heldKeys, panicToken }: Props = $props();
 
   let chipsEl = $state<HTMLDivElement>();
   let width = $state(0);

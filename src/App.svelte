@@ -238,7 +238,7 @@
 </script>
 
 <main>
-  <TopBar onPress={press} onRelease={release} heldKeys={displayKeys} />
+  <TopBar onPress={press} onRelease={release} heldKeys={displayKeys} {panicToken} />
   <PianoLayout onPress={press} onRelease={release} heldKeys={displayKeys} />
   <SuggestionRail onPress={press} onRelease={release} heldKeys={displayKeys} {panicToken} />
   <footer>
