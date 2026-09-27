@@ -83,7 +83,7 @@ Plans:
   4. Browser verification proves the rail, honest empty state, and long or unusual labels remain subordinate and usable on desktop, iPad-sized, and iPhone-landscape layouts.
   5. OP-1 and MIDI-monitor verification proves browsing emits no MIDI, a chip press emits exactly what its pad would (including chip + pad held together), and the existing bank → pad → style → MIDI performance loop remains intact.
 
-**Plans**: 4/4 plans executed
+**Plans**: 4/5 plans executed
 
 Plans:
 **Wave 1**
@@ -98,6 +98,10 @@ Plans:
 **Wave 3** *(blocked on 04-01 and 04-03)*
 
 - [x] 04-04-PLAN.md — iPhone-landscape TopBar strip + anchored panel with remembered pager and silent browsing.
+
+**Wave 4** *(gap closure, blocked on 04-04)*
+
+- [ ] 04-05-PLAN.md — Gap closure: a panic resets held chips on both surfaces (CR-01); the iPhone panel's open state ends with an empty bank (WR-01).
 
 **UI hint**: yes
 
@@ -141,6 +145,6 @@ Plans:
 | 2. Post-prototype polish + UAT | v1.0 | 9/9 | Complete | 2026-05-23 |
 | 02.1 Visual redesign adoption | pre-v2 | 4/4 | Complete | 2026-07-06 |
 | 3. Catalogue Mechanism & Bootstrap | v2.0 | 4/4 | Complete    | 2026-08-23 |
-| 4. Read-Only Suggestion Rail | v2.0 | 4/4 | In Progress|  |
+| 4. Read-Only Suggestion Rail | v2.0 | 4/5 | In Progress|  |
 | 5. Variation Cycling & Queued Feedback | v2.0 | 0/TBD | Not started | - |
 | 6. Measured External BPM | v2.0 | 0/TBD | Not started | - |
