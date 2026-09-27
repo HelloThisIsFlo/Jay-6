@@ -10,9 +10,10 @@
     onPress: (key: Key, notes: number[]) => void;
     onRelease: (key: Key) => void;
     heldKeys: Set<Key>;
+    panicToken?: number;
   }
 
-  let { suggestion, maxPerRow, onPress, onRelease, heldKeys }: Props = $props();
+  let { suggestion, maxPerRow, onPress, onRelease, heldKeys, panicToken = 0 }: Props = $props();
 
   let chipsEl = $state<HTMLDivElement>();
   let width = $state(0);
@@ -36,7 +37,7 @@
 
 <div class="chips" bind:this={chipsEl} bind:clientWidth={width}>
   {#each suggestion.steps as step, index (suggestion.id + ':' + index)}
-    <SuggestionChip {step} bankIndex={suggestion.bankIndex} {onPress} {onRelease} {heldKeys} />
+    <SuggestionChip {step} bankIndex={suggestion.bankIndex} {onPress} {onRelease} {heldKeys} {panicToken} />
   {/each}
 </div>
 

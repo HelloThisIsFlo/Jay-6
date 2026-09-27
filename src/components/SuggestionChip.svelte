@@ -10,9 +10,10 @@
     onPress: (key: Key, notes: number[]) => void;
     onRelease: (key: Key) => void;
     heldKeys: Set<Key>;
+    panicToken: number;
   }
 
-  let { step, bankIndex, onPress, onRelease, heldKeys }: Props = $props();
+  let { step, bankIndex, onPress, onRelease, heldKeys, panicToken }: Props = $props();
 
   // D-03: a chip is a pad alias — heldHere is per-instance (this exact chip's
   // pointer), never derived from the shared heldKeys set, or every chip sharing
@@ -20,6 +21,16 @@
   let heldHere = $state(false);
   let pointerId: number | null = null;
   let pressedKey: Key | null = null;
+
+  // host.panic already silenced this key and App already emptied the hold counts,
+  // so the chip only drops its local held look and never releases; a release now
+  // could only cancel a hold another source took after the panic (D-04).
+  $effect(() => {
+    void panicToken;
+    pointerId = null;
+    pressedKey = null;
+    heldHere = false;
+  });
 
   const visual = $derived(chipVisualState(heldHere, heldKeys.has(step.key)));
   const label = $derived(splitChordLabel(step.displayLabel));
