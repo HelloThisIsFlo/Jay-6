@@ -15,8 +15,10 @@ import {
   rememberedPage,
   stepPage,
   panelMaxPerRow,
+  endChipHold,
   type HoldCounts,
   type PageMemory,
+  type ChipHold,
 } from '../src/rail';
 
 // Folds press/release events from NO_HOLDS through the reducers and returns the
@@ -341,6 +343,107 @@ describe('stepPage', () => {
     [0, 1, 0, 0],
   ] as const)('stepPage(%d, %d, %d) -> %d', (index, delta, count, expected) => {
     expect(stepPage(index, delta, count)).toBe(expected);
+  });
+});
+
+describe('endChipHold', () => {
+  it('returns hold null and release null for every end kind when there is no hold', () => {
+    expect(endChipHold(null, { kind: 'pointer-end', pointerId: 1 })).toEqual({ hold: null, release: null });
+    expect(endChipHold(null, { kind: 'unmount' })).toEqual({ hold: null, release: null });
+    expect(endChipHold(null, { kind: 'panic' })).toEqual({ hold: null, release: null });
+  });
+
+  it('releases the held key on a pointer-end from the holding pointer', () => {
+    const hold: ChipHold = { pointerId: 1, key: 'C' };
+    expect(endChipHold(hold, { kind: 'pointer-end', pointerId: 1 })).toEqual({ hold: null, release: 'C' });
+  });
+
+  it('returns the same hold reference and releases nothing on a pointer-end from a different pointer', () => {
+    const hold: ChipHold = { pointerId: 1, key: 'C' };
+    const step = endChipHold(hold, { kind: 'pointer-end', pointerId: 2 });
+    expect(step.hold).toBe(hold);
+    expect(step.release).toBeNull();
+  });
+
+  it('releases the key exactly once across two end paths for the same press (pointerup then lostpointercapture)', () => {
+    const hold: ChipHold = { pointerId: 1, key: 'C' };
+    const first = endChipHold(hold, { kind: 'pointer-end', pointerId: 1 });
+    expect(first).toEqual({ hold: null, release: 'C' });
+    const second = endChipHold(first.hold, { kind: 'pointer-end', pointerId: 1 });
+    expect(second).toEqual({ hold: null, release: null });
+  });
+
+  it('releases the held key on unmount (D-07)', () => {
+    const hold: ChipHold = { pointerId: 1, key: 'C' };
+    expect(endChipHold(hold, { kind: 'unmount' })).toEqual({ hold: null, release: 'C' });
+  });
+
+  it('releases nothing on unmount with no hold', () => {
+    expect(endChipHold(null, { kind: 'unmount' })).toEqual({ hold: null, release: null });
+  });
+
+  it('clears the hold without releasing on panic', () => {
+    const hold: ChipHold = { pointerId: 1, key: 'C' };
+    expect(endChipHold(hold, { kind: 'panic' })).toEqual({ hold: null, release: null });
+  });
+
+  it('releases nothing for a pointer-end or unmount that arrives after a panic already cleared the hold', () => {
+    const hold: ChipHold = { pointerId: 1, key: 'C' };
+    const afterPanic = endChipHold(hold, { kind: 'panic' }).hold;
+    expect(endChipHold(afterPanic, { kind: 'pointer-end', pointerId: 1 })).toEqual({ hold: null, release: null });
+    expect(endChipHold(afterPanic, { kind: 'unmount' })).toEqual({ hold: null, release: null });
+  });
+
+  it('releases exactly once for a fresh hold (new pointerId) taken after a panic', () => {
+    const freshHold: ChipHold = { pointerId: 2, key: 'C' };
+    expect(endChipHold(freshHold, { kind: 'pointer-end', pointerId: 2 })).toEqual({ hold: null, release: 'C' });
+  });
+
+  it('never mutates the input hold', () => {
+    const hold: ChipHold = { pointerId: 1, key: 'C' };
+    const frozen = Object.freeze({ ...hold });
+    endChipHold(frozen, { kind: 'pointer-end', pointerId: 1 });
+    endChipHold(frozen, { kind: 'unmount' });
+    endChipHold(frozen, { kind: 'panic' });
+    expect(frozen).toEqual({ pointerId: 1, key: 'C' });
+  });
+
+  it('composes with the hold-count reducer (D-04): chip press, panic (no release), pad press, pre-panic chip lift (no release), pad release', () => {
+    let counts: HoldCounts = NO_HOLDS;
+    const forwarded: string[] = [];
+    let hold: ChipHold | null;
+
+    // Chip presses C — forwarded (0-to-1 transition).
+    const chipPress = pressHold(counts, 'C');
+    counts = chipPress.counts;
+    if (chipPress.forward) forwarded.push('press C');
+    hold = { pointerId: 1, key: 'C' };
+
+    // Panic resets App's holdCounts to a brand-new NO_HOLDS and settles the chip
+    // with no release — releaseHold is never called for the panic'd hold.
+    counts = NO_HOLDS;
+    const panicStep = endChipHold(hold, { kind: 'panic' });
+    hold = panicStep.hold;
+    expect(panicStep.release).toBeNull();
+
+    // Pad presses C — forwarded (0-to-1 transition against the fresh NO_HOLDS).
+    const padPress = pressHold(counts, 'C');
+    counts = padPress.counts;
+    if (padPress.forward) forwarded.push('press C');
+
+    // The pre-panic chip pointer lifts: hold is already null, so releaseHold is
+    // never called — a later lift can never cancel the pad's newer hold (D-04).
+    const liftStep = endChipHold(hold, { kind: 'pointer-end', pointerId: 1 });
+    expect(liftStep.release).toBeNull();
+    hold = liftStep.hold;
+
+    // The pad releases — forwarded (1-to-0 transition).
+    const padRelease = releaseHold(counts, 'C');
+    counts = padRelease.counts;
+    if (padRelease.forward) forwarded.push('release C');
+
+    expect(forwarded).toEqual(['press C', 'press C', 'release C']);
+    expect(counts.size).toBe(0);
   });
 });
 
